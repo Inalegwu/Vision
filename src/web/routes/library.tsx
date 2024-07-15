@@ -1,7 +1,7 @@
 import { Button, Flex, Heading, Text } from "@radix-ui/themes";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
-import { globalState$ } from "../state";
+import { Issue } from "../components";
 
 export const Route = createFileRoute("/library")({
   component: Component,
@@ -9,7 +9,7 @@ export const Route = createFileRoute("/library")({
 
 function Component() {
   return (
-    <Flex direction="column" className="w-full h-screen px-2 py-3">
+    <Flex direction="column" className="w-full h-screen px-2 py-2">
       <Flex align="center" justify="between" className="w-full">
         <Heading size="8">Library</Heading>
         <Flex align="center" justify="end" gap="3">
@@ -19,8 +19,14 @@ function Component() {
           </Button>
         </Flex>
       </Flex>
-      <Flex grow="1">
-        <Text>{globalState$.sourceFolder.get()}</Text>
+      <Flex grow="1" className="py-5">
+        <Issue
+          issue={{
+            id: "1",
+            issueTitle: "Kill All Immortals",
+            collectionId: null,
+          }}
+        />
       </Flex>
     </Flex>
   );

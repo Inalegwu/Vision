@@ -1,4 +1,5 @@
 import FlatList from "./flatlist";
+import Issue from "./issue";
 import Layout from "./layout";
 
-export { FlatList, Layout };
+export { FlatList, Issue, Layout };
