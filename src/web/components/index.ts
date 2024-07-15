@@ -1,4 +1,4 @@
-import Layout from "./Layout";
-import ErrorBoundaryFallBack from "./ErrorBoundaryFallBack";
+import FlatList from "./flatlist";
+import Layout from "./layout";
 
-export { ErrorBoundaryFallBack, Layout };
+export { FlatList, Layout };

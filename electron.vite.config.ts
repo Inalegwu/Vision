@@ -1,7 +1,7 @@
 import { TanStackRouterVite } from "@tanstack/router-vite-plugin";
 import react from "@vitejs/plugin-react";
 import { defineConfig, externalizeDepsPlugin } from "electron-vite";
-import { resolve } from "path";
+import { resolve } from "node:path";
 import UnoCSS from "unocss/vite";
 
 export default defineConfig({
@@ -11,9 +11,11 @@ export default defineConfig({
       lib: {
         entry: "src/main.ts",
       },
+      rollupOptions: {
+        external: ["better-sqlite3", "node-unrar-js"],
+      },
     },
     resolve: {
-      // path aliases
       alias: {
         "@src": resolve(__dirname, "src/"),
         "@shared": resolve(__dirname, "src/shared/"),
@@ -26,17 +28,14 @@ export default defineConfig({
   preload: {
     plugins: [externalizeDepsPlugin()],
     build: {
-      // tell electron-vite where to look for your preload file
       lib: {
         entry: "src/preload.ts",
       },
     },
   },
   renderer: {
-    // tell electron-vite where your web entry point is
     root: "src/web/",
     resolve: {
-      // path aliases
       alias: {
         "@src": resolve(__dirname, "src/"),
         "@shared": resolve(__dirname, "src/shared/"),
@@ -53,7 +52,6 @@ export default defineConfig({
         generatedRouteTree: "./src/web/routeTree.gen.ts",
       }),
     ],
-    // where to output your web files
     build: {
       outDir: "out/renderer",
       rollupOptions: {

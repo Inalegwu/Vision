@@ -1,28 +1,24 @@
 import { createContext } from "@src/shared/context";
 import { appRouter } from "@src/shared/routers/_app";
-import { BrowserWindow, app } from "electron";
+import { BrowserWindow, app, screen } from "electron";
 import { createIPCHandler } from "electron-trpc/main";
 import { join } from "node:path";
 
-// set the app name independent of package.json name
-app.setName("ElectroStatic");
+app.setName("Vision");
 
 const createWindow = () => {
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   const mainWindow = new BrowserWindow({
-    // disable the window frame
-    // remove this if you don't plan
-    // on having a custom frame
     frame: false,
+    show: false,
+    width: width - 50,
+    height: height - 50,
     webPreferences: {
       sandbox: false,
       preload: join(__dirname, "../preload/preload.js"),
     },
   });
 
-  // create and attach the ipc handler
-  // appRouter is defined in src/shared/routers/_app.ts
-  // this is the root and all routers will be attached
-  // to that
   createIPCHandler({
     router: appRouter,
     windows: [mainWindow],
@@ -30,7 +26,7 @@ const createWindow = () => {
   });
 
   mainWindow.webContents.on("dom-ready", () => {
-    mainWindow.show;
+    mainWindow.show();
   });
 
   if (import.meta.env.DEV) {
@@ -39,7 +35,7 @@ const createWindow = () => {
     mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
   }
 
-  mainWindow.webContents.openDevTools({ mode: "detach" });
+  // mainWindow.webContents.openDevTools({ mode: "detach" });
 };
 
 app.whenReady().then(() => {

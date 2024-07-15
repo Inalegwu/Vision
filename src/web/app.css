@@ -1,0 +1,67 @@
+@font-face {
+  font-family: Font;
+  src: url("../assets/fonts/SF-Pro-Display-Light.otf");
+}
+
+@font-face {
+  font-family: Font;
+  src: url("../assets/fonts/SF-Pro-Display-Medium.otf");
+}
+
+@font-face {
+  font-family: Font;
+  src: url("../assets/fonts/SF-Pro-Display-Regular.otf");
+}
+
+/* @font-face {
+  font-family: Font;
+  src: url("../assets/fonts/inter.ttf");
+} */
+
+@font-face {
+  font-family: Font;
+  src: url("../assets/fonts/SF-Pro-Display-Semibold.otf");
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Font;
+  text-decoration: none;
+}
+
+.radix-themes{
+    --default-font-family:Font;
+  --heading-font-family: Font;
+  --code-font-family:Font;
+  --strong-font-family:Font;
+  --em-font-family:Font;
+  --quote-font-family:Font;
+}
+
+body {
+   -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  overflow: hidden;
+}
+
+#drag-region {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-app-region: drag;
+  cursor: grab;
+}
+
+::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+
+button{
+  border:none;
+  appearance:none;
+  background:none;
+  outline: none;
+}
