@@ -15,6 +15,12 @@ export const globalState$ = observable<GlobalState>({
   sourceFolder: null,
 });
 
+export const settingsState$ = observable<{
+  visible: boolean;
+}>({
+  visible: false,
+});
+
 persistObservable(globalState$, {
   local: "global_state",
 });

@@ -13,6 +13,8 @@ const libraryRouter = router({
       return false;
     }
 
+    console.log(filePaths.join(","));
+
     globalState$.sourceFolder.set(filePaths[0]);
 
     return true;

@@ -8,3 +8,5 @@ const t = initTRPC.context<Context>().create({
 export const middleware = t.middleware;
 export const router = t.router;
 export const publicProcedure = t.procedure;
+// this is for the future, when account creation and syncing come into play
+// export const protectedProcedure=t.procedure.use(async(middlewareFns)=>{})

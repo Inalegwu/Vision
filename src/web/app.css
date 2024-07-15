@@ -1,4 +1,4 @@
-@font-face {
+/* @font-face {
   font-family: Font;
   src: url("../assets/fonts/SF-Pro-Display-Light.otf");
 }
@@ -11,17 +11,23 @@
 @font-face {
   font-family: Font;
   src: url("../assets/fonts/SF-Pro-Display-Regular.otf");
-}
+} */
 
 /* @font-face {
   font-family: Font;
-  src: url("../assets/fonts/inter.ttf");
+  src: url("../assets/fonts/SF-Pro-Display-Semibold.otf");
 } */
 
 @font-face {
   font-family: Font;
-  src: url("../assets/fonts/SF-Pro-Display-Semibold.otf");
+  src: url("../assets/fonts/inter.ttf");
 }
+
+/* @font-face{
+  font-family:Font;
+  src:url("../assets/fonts/bric.ttf")
+} */
+
 
 * {
   margin: 0;
