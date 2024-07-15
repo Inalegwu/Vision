@@ -1,0 +1,31 @@
+@font-face {
+  font-family: Bricolage;
+  src: url("../assets/fonts/bricolage.ttf");
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Bricolage;
+  text-decoration: none;
+}
+
+body {
+   -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  overflow: hidden;
+}
+
+#drag-region {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-app-region: drag;
+  cursor: grab;
+}
+
+::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}

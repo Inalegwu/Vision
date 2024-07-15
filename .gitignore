@@ -1,0 +1,8 @@
+.DS_Store
+dist
+release
+node_modules
+.drizzle
+out
+*.vite.config.*.mjs
+*.gen.ts
