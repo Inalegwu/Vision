@@ -17,7 +17,7 @@ export default function Issue({ issue }: Props) {
         >
           {/* TODO make image */}
           <div
-            className="w-full p-2 h-full bg-zinc-200/5 rounded-md border-1 border-solid border-zinc-400 dark:border-zinc-800"
+            className="w-full p-2 h-full bg-zinc-200/5 rounded-md border-1 border-solid border-zinc-200 dark:border-zinc-800"
             // alt="issue_thumbnail"
           />
           <Flex direction="column" align="start">
