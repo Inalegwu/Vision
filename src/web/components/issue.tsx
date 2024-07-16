@@ -3,12 +3,13 @@ import t from "@src/shared/config";
 import type { Issue as issue } from "@src/shared/types";
 import { useRouter } from "@tanstack/react-router";
 import { Edit, Trash2 } from "lucide-react";
+import { memo } from "react";
 
 type Props = {
   issue: issue;
 };
 
-export default function Issue({ issue }: Props) {
+const Issue = memo(({ issue }: Props) => {
   const utils = t.useUtils();
   const navigation = useRouter();
   const { mutate: deleteIssue } = t.issue.deleteIssue.useMutation({
@@ -68,4 +69,6 @@ export default function Issue({ issue }: Props) {
       </ContextMenu.Content>
     </ContextMenu.Root>
   );
-}
+});
+
+export default Issue;
