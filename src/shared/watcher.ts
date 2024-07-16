@@ -1,8 +1,8 @@
 import chokidar from "chokidar";
 import { parseWorkerResponse } from "./validations";
-import ParserPath from "./workers/parser?nodeWorker";
+import Parser from "./workers/parser?nodeWorker";
 
-const parseWorker = ParserPath({
+const parseWorker = Parser({
   name: "parse_file_worker",
 });
 
@@ -28,13 +28,9 @@ export default function watchFS(path: string | null) {
 
   const watcher = chokidar.watch(path, {
     // ignored: /.*?(?<!\.(cbr|cbz))$/,
-    ignoreInitial: false,
   });
 
   watcher.on("add", (p, s) => {
-    // TODO handle ignoring non .cbz and .cbr files and
-    // extracting and serializing .cbz and .cbr files into Storage
-    console.log({ p, ...s });
     parseWorker.postMessage({
       parsePath: p,
     });

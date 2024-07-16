@@ -12,9 +12,9 @@ if (!port) throw new Error("Illegal State");
 console.log("parser started...");
 
 port.on("message", async (v) => {
-  const data = parsePathSchema.safeParse(v);
+  const message = parsePathSchema.safeParse(v);
 
-  if (!data.success) {
+  if (!message.success) {
     port.postMessage({
       completed: false,
       message: "Invalid message data sent",
@@ -22,12 +22,16 @@ port.on("message", async (v) => {
     return;
   }
 
-  if (data.data.parsePath.includes("cbz")) {
+  if (message.data.parsePath.includes("cbz")) {
     return;
   }
 
-  if (data.data.parsePath.includes("cbr")) {
-    return handleRar(data.data.parsePath);
+  if (message.data.parsePath.includes("cbr")) {
+    const result = await handleRar(message.data.parsePath);
+
+    port.postMessage(result);
+
+    return;
   }
 
   port.postMessage({
@@ -56,7 +60,7 @@ async function handleRar(
   //     };
   //   }
 
-  console.log(fileName);
+  console.log({ fileName });
 
   const extractor = await createExtractorFromData({
     data: Uint8Array.from(readFileSync(filePath)).buffer,
