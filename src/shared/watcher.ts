@@ -20,8 +20,11 @@ parseWorker.on("message", (e) => {
 export default function watchFS(path: string | null) {
   if (path === null) return;
 
+  console.log(path);
+
   const watcher = chokidar.watch(path, {
     // ignored: /.*?(?<!\.(cbr|cbz))$/,
+    ignoreInitial: false,
   });
 
   watcher.on("add", (p, s) => {

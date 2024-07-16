@@ -12,8 +12,10 @@ export default function Issue({ issue }: Props) {
   const utils = t.useUtils();
   const navigation = useRouter();
   const { mutate: deleteIssue } = t.issue.deleteIssue.useMutation({
-    onSuccess: () => {
-      utils.library.getLibrary.invalidate();
+    onSuccess: (d) => {
+      if (d) {
+        utils.library.getLibrary.invalidate();
+      }
     },
   });
 

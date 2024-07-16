@@ -1,5 +1,6 @@
 import { Flex } from "@radix-ui/themes";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import t from "@src/shared/config";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/$issueId")({
   component: Component,
@@ -8,21 +9,37 @@ export const Route = createFileRoute("/$issueId")({
 function Component() {
   const { issueId } = Route.useParams();
 
-  const navigation = useRouter();
+  const { data, isLoading } = t.issue.getPages.useQuery({
+    issueId,
+  });
+
+  if (isLoading) {
+    return (
+      <Flex className="w-full h-screen" align="center" justify="center">
+        <div className="p-2 border-1 border-solid border-zinc-400 dark:border-zinc-800 rounded-full animate-pulse" />
+      </Flex>
+    );
+  }
 
   return (
     <Flex className="w-full h-screen" justify="center">
-      {issueId}
+      {data?.id}
       <Flex
         align="center"
         justify="start"
         gap="2"
-        className="absolute z-20 w-5/6 bottom-10 bg-transparent border-1 border-solid border-zinc-200 dark:border-zinc-800 rounded-lg p-2"
+        className="absolute z-20 w-5/6 overflow-x-scroll bottom-10 bg-transparent border-1 border-solid border-zinc-200 dark:border-zinc-800 rounded-lg p-2"
       >
-        <div className="bg-zinc-400 border-1 border-solid border-zinc-800 rounded-md w-[80px] cursor-pointer h-[90px]" />
-        <div className="bg-zinc-400 border-1 border-solid border-zinc-800 rounded-md w-[80px] cursor-pointer h-[90px]" />
-        <div className="bg-zinc-400 border-1 border-solid border-zinc-800 rounded-md w-[80px] cursor-pointer h-[90px]" />
-        <div className="bg-zinc-400 border-1 border-solid border-zinc-800 rounded-md w-[80px] cursor-pointer h-[90px]" />
+        {data?.pages.map((v) => {
+          return (
+            <img
+              className="w-[100px] h-[95px] rounded-md border-1 border-solid border-zinc-200 dark:border-zinc-800 cursor-pointer"
+              key={v.id}
+              alt={`page_${v.id}`}
+              src={v.pageContent}
+            />
+          );
+        })}
       </Flex>
     </Flex>
   );

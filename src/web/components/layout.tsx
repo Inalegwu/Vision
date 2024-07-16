@@ -13,7 +13,6 @@ import {
   Moon,
   Plus,
   Sun,
-  User,
   X,
 } from "lucide-react";
 import type React from "react";
@@ -70,14 +69,13 @@ export default function Layout({ children }: LayoutProps) {
             Vision
           </Text>
           <Flex>
-            {isNotHome && (
-              <button
-                onClick={() => navigation.history.back()}
-                className="cursor-pointer dark:text-zinc-400 hover:bg-zinc-400/8 px-3 py-2"
-              >
-                <ArrowLeft size={10} />
-              </button>
-            )}
+            <button
+              disabled={!isNotHome}
+              onClick={() => navigation.history.back()}
+              className="cursor-pointer dark:text-zinc-400 hover:bg-zinc-400/8 px-3 py-2"
+            >
+              <ArrowLeft size={10} />
+            </button>
             <Tooltip content="Add Issue To Library">
               <button
                 onClick={() => addIssueToLibrary()}
@@ -114,7 +112,7 @@ export default function Layout({ children }: LayoutProps) {
           >
             <Library size={10.5} />
           </button>
-          <button
+          {/* <button
             onClick={() =>
               navigation.navigate({
                 to: "/me",
@@ -124,6 +122,9 @@ export default function Layout({ children }: LayoutProps) {
           >
             <User size={10} />
           </button>
+          <button className="cursor-pointer dark:text-zinc-400 hover:bg-zinc-400/8 px-3 py-2">
+            <ShoppingBag size={10} />
+          </button> */}
           <Flex grow="1" id="drag-region" p="2" />
         </Flex>
         <Flex align="center" justify="end">
