@@ -1,5 +1,4 @@
 import chokidar from "chokidar";
-import { fileAddEvent } from "./events";
 
 export default function watchFS(path: string | null) {
   console.log("starting file watcher...");
@@ -11,7 +10,8 @@ export default function watchFS(path: string | null) {
   });
 
   watcher.on("add", (p, s) => {
+    // TODO handle ignoring non .cbz and .cbr files and
+    // extracting and serializing .cbz and .cbr files into Storage
     console.log({ p, ...s });
-    fileAddEvent.fire();
   });
 }
