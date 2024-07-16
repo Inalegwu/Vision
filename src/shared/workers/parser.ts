@@ -1,3 +1,4 @@
+import Zip from "adm-zip";
 import { eq } from "drizzle-orm";
 import { createExtractorFromData } from "node-unrar-js";
 import { readFileSync } from "node:fs";
@@ -24,38 +25,38 @@ port.on("message", async (v) => {
     return;
   }
 
-  if (message.data.parsePath.includes("cbz")) {
-    return;
-  }
-
-  if (message.data.parsePath.includes("cbr")) {
-    switch (message.data.action) {
-      case "LINK": {
+  switch (message.data.action) {
+    case "LINK": {
+      if (message.data.parsePath.includes("cbr")) {
         const result = await handleRar(message.data.parsePath);
+        port.postMessage(result);
+      }
+
+      if (message.data.parsePath.includes("cbz")) {
+        const result = handleZip(message.data.parsePath);
 
         port.postMessage(result);
-
-        return;
       }
 
-      case "UNLINK": {
-        const result = await unlinkRar(message.data.parsePath);
+      return;
+    }
 
-        port.postMessage(result);
+    case "UNLINK": {
+      const result = await unlinkIssue(message.data.parsePath);
 
-        return;
-      }
+      port.postMessage(result);
 
-      default: {
-        return;
-      }
+      return;
+    }
+
+    default: {
+      port.postMessage({
+        completed: false,
+        message: "File extenstion isn't a comic file",
+      });
+      return;
     }
   }
-
-  port.postMessage({
-    completed: false,
-    message: "File extenstion isn't a comic file",
-  });
 });
 
 async function handleRar(
@@ -92,9 +93,6 @@ async function handleRar(
 
     const sortedFiles = [...extracted.files].sort((a, b) =>
       sortPages(a.fileHeader.name, b.fileHeader.name),
-    );
-    const metaDataFile = sortedFiles.find((v) =>
-      v.fileHeader.name.includes("xml"),
     );
     const sortedWithoutMeta = sortedFiles.filter(
       (v) => !v.fileHeader.name.includes("xml"),
@@ -137,7 +135,7 @@ async function handleRar(
   }
 }
 
-async function unlinkRar(
+async function unlinkIssue(
   filePath: string,
 ): Promise<z.infer<typeof parseWorkerResponse>> {
   const fileName = filePath
@@ -163,4 +161,68 @@ async function unlinkRar(
     completed: true,
     message: null,
   };
+}
+
+async function handleZip(
+  filePath: string,
+): Promise<z.infer<typeof parseWorkerResponse>> {
+  try {
+    const fileName = filePath
+      .replace(/^.*[\\\/]/, "")
+      .replace(/\.[^/.]+$/, "")
+      .replace(/(\d+)$/, "")
+      .replace("-", "");
+
+    const exists = await db.query.issues.findFirst({
+      where: (issues, { eq }) => eq(issues.issueTitle, fileName),
+    });
+
+    if (exists) {
+      return {
+        completed: true,
+        message: "Issue already saved",
+      };
+    }
+
+    const files = new Zip(readFileSync(filePath))
+      .getEntries()
+      .sort((a, b) => sortPages(a.name, b.name))
+      .map((v) => ({ name: v.name, data: v.getData(), isDir: v.isDirectory }));
+
+    const filesWithoutMetadata = files.filter((v) => !v.name.includes("xml"));
+
+    const thumbnailUrl = convertToImageUrl(files[0].data || files[1].data!);
+
+    const newIssue = await db
+      .insert(issues)
+      .values({
+        id: v4(),
+        issueTitle: fileName,
+        thumbnailUrl,
+      })
+      .returning();
+
+    for (const file of filesWithoutMetadata) {
+      if (file.isDir) {
+        continue;
+      }
+
+      await db.insert(pages).values({
+        id: v4(),
+        issueId: newIssue[0].id,
+        pageContent: convertToImageUrl(file.data),
+      });
+    }
+
+    return {
+      completed: true,
+      message: null,
+    };
+  } catch (e) {
+    console.log({ e });
+    return {
+      completed: false,
+      message: "Error handling .cbz",
+    };
+  }
 }
