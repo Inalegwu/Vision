@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { createExtractorFromData } from "node-unrar-js";
 import { readFileSync } from "node:fs";
 import { parentPort } from "node:worker_threads";
@@ -30,11 +31,27 @@ port.on("message", async (v) => {
   }
 
   if (message.data.parsePath.includes("cbr")) {
-    const result = await handleRar(message.data.parsePath);
+    switch (message.data.action) {
+      case "LINK": {
+        const result = await handleRar(message.data.parsePath);
 
-    port.postMessage(result);
+        port.postMessage(result);
 
-    return;
+        return;
+      }
+
+      case "UNLINK": {
+        const result = await unlinkRar(message.data.parsePath);
+
+        port.postMessage(result);
+
+        return;
+      }
+
+      default: {
+        return;
+      }
+    }
   }
 
   port.postMessage({
@@ -125,4 +142,34 @@ async function handleRar(
       completed: false,
     };
   }
+}
+
+async function unlinkRar(
+  filePath: string,
+): Promise<z.infer<typeof parseWorkerResponse>> {
+  const fileName = filePath
+    .replace(/^.*[\\\/]/, "")
+    .replace(/\.[^/.]+$/, "")
+    .replace(/(\d+)$/, "")
+    .replace("-", "");
+
+  const exists = await db.query.issues.findFirst({
+    where: (issues, { eq }) => eq(issues.issueTitle, fileName),
+  });
+
+  if (!exists) {
+    return {
+      completed: true,
+      message: "File doesn't exist",
+    };
+  }
+
+  const finalized = db.delete(issues).where(eq(issues.id, exists.id)).returning;
+
+  console.log(finalized);
+
+  return {
+    completed: true,
+    message: null,
+  };
 }

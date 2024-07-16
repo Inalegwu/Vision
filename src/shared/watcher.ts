@@ -33,6 +33,14 @@ export default function watchFS(path: string | null) {
   watcher.on("add", (p, s) => {
     parseWorker.postMessage({
       parsePath: p,
+      action: "LINK",
+    });
+  });
+
+  watcher.on("unlink", (p) => {
+    parseWorker.postMessage({
+      parsePath: p,
+      action: "UNLINK",
     });
   });
 }
