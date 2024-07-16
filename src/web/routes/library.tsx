@@ -2,6 +2,7 @@ import { Flex, Heading } from "@radix-ui/themes";
 import t from "@src/shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { Issue } from "../components";
 import { globalState$ } from "../state";
 
 export const Route = createFileRoute("/library")({
@@ -11,6 +12,10 @@ export const Route = createFileRoute("/library")({
 function Component() {
   const { mutate: createSourceDir } =
     t.library.createLibraryFolder.useMutation();
+
+  const { data } = t.library.getLibrary.useQuery();
+
+  console.log(data);
 
   useEffect(() => {
     if (globalState$.firstLaunch.get()) {
@@ -23,7 +28,11 @@ function Component() {
       <Flex align="center" justify="between" className="w-full">
         <Heading size="8">Library</Heading>
       </Flex>
-      <Flex grow="1" className="py-5"></Flex>
+      <Flex grow="1" className="py-5" gap="2">
+        {data?.map((issue) => (
+          <Issue key={issue.id} issue={issue} />
+        ))}
+      </Flex>
     </Flex>
   );
 }

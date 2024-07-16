@@ -4,6 +4,13 @@ import { BrowserWindow, app, screen } from "electron";
 import { createIPCHandler } from "electron-trpc/main";
 import { join } from "node:path";
 
+// THIS IS A HACK
+// this ensures that the application database
+// is available when this file is instantiated
+process.env = {
+  DB_URL: `${app.getPath("appData")}/Vision/vision.db`,
+};
+
 app.setName("Vision");
 
 const createWindow = () => {

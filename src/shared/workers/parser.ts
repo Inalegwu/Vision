@@ -1,8 +1,11 @@
 import { createExtractorFromData } from "node-unrar-js";
 import { readFileSync } from "node:fs";
 import { parentPort } from "node:worker_threads";
+import { v4 } from "uuid";
 import type { z } from "zod";
-import { sortPages } from "../utils";
+import { issues, pages } from "../schema";
+import db from "../storage";
+import { convertToImageUrl, sortPages } from "../utils";
 import { parsePathSchema, type parseWorkerResponse } from "../validations";
 
 const port = parentPort;
@@ -43,50 +46,83 @@ port.on("message", async (v) => {
 async function handleRar(
   filePath: string,
 ): Promise<z.infer<typeof parseWorkerResponse>> {
-  const fileName = filePath
-    .replace(/^.*[\\\/]/, "")
-    .replace(/\.[^/.]+$/, "")
-    .replace(/(\d+)$/, "")
-    .replace("-", "");
+  try {
+    const fileName = filePath
+      .replace(/^.*[\\\/]/, "")
+      .replace(/\.[^/.]+$/, "")
+      .replace(/(\d+)$/, "")
+      .replace("-", "");
 
-  //   const exists = await db.query.issues.findFirst({
-  //     where: (issue, { eq }) => eq(issue.issueTitle, fileName),
-  //   });
+    const exists = await db.query.issues.findFirst({
+      where: (issue, { eq }) => eq(issue.issueTitle, fileName),
+    });
 
-  //   if (exists) {
-  //     return {
-  //       message: "already saved",
-  //       completed: true,
-  //     };
-  //   }
+    if (exists) {
+      return {
+        message: "already saved",
+        completed: true,
+      };
+    }
 
-  console.log({ fileName });
+    console.log({ fileName });
 
-  const extractor = await createExtractorFromData({
-    data: Uint8Array.from(readFileSync(filePath)).buffer,
-    wasmBinary: readFileSync(
-      require.resolve("node-unrar-js/dist/js/unrar.wasm"),
-    ),
-  });
+    const extractor = await createExtractorFromData({
+      data: Uint8Array.from(readFileSync(filePath)).buffer,
+      wasmBinary: readFileSync(
+        require.resolve("node-unrar-js/dist/js/unrar.wasm"),
+      ),
+    });
 
-  const extracted = extractor.extract({
-    files: [...extractor.getFileList().fileHeaders].map((v) => v.name),
-  });
+    const extracted = extractor.extract({
+      files: [...extractor.getFileList().fileHeaders].map((v) => v.name),
+    });
 
-  const sortedFiles = [...extracted.files].sort((a, b) =>
-    sortPages(a.fileHeader.name, b.fileHeader.name),
-  );
-  const metaDataFile = sortedFiles.find((v) =>
-    v.fileHeader.name.includes("xml"),
-  );
-  const sortedWithoutMeta = sortedFiles.filter(
-    (v) => !v.fileHeader.name.includes("xml"),
-  );
+    const sortedFiles = [...extracted.files].sort((a, b) =>
+      sortPages(a.fileHeader.name, b.fileHeader.name),
+    );
+    const metaDataFile = sortedFiles.find((v) =>
+      v.fileHeader.name.includes("xml"),
+    );
+    const sortedWithoutMeta = sortedFiles.filter(
+      (v) => !v.fileHeader.name.includes("xml"),
+    );
 
-  console.log({ metaDataFile, sortedWithoutMeta });
+    const thumbnailUrl = convertToImageUrl(
+      sortedFiles[0]?.extraction?.buffer || sortedFiles[1].extraction?.buffer!,
+    );
 
-  return {
-    completed: true,
-    message: null,
-  };
+    const newIssue = await db
+      .insert(issues)
+      .values({
+        id: v4(),
+        thumbnailUrl,
+        issueTitle: fileName,
+      })
+      .returning();
+
+    console.log(newIssue);
+
+    for (const file of sortedWithoutMeta) {
+      if (file.fileHeader.flags.directory) {
+        continue;
+      }
+
+      await db.insert(pages).values({
+        id: v4(),
+        pageContent: convertToImageUrl(file.extraction?.buffer!),
+        issueId: newIssue[0].id,
+      });
+    }
+
+    return {
+      completed: true,
+      message: null,
+    };
+  } catch (e) {
+    console.log({ e });
+    return {
+      message: "Error Occured while handling DB",
+      completed: false,
+    };
+  }
 }

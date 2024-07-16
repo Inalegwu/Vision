@@ -10,6 +10,7 @@ export const queryClient = new QueryClient({
     queries: {
       networkMode: "always",
       cacheTime: Number.POSITIVE_INFINITY,
+      refetchOnWindowFocus: false,
     },
     mutations: {
       networkMode: "always",

@@ -16,3 +16,8 @@ export function sortPages(a: string, b: string) {
 
   return a > b ? 1 : -1;
 }
+
+export function convertToImageUrl(buffer: ArrayBufferLike) {
+  const b64 = Buffer.from(buffer).toString("base64");
+  return `data:image/png;base64,${b64}`;
+}

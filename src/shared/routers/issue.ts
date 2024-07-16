@@ -39,6 +39,9 @@ const issueRouter = router({
     .query(async ({ input }) => {
       console.log(input);
       console.log("TODO: fetch issue metadata and populate");
+      return {
+        hm: "hmm",
+      };
     }),
 });
 

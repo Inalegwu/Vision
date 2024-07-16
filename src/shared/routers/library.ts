@@ -12,6 +12,11 @@ const libraryRouter = router({
   startLibraryWatcher: publicProcedure.mutation(async ({ ctx }) =>
     watchFS(`${ctx.app.getPath("documents")}/Vision`),
   ),
+  getLibrary:publicProcedure.query(async({ctx})=>{
+    const issues=await ctx.db.query.issues.findMany({});
+
+    return issues
+  })
 });
 
 export default libraryRouter;

@@ -11,7 +11,13 @@ export type GlobalState = {
   user: User | null;
 };
 
-export type Issue = typeof issues.$inferSelect;
+export type Issue = Omit<
+  Omit<typeof issues.$inferSelect, "dateCreated">,
+  "dateUpdated"
+> & {
+  dateCreated: string | null;
+  dateUpdated: string | null;
+};
 export type Collection = typeof collections.$inferSelect;
 export type Page = typeof pages.$inferSelect;
 
