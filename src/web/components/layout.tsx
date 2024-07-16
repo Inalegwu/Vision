@@ -1,9 +1,9 @@
 import { Flex, Text, Tooltip } from "@radix-ui/themes";
 import t from "@src/shared/config";
+import { fileAddEvent } from "@src/shared/events";
 import { useRouter } from "@tanstack/react-router";
 import { AnimatePresence } from "framer-motion";
 import {
-  Folders,
   Home,
   Library,
   Maximize2,
@@ -28,8 +28,13 @@ export default function Layout({ children }: LayoutProps) {
   const { mutate: maximizeWindow } = t.window.maximize.useMutation();
   const { mutate: closeWindow } = t.window.closeWindow.useMutation();
   const { mutate: addIssueToLibrary } = t.issue.addIssue.useMutation();
-  const { mutate: addSourceFolder, isLoading: addingSourceFolder } =
-    t.library.addLibraryFolder.useMutation();
+
+  const { mutate: startFileWatcher } =
+    t.library.startLibraryWatcher.useMutation();
+
+  fileAddEvent.on(() => {
+    console.log("file add event");
+  });
 
   useEffect(() => {
     if (globalState$.colorMode.get() === "dark") {
@@ -39,7 +44,8 @@ export default function Layout({ children }: LayoutProps) {
       document.body.classList.remove("dark");
       globalState$.colorMode.set("light");
     }
-  }, []);
+    startFileWatcher();
+  }, [startFileWatcher]);
 
   return (
     <Flex
@@ -66,16 +72,6 @@ export default function Layout({ children }: LayoutProps) {
                 className="cursor-pointer dark:text-zinc-400 hover:bg-zinc-400/8 px-3 py-2"
               >
                 <Plus size={10} />
-              </button>
-            </Tooltip>
-            <Tooltip content="Add Source Folder">
-              <button
-                type="button"
-                onClick={() => addSourceFolder()}
-                disabled={addingSourceFolder}
-                className="cursor-pointer dark:text-zinc-400 hover:bg-zinc-400/8 px-3 py-2 disabled:cursor-cancel"
-              >
-                <Folders size={10} />
               </button>
             </Tooltip>
           </Flex>

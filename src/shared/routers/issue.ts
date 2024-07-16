@@ -14,25 +14,18 @@ const issueRouter = router({
   addIssue: publicProcedure.mutation(async ({ ctx }) => {
     const { canceled, filePaths } = await dialog.showOpenDialog({});
 
-    if (canceled) return false;
+    const buffer = readFileSync(filePaths[0]);
 
-    const wasmBinary = readFileSync(
-      require.resolve("node_modules/node-unrar-js/dist/js/unrar.wasm"),
-    );
-    const file = readFileSync(filePaths[0]);
+    console.log(buffer);
 
-    console.log(file);
-
-    const extractor = await createExtractorFromData({
-      data: Uint8Array.from(file).buffer,
-      wasmBinary,
+    const extractor = createExtractorFromData({
+      wasmBinary: readFileSync(
+        require.resolve("node_modules/node-unrar-js/dist/js/unrar.wasm"),
+      ).buffer,
+      data: Uint8Array.from(buffer),
     });
 
-    const extracted = extractor.extract({
-      files: [...extractor.getFileList().fileHeaders].map((v) => v.name),
-    });
-
-    console.log({ extracted });
+    console.log(extractor);
 
     console.log({ canceled, filePaths });
   }),

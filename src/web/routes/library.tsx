@@ -1,23 +1,28 @@
-import { Button, Flex, Heading, Text } from "@radix-ui/themes";
+import { Flex, Heading } from "@radix-ui/themes";
+import t from "@src/shared/config";
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus } from "lucide-react";
+import { useEffect } from "react";
 import { Issue } from "../components";
+import { globalState$ } from "../state";
 
 export const Route = createFileRoute("/library")({
   component: Component,
 });
 
 function Component() {
+  const { mutate: createSourceDir } =
+    t.library.createLibraryFolder.useMutation();
+
+  useEffect(() => {
+    if (globalState$.firstLaunch.get()) {
+      createSourceDir();
+    }
+  }, [createSourceDir]);
+
   return (
     <Flex direction="column" className="w-full h-screen px-2 py-2">
       <Flex align="center" justify="between" className="w-full">
         <Heading size="8">Library</Heading>
-        <Flex align="center" justify="end" gap="3">
-          <Button size="1" className="cursor-pointer" variant="surface">
-            <Plus size={11} />
-            <Text>Add Issue To Library</Text>
-          </Button>
-        </Flex>
       </Flex>
       <Flex grow="1" className="py-5">
         <Issue

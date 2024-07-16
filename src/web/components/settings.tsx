@@ -25,7 +25,7 @@ export default function SettingsMenu() {
             <Flex className="px-1 py-2">
               <button
                 type="button"
-                className="cursor-pointer rounded-full w-5 h-5 hover:bg-red-600/20 text-red-400"
+                className="flex items-center justify-center cursor-pointer rounded-full w-5 h-5 hover:bg-red-600/20 text-red-400"
                 onClick={() => settingsState$.visible.set(false)}
               >
                 <X size={11} />

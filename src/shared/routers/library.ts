@@ -1,24 +1,17 @@
 import { publicProcedure, router } from "@src/trpc";
 import { globalState$ } from "@src/web/state";
-import { dialog } from "electron";
+import { mkdirSync } from "node:fs";
+import watchFS from "../watcher";
 
 const libraryRouter = router({
-  addLibraryFolder: publicProcedure.mutation(async ({ ctx }) => {
-    const { canceled, filePaths } = await dialog.showOpenDialog({
-      defaultPath: `${ctx.app.getPath("downloads")}`,
-      properties: ["openDirectory"],
-    });
-
-    if (canceled) {
-      return false;
-    }
-
-    console.log(filePaths.join(","));
-
-    globalState$.sourceFolder.set(filePaths[0]);
-
-    return true;
+  createLibraryFolder: publicProcedure.mutation(async ({ ctx }) => {
+    const path = `${ctx.app.getPath("documents")}/Vision`;
+    mkdirSync(path);
+    globalState$.sourceDir.set(path);
   }),
+  startLibraryWatcher: publicProcedure.mutation(async ({ ctx }) =>
+    watchFS(`${ctx.app.getPath("documents")}/Vision`),
+  ),
 });
 
 export default libraryRouter;

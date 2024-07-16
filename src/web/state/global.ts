@@ -12,7 +12,8 @@ configureObservablePersistence({
 
 export const globalState$ = observable<GlobalState>({
   colorMode: "dark",
-  sourceFolder: null,
+  firstLaunch: true,
+  sourceDir: null,
 });
 
 export const settingsState$ = observable<{

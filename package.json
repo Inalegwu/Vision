@@ -1,14 +1,14 @@
 {
   "name": "vision",
-  "description": "comic book reader for the digital comic enthusiast",
+  "description": "A comic book reader, For the Digital Comic Enthusiast",
   "version": "0.0.1",
   "author": {
-    "email": "youremail@provider.com",
-    "name": "your_name"
+    "email": "ikwueinalegwu@gmail.com",
+    "name": "Ikwue Inalegwu"
   },
   "license": "MIT",
   "repository": {
-    "url": "https://github.com/Inalegwu/ElectroStatic.git"
+    "url": "https://github.com/Inalegwu/Vision.git"
   },
   "main": "out/main/main.js",
   "scripts": {
