@@ -31,6 +31,7 @@
     "@trpc/client": "^10.44.1",
     "@trpc/react-query": "^10.44.1",
     "@trpc/server": "^10.44.1",
+    "adm-zip": "^0.5.14",
     "better-sqlite3": "^11.1.2",
     "chokidar": "^3.6.0",
     "drizzle-orm": "^0.32.0",

@@ -7,8 +7,6 @@ const parseWorker = Parser({
 });
 
 parseWorker.on("message", (e) => {
-  console.log(e);
-
   const response = parseWorkerResponse.safeParse(e);
 
   if (!response.success) {
@@ -17,13 +15,9 @@ parseWorker.on("message", (e) => {
     });
     return;
   }
-
-  console.log(response.data);
 });
 
 export default function watchFS(path: string | null) {
-  console.log("starting file watcher...");
-  console.log(path);
   if (path === null) return;
 
   const watcher = chokidar.watch(path, {

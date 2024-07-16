@@ -13,8 +13,6 @@ const port = parentPort;
 
 if (!port) throw new Error("Illegal State");
 
-console.log("parser started...");
-
 port.on("message", async (v) => {
   const message = parsePathSchema.safeParse(v);
 
@@ -81,8 +79,6 @@ async function handleRar(
       };
     }
 
-    console.log({ fileName });
-
     const extractor = await createExtractorFromData({
       data: Uint8Array.from(readFileSync(filePath)).buffer,
       wasmBinary: readFileSync(
@@ -117,8 +113,6 @@ async function handleRar(
       })
       .returning();
 
-    console.log(newIssue);
-
     for (const file of sortedWithoutMeta) {
       if (file.fileHeader.flags.directory) {
         continue;
@@ -136,7 +130,6 @@ async function handleRar(
       message: null,
     };
   } catch (e) {
-    console.log({ e });
     return {
       message: "Error Occured while handling DB",
       completed: false,
@@ -165,8 +158,6 @@ async function unlinkRar(
   }
 
   const finalized = db.delete(issues).where(eq(issues.id, exists.id)).returning;
-
-  console.log(finalized);
 
   return {
     completed: true,

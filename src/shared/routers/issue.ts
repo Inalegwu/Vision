@@ -1,8 +1,5 @@
 import { publicProcedure, router } from "@src/trpc";
 import { eq } from "drizzle-orm";
-import { dialog } from "electron";
-import { createExtractorFromData } from "node-unrar-js";
-import { readFileSync } from "node:fs";
 import z from "zod";
 import { issues } from "../schema";
 
@@ -15,22 +12,11 @@ const issueRouter = router({
     };
   }),
   addIssue: publicProcedure.mutation(async ({ ctx }) => {
-    const { canceled, filePaths } = await dialog.showOpenDialog({});
+    // TODO
 
-    const buffer = readFileSync(filePaths[0]);
-
-    console.log(buffer);
-
-    const extractor = createExtractorFromData({
-      wasmBinary: readFileSync(
-        require.resolve("node_modules/node-unrar-js/dist/js/unrar.wasm"),
-      ).buffer,
-      data: Uint8Array.from(buffer),
-    });
-
-    console.log(extractor);
-
-    console.log({ canceled, filePaths });
+    return {
+      hm: "hmmm",
+    };
   }),
   getIssueMetadata: publicProcedure
     .input(
@@ -39,8 +25,7 @@ const issueRouter = router({
       }),
     )
     .query(async ({ input }) => {
-      console.log(input);
-      console.log("TODO: fetch issue metadata and populate");
+      // TODO: fetch issue metadata and populate"
       return {
         hm: "hmm",
       };

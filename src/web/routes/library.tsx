@@ -15,11 +15,10 @@ function Component() {
 
   const { data } = t.library.getLibrary.useQuery();
 
-  console.log(data);
-
   useEffect(() => {
     if (globalState$.firstLaunch.get()) {
       createSourceDir();
+      globalState$.firstLaunch.set(false);
     }
   }, [createSourceDir]);
 
