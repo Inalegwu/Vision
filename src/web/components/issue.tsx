@@ -9,9 +9,12 @@ type Props = {
 };
 
 export default function Issue({ issue }: Props) {
+  const utils = t.useUtils();
   const navigation = useRouter();
-  const { data } = t.issue.getIssueMetadata.useQuery({
-    issueName: issue.issueTitle,
+  const { mutate: deleteIssue } = t.issue.deleteIssue.useMutation({
+    onSuccess: () => {
+      utils.library.getLibrary.invalidate();
+    },
   });
 
   return (
@@ -32,12 +35,12 @@ export default function Issue({ issue }: Props) {
         >
           {/* TODO make image */}
           <img
-            className="w-full h-full bg-zinc-200/5 rounded-md border-1 border-solid border-zinc-200 dark:border-zinc-800"
+            className="w-full h-full bg-zinc-200/5 rounded-md border-1 border-solid border-zinc-300 dark:border-zinc-800"
             alt="issue_thumbnail"
             src={issue.thumbnailUrl}
           />
           <Flex direction="column" align="start">
-            <Text size="2" className="text-gray-600 dark:text-zinc-400">
+            <Text size="1" className="text-gray-600 dark:text-zinc-400">
               {issue.issueTitle}
             </Text>
           </Flex>
@@ -45,13 +48,17 @@ export default function Issue({ issue }: Props) {
       </ContextMenu.Trigger>
       <ContextMenu.Content size="1" variant="soft">
         <ContextMenu.Item className="cursor-pointer">
-          <Flex align="center" justify="start" gap="1">
+          <Flex align="center" justify="start" gap="2">
             <Edit size={10} />
             <Text>Edit Issue</Text>
           </Flex>
         </ContextMenu.Item>
-        <ContextMenu.Item className="cursor-pointer">
-          <Flex align="center" justify="start" gap="1">
+        <ContextMenu.Item
+          onClick={() => deleteIssue({ issueId: issue.id })}
+          color="ruby"
+          className="cursor-pointer"
+        >
+          <Flex align="center" justify="start" gap="2">
             <Trash2 size={10} />
             <Text>Delete Issue</Text>
           </Flex>

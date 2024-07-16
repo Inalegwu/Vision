@@ -1,8 +1,10 @@
 import { publicProcedure, router } from "@src/trpc";
+import { eq } from "drizzle-orm";
 import { dialog } from "electron";
 import { createExtractorFromData } from "node-unrar-js";
 import { readFileSync } from "node:fs";
 import z from "zod";
+import { issues } from "../schema";
 
 const issueRouter = router({
   getMyIssues: publicProcedure.query(async ({ ctx }) => {
@@ -42,6 +44,20 @@ const issueRouter = router({
       return {
         hm: "hmm",
       };
+    }),
+  deleteIssue: publicProcedure
+    .input(
+      z.object({
+        issueId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const deleted = await ctx.db
+        .delete(issues)
+        .where(eq(issues.id, input.issueId))
+        .returning();
+
+      return { deleted };
     }),
 });
 
