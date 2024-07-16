@@ -1,16 +1,8 @@
 import { publicProcedure, router } from "@src/trpc";
-import { eq } from "drizzle-orm";
 import z from "zod";
-import { issues } from "../schema";
+import deletionWorker from "../workers/deletion?nodeWorker";
 
 const issueRouter = router({
-  getMyIssues: publicProcedure.query(async ({ ctx }) => {
-    const issues = await ctx.db.query.issues.findMany({});
-
-    return {
-      issues,
-    };
-  }),
   addIssue: publicProcedure.mutation(async ({ ctx }) => {
     // TODO
 
@@ -36,14 +28,13 @@ const issueRouter = router({
         issueId: z.string(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      const deleted = await ctx.db
-        .delete(issues)
-        .where(eq(issues.id, input.issueId))
-        .returning();
-
-      return { deleted };
-    }),
+    .mutation(async ({ ctx, input }) =>
+      deletionWorker({
+        name: "deletion-worker",
+      }).postMessage({
+        issueId: input.issueId,
+      }),
+    ),
 });
 
 export default issueRouter;

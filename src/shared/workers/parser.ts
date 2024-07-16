@@ -99,7 +99,9 @@ async function handleRar(
     );
 
     const thumbnailUrl = convertToImageUrl(
-      sortedFiles[0]?.extraction?.buffer || sortedFiles[1].extraction?.buffer!,
+      sortedFiles[0]?.extraction?.buffer ||
+        sortedFiles[1].extraction?.buffer ||
+        sortedFiles[2].extraction?.buffer!,
     );
 
     const newIssue = await db
@@ -191,7 +193,9 @@ async function handleZip(
 
     const filesWithoutMetadata = files.filter((v) => !v.name.includes("xml"));
 
-    const thumbnailUrl = convertToImageUrl(files[0].data || files[1].data!);
+    const thumbnailUrl = convertToImageUrl(
+      files[0].data || files[1].data || files[2].data!,
+    );
 
     const newIssue = await db
       .insert(issues)

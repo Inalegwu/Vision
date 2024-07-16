@@ -9,3 +9,12 @@ export const parseWorkerResponse = z.object({
   completed: z.boolean(),
   message: z.string().nullable(),
 });
+
+export const deletionWorkerSchema = z.object({
+  issueId: z.string(),
+});
+
+export const deletionWorkerResponse = z.object({
+  completed: z.boolean(),
+  message: z.string().nullable(),
+});
