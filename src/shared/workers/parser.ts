@@ -25,6 +25,8 @@ port.on("message", async (v) => {
     return;
   }
 
+  console.log(message);
+
   switch (message.data.action) {
     case "LINK": {
       if (message.data.parsePath.includes("cbr")) {

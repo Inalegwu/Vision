@@ -38,3 +38,7 @@ export type ReadingState = {
     | null;
   doneReading: Issue | null;
 };
+
+export type SelectedIssueState = {
+  pages: Page[] | null;
+};

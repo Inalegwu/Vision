@@ -4,7 +4,11 @@ import {
   persistObservable,
 } from "@legendapp/state/persist";
 import { ObservablePersistLocalStorage } from "@legendapp/state/persist-plugins/local-storage";
-import type { GlobalState, ReadingState } from "@shared/types";
+import type {
+  GlobalState,
+  ReadingState,
+  SelectedIssueState,
+} from "@shared/types";
 
 configureObservablePersistence({
   pluginLocal: ObservablePersistLocalStorage,
@@ -30,6 +34,10 @@ export const settingsState$ = observable<{
 export const readingState$ = observable<ReadingState>({
   currentlyReading: null,
   doneReading: null,
+});
+
+export const selectedIssue$ = observable<SelectedIssueState>({
+  pages: null,
 });
 
 persistObservable(globalState$, {

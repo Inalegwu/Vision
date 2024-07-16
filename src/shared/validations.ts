@@ -18,3 +18,20 @@ export const deletionWorkerResponse = z.object({
   completed: z.boolean(),
   message: z.string().nullable(),
 });
+
+export const pagesWorkerSchema = z.object({
+  issueId: z.string(),
+});
+
+export const pagesWorkerResponse = z.object({
+  pages: z.array(
+    z.object({
+      id: z.string(),
+      pageContent: z.string(),
+      dateCreated: z.date().nullable(),
+      dateUpdated: z.date().nullable(),
+      issueId: z.string(),
+    }),
+  ),
+  completed: z.boolean(),
+});

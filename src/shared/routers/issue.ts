@@ -1,6 +1,5 @@
 import { publicProcedure, router } from "@src/trpc";
 import z from "zod";
-import { deletionWorkerResponse } from "../validations";
 import deletionWorker from "../workers/deletion?nodeWorker";
 
 const issueRouter = router({
@@ -29,33 +28,13 @@ const issueRouter = router({
         issueId: z.string(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      let completed: boolean;
-      const worker = deletionWorker({
+    .mutation(async ({ ctx, input }) =>
+      deletionWorker({
         name: "deletion-worker",
-      });
-
-      worker.postMessage({
+      }).postMessage({
         issueId: input.issueId,
-      });
-
-      worker.on("message", (e) => {
-        const response = deletionWorkerResponse.safeParse(e);
-
-        if (!response.success) {
-          worker.postMessage({
-            errorMessage: "Invalid Message Sent",
-          });
-          return;
-        }
-
-        if (response.data.completed) {
-          completed = true;
-        }
-      });
-
-      return completed;
-    }),
+      }),
+    ),
   getPages: publicProcedure
     .input(
       z.object({
