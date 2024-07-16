@@ -1,0 +1,20 @@
+name : 'Setup Node + PNPM  + Install Dependencies'
+description : 'Setup Node + PNPM + Install Dependencies'
+
+runs:
+  using : 'composite'
+  steps:
+
+    - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+    - name: Setup PNPM
+        uses : pnpm/action-setup@v2
+        with :
+          version : 8
+
+    - name : 📦 Install Project Deps
+        run  : pnpm install
+        shell : bash
