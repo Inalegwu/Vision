@@ -32,7 +32,6 @@ if (!rootElement?.innerHTML) {
       <t.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
           <Theme
-            appearance="dark"
             radius="medium"
             accentColor="gray"
             grayColor="slate"

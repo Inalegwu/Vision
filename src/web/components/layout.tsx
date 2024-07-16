@@ -1,15 +1,19 @@
+import { computed } from "@legendapp/state";
+import { useObserveEffect } from "@legendapp/state/react";
 import { Flex, Text, Tooltip } from "@radix-ui/themes";
 import t from "@src/shared/config";
-import { fileAddEvent } from "@src/shared/events";
-import { useRouter } from "@tanstack/react-router";
+import { useRouter, useRouterState } from "@tanstack/react-router";
 import { AnimatePresence } from "framer-motion";
 import {
+  ArrowLeft,
   Home,
   Library,
   Maximize2,
   Minus,
+  Moon,
   Plus,
-  Settings,
+  Sun,
+  User,
   X,
 } from "lucide-react";
 import type React from "react";
@@ -23,6 +27,9 @@ type LayoutProps = {
 
 export default function Layout({ children }: LayoutProps) {
   const navigation = useRouter();
+  const routerState = useRouterState();
+
+  const isNotHome = computed(() => routerState.location.pathname !== "/").get();
 
   const { mutate: minimizeWindow } = t.window.minimize.useMutation();
   const { mutate: maximizeWindow } = t.window.maximize.useMutation();
@@ -32,11 +39,7 @@ export default function Layout({ children }: LayoutProps) {
   const { mutate: startFileWatcher } =
     t.library.startLibraryWatcher.useMutation();
 
-  fileAddEvent.on(() => {
-    console.log("file add event");
-  });
-
-  useEffect(() => {
+  useObserveEffect(() => {
     if (globalState$.colorMode.get() === "dark") {
       document.body.classList.add("dark");
       globalState$.colorMode.set("dark");
@@ -44,6 +47,9 @@ export default function Layout({ children }: LayoutProps) {
       document.body.classList.remove("dark");
       globalState$.colorMode.set("light");
     }
+  });
+
+  useEffect(() => {
     startFileWatcher();
   }, [startFileWatcher]);
 
@@ -52,7 +58,7 @@ export default function Layout({ children }: LayoutProps) {
       width="100%"
       direction="column"
       grow="1"
-      className="transition bg-light-4 dark:bg-dark-9"
+      className="transition bg-light-5 dark:bg-dark-9"
     >
       <Flex
         align="center"
@@ -64,10 +70,16 @@ export default function Layout({ children }: LayoutProps) {
             Vision
           </Text>
           <Flex>
-            {" "}
+            {isNotHome && (
+              <button
+                onClick={() => navigation.history.back()}
+                className="cursor-pointer dark:text-zinc-400 hover:bg-zinc-400/8 px-3 py-2"
+              >
+                <ArrowLeft size={10} />
+              </button>
+            )}
             <Tooltip content="Add Issue To Library">
               <button
-                type="button"
                 onClick={() => addIssueToLibrary()}
                 className="cursor-pointer dark:text-zinc-400 hover:bg-zinc-400/8 px-3 py-2"
               >
@@ -102,15 +114,35 @@ export default function Layout({ children }: LayoutProps) {
           >
             <Library size={10.5} />
           </button>
+          <button
+            onClick={() =>
+              navigation.navigate({
+                to: "/me",
+              })
+            }
+            className="cursor-pointer dark:text-zinc-400 hover:bg-zinc-400/8 px-3 py-2"
+          >
+            <User size={10} />
+          </button>
           <Flex grow="1" id="drag-region" p="2" />
         </Flex>
         <Flex align="center" justify="end">
           <button
             type="button"
-            onClick={() => settingsState$.visible.set(true)}
+            onClick={() => {
+              if (globalState$.colorMode.get() === "dark") {
+                globalState$.colorMode.set("light");
+              } else {
+                globalState$.colorMode.set("dark");
+              }
+            }}
             className="cursor-pointer text-zinc-400 hover:bg-zinc-400/20 hover:dark:bg-zinc-100/5 px-3 py-2"
           >
-            <Settings size={10} />
+            {globalState$.colorMode.get() === "dark" ? (
+              <Sun size={10} />
+            ) : (
+              <Moon size={10} />
+            )}
           </button>
           <button
             className="px-3 py-2 text-zinc-400 cursor-pointer hover:bg-zinc-400/20 hover:dark:bg-zinc-100/5"
@@ -135,6 +167,7 @@ export default function Layout({ children }: LayoutProps) {
           </button>
         </Flex>
       </Flex>
+
       {children}
       <AnimatePresence>
         {settingsState$.visible.get() && <SettingsMenu />}

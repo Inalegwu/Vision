@@ -2,7 +2,6 @@ import { Flex, Heading } from "@radix-ui/themes";
 import t from "@src/shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Issue } from "../components";
 import { globalState$ } from "../state";
 
 export const Route = createFileRoute("/library")({
@@ -24,15 +23,7 @@ function Component() {
       <Flex align="center" justify="between" className="w-full">
         <Heading size="8">Library</Heading>
       </Flex>
-      <Flex grow="1" className="py-5">
-        <Issue
-          issue={{
-            id: "1",
-            issueTitle: "Kill All Immortals",
-            collectionId: null,
-          }}
-        />
-      </Flex>
+      <Flex grow="1" className="py-5"></Flex>
     </Flex>
   );
 }

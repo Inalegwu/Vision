@@ -2,6 +2,7 @@ import { publicProcedure, router } from "@src/trpc";
 import { dialog } from "electron";
 import { createExtractorFromData } from "node-unrar-js";
 import { readFileSync } from "node:fs";
+import z from "zod";
 
 const issueRouter = router({
   getMyIssues: publicProcedure.query(async ({ ctx }) => {
@@ -29,6 +30,16 @@ const issueRouter = router({
 
     console.log({ canceled, filePaths });
   }),
+  getIssueMetadata: publicProcedure
+    .input(
+      z.object({
+        issueName: z.string().refine((v) => v.trim()),
+      }),
+    )
+    .query(async ({ input }) => {
+      console.log(input);
+      console.log("TODO: fetch issue metadata and populate");
+    }),
 });
 
 export default issueRouter;

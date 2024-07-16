@@ -11,9 +11,14 @@ configureObservablePersistence({
 });
 
 export const globalState$ = observable<GlobalState>({
-  colorMode: "dark",
+  colorMode: "light",
   firstLaunch: true,
   sourceDir: null,
+  user: null,
+});
+
+export const fullScreenState$ = observable<{ isFullscreen: boolean }>({
+  isFullscreen: false,
 });
 
 export const settingsState$ = observable<{
@@ -24,4 +29,8 @@ export const settingsState$ = observable<{
 
 persistObservable(globalState$, {
   local: "global_state",
+});
+
+persistObservable(fullScreenState$, {
+  local: "fullscreen_state",
 });

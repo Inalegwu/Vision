@@ -8,4 +8,5 @@ export const Route = createRootRoute({
       {/* <TanStackRouterDevtools /> */}
     </Layout>
   ),
+  // component: () => <Outlet />,
 });
