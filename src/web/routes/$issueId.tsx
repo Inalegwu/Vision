@@ -12,6 +12,7 @@ function Component() {
 
   return (
     <Flex className="w-full h-screen" justify="center">
+      {issueId}
       <Flex
         align="center"
         justify="start"
