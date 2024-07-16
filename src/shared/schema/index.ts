@@ -44,7 +44,7 @@ export const pages = sqliteTable(
     pageContent: text("page_content").notNull(),
     issueId: text("issue_id")
       .notNull()
-      .references(() => issues.id),
+      .references(() => issues.id,{onDelete:"cascade"}),
     dateCreated: integer("date_created", {
       mode: "timestamp",
     }).default(new Date()),
