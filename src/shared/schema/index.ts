@@ -68,9 +68,9 @@ export const issueToCollection = relations(issues, ({ one }) => ({
   }),
 }));
 
-// export const issueToPage = relations(issues, ({ many }) => ({
-//   pages: many(pages),
-// }));
+export const issueToPage = relations(issues, ({ many }) => ({
+  pages: many(pages),
+}));
 
 export const pageToIssue = relations(pages, ({ one }) => ({
   issue: one(issues, {
