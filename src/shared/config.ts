@@ -1,3 +1,4 @@
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { QueryClient } from "@tanstack/react-query";
 import { createTRPCReact } from "@trpc/react-query";
 import { ipcLink } from "electron-trpc/renderer";
@@ -17,6 +18,10 @@ export const queryClient = new QueryClient({
       cacheTime: Number.POSITIVE_INFINITY,
     },
   },
+});
+
+export const persister = createSyncStoragePersister({
+  storage: window.localStorage,
 });
 
 export const trpcClient = t.createClient({

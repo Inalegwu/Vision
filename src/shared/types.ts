@@ -28,3 +28,13 @@ export type ParserResponse = {
 export type ParserErrorResponse = ParserResponse & {
   message: string;
 };
+
+export type ReadingState = {
+  currentlyReading:
+    | (Issue & {
+        pageNumber: number;
+        totalPages: number;
+      })
+    | null;
+  doneReading: Issue | null;
+};

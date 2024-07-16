@@ -1,11 +1,32 @@
-import { Flex, Heading } from "@radix-ui/themes";
+import { Flex, Heading, Text } from "@radix-ui/themes";
 import { createFileRoute } from "@tanstack/react-router";
+import { readingState$ } from "../state";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
 function Index() {
+  if (
+    readingState$.currentlyReading.get() === null &&
+    readingState$.doneReading.get() === null
+  ) {
+    return (
+      <Flex
+        direction="column"
+        className="w-full h-screen"
+        align="center"
+        justify="center"
+        gap="1"
+      >
+        <Heading size="8">Nothing to see yet</Heading>
+        <Text size="4" color="gray">
+          start reading to track your progress
+        </Text>
+      </Flex>
+    );
+  }
+
   return (
     <Flex direction="column" className="h-screen w-full">
       <Flex

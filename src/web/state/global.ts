@@ -4,7 +4,7 @@ import {
   persistObservable,
 } from "@legendapp/state/persist";
 import { ObservablePersistLocalStorage } from "@legendapp/state/persist-plugins/local-storage";
-import type { GlobalState } from "@shared/types";
+import type { GlobalState, ReadingState } from "@shared/types";
 
 configureObservablePersistence({
   pluginLocal: ObservablePersistLocalStorage,
@@ -27,10 +27,19 @@ export const settingsState$ = observable<{
   visible: false,
 });
 
+export const readingState$ = observable<ReadingState>({
+  currentlyReading: null,
+  doneReading: null,
+});
+
 persistObservable(globalState$, {
   local: "global_state",
 });
 
 persistObservable(fullScreenState$, {
   local: "fullscreen_state",
+});
+
+persistObservable(readingState$, {
+  local: "reading_state",
 });

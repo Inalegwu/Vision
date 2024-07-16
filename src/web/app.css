@@ -1,4 +1,4 @@
-@font-face {
+/* @font-face {
   font-family: Font;
   src: url("../assets/fonts/SF-Pro-Display-Light.otf");
 }
@@ -16,12 +16,12 @@
  @font-face {
   font-family: Font;
   src: url("../assets/fonts/SF-Pro-Display-Semibold.otf");
-}
+} */
 
-/* @font-face {
+@font-face {
   font-family: Font;
   src: url("../assets/fonts/inter.ttf");
-} */
+}
 
 /* @font-face{
   font-family:Font;
