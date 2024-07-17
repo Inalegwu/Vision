@@ -1,12 +1,12 @@
 import { Flex, Heading } from "@radix-ui/themes";
 import t from "@src/shared/config";
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 import { Issue } from "../components";
 import { globalState$ } from "../state";
 
 export const Route = createFileRoute("/library")({
-  component: Component,
+  component: memo(Component),
 });
 
 function Component() {
