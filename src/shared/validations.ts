@@ -35,3 +35,7 @@ export const pagesWorkerResponse = z.object({
   ),
   completed: z.boolean(),
 });
+
+export const metadataWorkerSchema = z.object({
+  issueName: z.string(),
+});

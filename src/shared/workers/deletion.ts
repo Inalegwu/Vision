@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { parentPort } from "node:worker_threads";
+import { deleteFromStoreCompletionEvent$ } from "../events";
 import { issues } from "../schema";
 import db from "../storage";
 import { deletionWorkerSchema } from "../validations";
@@ -23,6 +24,8 @@ port.on("message", async (e) => {
       .delete(issues)
       .where(eq(issues.id, message.data.issueId))
       .returning();
+
+    deleteFromStoreCompletionEvent$.fire();
 
     port.postMessage({
       completed: true,

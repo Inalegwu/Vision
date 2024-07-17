@@ -1,5 +1,7 @@
 import { Flex, Heading } from "@radix-ui/themes";
+import type { IssueType } from "@shared/types";
 import t from "@src/shared/config";
+import { deleteFromStoreCompletionEvent$ } from "@src/shared/events";
 import { createFileRoute } from "@tanstack/react-router";
 import { memo, useEffect } from "react";
 import { Issue } from "../components";
@@ -10,10 +12,13 @@ export const Route = createFileRoute("/library")({
 });
 
 function Component() {
+  const utils = t.useUtils();
   const { mutate: createSourceDir } =
     t.library.createLibraryFolder.useMutation();
 
-  const { data } = t.library.getLibrary.useQuery();
+  const { data, isLoading } = t.library.getLibrary.useQuery();
+
+  deleteFromStoreCompletionEvent$.on(() => utils.library.invalidate());
 
   useEffect(() => {
     if (globalState$.firstLaunch.get()) {
@@ -27,11 +32,19 @@ function Component() {
       <Flex align="center" justify="between" className="w-full">
         <Heading size="8">Library</Heading>
       </Flex>
-      <Flex grow="1" className="py-5" gap="2">
-        {data?.map((issue) => (
-          <Issue key={issue.id} issue={issue} />
-        ))}
+      <Flex grow="1" className="py-5 overflow-y-scroll" gap="2" wrap="wrap">
+        <RenderIssues issues={data || []} />
       </Flex>
     </Flex>
   );
 }
+
+const RenderIssues = memo(({ issues }: { issues: IssueType[] }) => {
+  return (
+    <>
+      {issues?.map((issue) => (
+        <Issue key={issue.id} issue={issue} />
+      ))}
+    </>
+  );
+});

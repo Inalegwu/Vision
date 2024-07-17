@@ -1,7 +1,7 @@
 import { Flex } from "@radix-ui/themes";
 import t from "@src/shared/config";
 import { createFileRoute } from "@tanstack/react-router";
-import { motion } from "framer-motion";
+import { useInterval } from "../hooks";
 
 export const Route = createFileRoute("/$issueId")({
   component: Component,
@@ -13,6 +13,10 @@ function Component() {
   const { data, isLoading } = t.issue.getPages.useQuery({
     issueId,
   });
+
+  useInterval(() => {
+    console.log("to save reading state");
+  }, 10_000);
 
   if (isLoading) {
     return (

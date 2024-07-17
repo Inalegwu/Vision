@@ -1,6 +1,7 @@
 import { publicProcedure, router } from "@src/trpc";
 import z from "zod";
 import deletionWorker from "../workers/deletion?nodeWorker";
+import metadataWorker from "../workers/metadata?nodeWorker";
 
 const issueRouter = router({
   addIssue: publicProcedure.mutation(async ({ ctx }) => {
@@ -16,12 +17,11 @@ const issueRouter = router({
         issueName: z.string().refine((v) => v.trim()),
       }),
     )
-    .query(async ({ input }) => {
-      // TODO: fetch issue metadata and populate"
-      return {
-        hm: "hmm",
-      };
-    }),
+    .query(async ({ input }) =>
+      metadataWorker({ name: "meta-data-worker" }).postMessage({
+        issueTitle: input.issueName,
+      }),
+    ),
   deleteIssue: publicProcedure
     .input(
       z.object({

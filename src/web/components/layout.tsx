@@ -10,15 +10,14 @@ import {
   Library,
   Maximize2,
   Minus,
-  Moon,
   Plus,
-  Sun,
   X,
 } from "lucide-react";
 import type React from "react";
 import { useEffect } from "react";
 import { globalState$, settingsState$ } from "../state";
 import SettingsMenu from "./settings";
+import ThemeButton from "./theme-button";
 
 type LayoutProps = {
   children?: React.ReactNode;
@@ -128,23 +127,7 @@ export default function Layout({ children }: LayoutProps) {
           <Flex grow="1" id="drag-region" p="2" />
         </Flex>
         <Flex align="center" justify="end">
-          <button
-            type="button"
-            onClick={() => {
-              if (globalState$.colorMode.get() === "dark") {
-                globalState$.colorMode.set("light");
-              } else {
-                globalState$.colorMode.set("dark");
-              }
-            }}
-            className="cursor-pointer text-zinc-400 hover:bg-zinc-400/20 hover:dark:bg-zinc-100/5 px-3 py-2"
-          >
-            {globalState$.colorMode.get() === "dark" ? (
-              <Sun size={10} />
-            ) : (
-              <Moon size={10} />
-            )}
-          </button>
+          <ThemeButton />
           <button
             className="px-3 py-2 text-zinc-400 cursor-pointer hover:bg-zinc-400/20 hover:dark:bg-zinc-100/5"
             onClick={() => minimizeWindow()}

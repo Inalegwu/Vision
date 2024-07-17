@@ -24,7 +24,11 @@ export default function CurrentlyReading({ issue }: Props) {
           }
           className="relative w-[600px] cursor-pointer h-[340px] border-1 border-solid border-zinc-200 dark:border-zinc-800 rounded-md overflow-hidden"
         >
-          <Flex className="absolute z-0 w-full h-full" />
+          <img
+            src={issue.thumbnailUrl}
+            alt={issue.issueTitle}
+            className="absolute z-0 w-full h-full"
+          />
           <Flex
             className="absolute z-1 w-full h-full bg-black/20 dark:bg-black/30 px-3 py-4"
             align="start"

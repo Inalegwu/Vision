@@ -13,13 +13,7 @@ const libraryRouter = router({
     watchFS(`${ctx.app.getPath("documents")}/Vision`),
   ),
   getLibrary: publicProcedure.query(async ({ ctx }) => {
-    const issues = await ctx.db.query.issues.findMany({
-      columns: {
-        id: true,
-        issueTitle: true,
-        thumbnailUrl: true,
-      },
-    });
+    const issues = await ctx.db.query.issues.findMany({});
 
     return issues;
   }),
