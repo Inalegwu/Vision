@@ -114,7 +114,7 @@ async function handleRar(
       })
       .returning();
 
-    for (const file of sortedWithoutMeta) {
+    for (const file of sortedFiles) {
       if (file.fileHeader.flags.directory) {
         continue;
       }
