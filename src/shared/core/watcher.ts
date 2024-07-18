@@ -27,8 +27,6 @@ export default function watchFS(path: string | null) {
   try {
     if (path === null) return;
 
-    console.log(path);
-
     const watcher = chokidar.watch(path, {
       // ignored: /.*?(?<!\.(cbr|cbz))$/,
       ignoreInitial: false,

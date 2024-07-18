@@ -25,8 +25,6 @@ port.on("message", async (v) => {
     return;
   }
 
-  console.log(message);
-
   switch (message.data.action) {
     case "LINK": {
       if (message.data.parsePath.includes("cbr")) {
@@ -72,8 +70,6 @@ async function handleRar(
       .replace(/(\d+)$/, "")
       .replace("-", "");
 
-    console.log({ fileName });
-
     const exists = await db.query.issues.findFirst({
       where: (issue, { eq }) => eq(issue.issueTitle, fileName),
     });
@@ -103,15 +99,11 @@ async function handleRar(
       (v) => !v.fileHeader.name.includes("xml"),
     );
 
-    console.log({ sortedWithoutMeta });
-
     const thumbnailUrl = convertToImageUrl(
       sortedFiles[0]?.extraction?.buffer ||
         sortedFiles[1].extraction?.buffer ||
         sortedFiles[2].extraction?.buffer!,
     );
-
-    console.log({ thumbnailUrl });
 
     const newIssue = await db
       .insert(issues)
@@ -144,6 +136,7 @@ async function handleRar(
       message: null,
     };
   } catch (e) {
+    console.log({ e });
     return {
       message: "Error Occured while handling DB",
       completed: false,
@@ -190,8 +183,6 @@ async function handleZip(
       .replace(/(\d+)$/, "")
       .replace("-", "");
 
-    console.log({ fileName });
-
     const exists = await db.query.issues.findFirst({
       where: (issues, { eq }) => eq(issues.issueTitle, fileName),
     });
@@ -208,15 +199,11 @@ async function handleZip(
       .sort((a, b) => sortPages(a.name, b.name))
       .map((v) => ({ name: v.name, data: v.getData(), isDir: v.isDirectory }));
 
-    console.log({ files });
-
     const filesWithoutMetadata = files.filter((v) => !v.name.includes("xml"));
 
     const thumbnailUrl = convertToImageUrl(
       files[0].data || files[1].data || files[2].data!,
     );
-
-    console.log(thumbnailUrl);
 
     const newIssue = await db
       .insert(issues)
