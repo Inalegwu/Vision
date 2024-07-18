@@ -81,23 +81,23 @@ async function handleRar(
       };
     }
 
-    const extractor = await createExtractorFromData({
+    const sortedFiles = await createExtractorFromData({
       data: Uint8Array.from(readFileSync(filePath)).buffer,
       wasmBinary: readFileSync(
         require.resolve("node-unrar-js/dist/js/unrar.wasm"),
       ),
-    });
-
-    const extracted = extractor.extract({
-      files: [...extractor.getFileList().fileHeaders].map((v) => v.name),
-    });
-
-    const sortedFiles = [...extracted.files].sort((a, b) =>
-      sortPages(a.fileHeader.name, b.fileHeader.name),
-    );
-    const sortedWithoutMeta = sortedFiles.filter(
-      (v) => !v.fileHeader.name.includes("xml"),
-    );
+    })
+      .then((v) =>
+        v.extract({
+          files: [...v.getFileList().fileHeaders].map((v) => v.name),
+        }),
+      )
+      .then((v) =>
+        [...v.files].sort((a, b) =>
+          sortPages(a.fileHeader.name, b.fileHeader.name),
+        ),
+      )
+      .then((v) => v.filter((v) => !v.fileHeader.name.includes("xml")));
 
     const thumbnailUrl = convertToImageUrl(
       sortedFiles[0]?.extraction?.buffer ||
