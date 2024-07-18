@@ -7,7 +7,6 @@ type User = {
 export type GlobalState = {
   colorMode: "dark" | "light";
   firstLaunch: boolean;
-  sourceDir: string | null;
   user: User | null;
 };
 

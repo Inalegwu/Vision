@@ -2,8 +2,8 @@ import { build } from "electron-builder";
 
 build({
   config: {
-    appId: "com.electrostatic.app",
-    productName: "ElectroStatic",
+    appId: "com.vision.app",
+    productName: "Vision",
     artifactName: "${productName}-${version}_${platform}_${arch}.${ext}",
     buildDependenciesFromSource: true,
     files: ["out/**/*"],
