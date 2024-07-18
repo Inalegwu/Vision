@@ -1,4 +1,5 @@
 import { enableReactTracking } from "@legendapp/state/config/enableReactTracking";
+import { MillionLintProvider } from "@million/lint/runtime";
 import { Theme } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
 import t, { queryClient, trpcClient } from "@shared/config";
@@ -29,18 +30,20 @@ if (!rootElement?.innerHTML) {
 
   root.render(
     <StrictMode>
-      <t.Provider client={trpcClient} queryClient={queryClient}>
-        <QueryClientProvider client={queryClient}>
-          <Theme
-            radius="medium"
-            accentColor="gray"
-            grayColor="slate"
-            panelBackground="translucent"
-          >
-            <RouterProvider router={router} />
-          </Theme>
-        </QueryClientProvider>
-      </t.Provider>
+      <MillionLintProvider>
+        <t.Provider client={trpcClient} queryClient={queryClient}>
+          <QueryClientProvider client={queryClient}>
+            <Theme
+              radius="medium"
+              accentColor="gray"
+              grayColor="slate"
+              panelBackground="translucent"
+            >
+              <RouterProvider router={router} />
+            </Theme>
+          </QueryClientProvider>
+        </t.Provider>
+      </MillionLintProvider>
     </StrictMode>,
   );
 }
