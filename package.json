@@ -18,6 +18,7 @@
     "build": "pnpm tsx build.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "type:check": "pnpm exec tsc --noEmit",
     "postinstall": "electron-rebuild"
   },
   "dependencies": {

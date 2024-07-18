@@ -1,7 +1,7 @@
 import { computed } from "@legendapp/state";
 import { useObserveEffect } from "@legendapp/state/react";
 import { Flex, Text, Tooltip } from "@radix-ui/themes";
-import t from "@src/shared/config";
+import t from "@shared/config";
 import { useRouter, useRouterState } from "@tanstack/react-router";
 import { AnimatePresence } from "framer-motion";
 import {
@@ -151,8 +151,7 @@ export default function Layout({ children }: LayoutProps) {
           </button>
         </Flex>
       </Flex>
-
-      {children}
+      <AnimatePresence initial={false}>{children}</AnimatePresence>
       <AnimatePresence>
         {settingsState$.visible.get() && <SettingsMenu />}
       </AnimatePresence>

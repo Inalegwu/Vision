@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
 import { parentPort } from "node:worker_threads";
+import { issues } from "../../schema";
+import db from "../../storage";
 import { deleteFromStoreCompletionEvent$ } from "../events";
-import { issues } from "../schema";
-import db from "../storage";
 import { deletionWorkerSchema } from "../validations";
 
 const port = parentPort;

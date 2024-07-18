@@ -12,9 +12,10 @@
     "paths": {
       "@src/*": ["src/*"],
       "@shared/*": ["src/shared/*"],
-      "@components/*": ["src/web/components/*"],
+      "@components": ["src/web/components/index.ts"],
       "@assets/*": ["src/assets/*"],
-      "@pages/*": ["src/web/routes/*"]
+      "@pages/*": ["src/web/routes/*"],
+      "@core/*": ["src/shared/core/*"]
     }
   },
   "include": ["src", "src/web/kuma.config.ts"],

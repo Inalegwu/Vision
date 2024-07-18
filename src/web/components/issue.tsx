@@ -1,5 +1,5 @@
 import { ContextMenu, Flex, Text } from "@radix-ui/themes";
-import t from "@src/shared/config";
+import t from "@shared/config";
 import type { Issue as issue } from "@src/shared/types";
 import { useRouter } from "@tanstack/react-router";
 import { Edit, Trash2 } from "lucide-react";
@@ -29,7 +29,6 @@ export default function Issue({ issue }: Props) {
             })
           }
         >
-          {/* TODO make image */}
           <img
             className="w-full h-full bg-zinc-200/5 rounded-md border-1 border-solid border-zinc-300 dark:border-zinc-800"
             alt="issue_thumbnail"

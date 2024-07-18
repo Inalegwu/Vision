@@ -1,7 +1,7 @@
+import watchFS from "@core/watcher";
 import { publicProcedure, router } from "@src/trpc";
 import { globalState$ } from "@src/web/state";
 import { mkdirSync } from "node:fs";
-import watchFS from "../watcher";
 
 const libraryRouter = router({
   createLibraryFolder: publicProcedure.mutation(async ({ ctx }) => {

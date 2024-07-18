@@ -1,5 +1,5 @@
 import { Flex } from "@radix-ui/themes";
-import t from "@src/shared/config";
+import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { useInterval } from "../hooks";
 

@@ -1,7 +1,7 @@
+import deletionWorker from "@core/workers/deletion?nodeWorker";
+import metadataWorker from "@core/workers/metadata?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import z from "zod";
-import deletionWorker from "../workers/deletion?nodeWorker";
-import metadataWorker from "../workers/metadata?nodeWorker";
 
 const issueRouter = router({
   addIssue: publicProcedure.mutation(async ({ ctx }) => {

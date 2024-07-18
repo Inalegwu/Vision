@@ -1,5 +1,5 @@
 import { Flex, Text } from "@radix-ui/themes";
-import t from "@src/shared/config";
+import t from "@shared/config";
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { Mail } from "lucide-react";
 

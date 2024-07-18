@@ -5,9 +5,9 @@ import { readFileSync } from "node:fs";
 import { parentPort } from "node:worker_threads";
 import { v4 } from "uuid";
 import type { z } from "zod";
-import { issues, pages } from "../schema";
-import db from "../storage";
-import { convertToImageUrl, sortPages } from "../utils";
+import { issues, pages } from "../../schema";
+import db from "../../storage";
+import { convertToImageUrl, sortPages } from "../../utils";
 import { parsePathSchema, type parseWorkerResponse } from "../validations";
 
 const port = parentPort;

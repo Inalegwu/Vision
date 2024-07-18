@@ -20,9 +20,7 @@ export default defineConfig({
       alias: {
         "@src": resolve(__dirname, "src/"),
         "@shared": resolve(__dirname, "src/shared/"),
-        "@components": resolve(__dirname, "src/web/components/"),
-        "@assets": resolve(__dirname, "src/assets/"),
-        "@pages": resolve(__dirname, "src/web/pages"),
+        "@core": resolve(__dirname, "src/shared/core/"),
       },
     },
   },
@@ -38,11 +36,10 @@ export default defineConfig({
     root: "src/web/",
     resolve: {
       alias: {
-        "@src": resolve(__dirname, "src/"),
         "@shared": resolve(__dirname, "src/shared/"),
-        "@components": resolve(__dirname, "src/web/components/"),
+        "@components": resolve(__dirname, "src/web/components/index.ts"),
         "@assets": resolve(__dirname, "src/assets/"),
-        "@pages": resolve(__dirname, "src/web/pages"),
+        "@core": resolve(__dirname, "src/shared/core/"),
       },
     },
     plugins: [
