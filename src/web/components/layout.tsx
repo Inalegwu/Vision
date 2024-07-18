@@ -18,6 +18,7 @@ import type React from "react";
 import { useEffect } from "react";
 import { globalState$, settingsState$ } from "../state";
 import SettingsMenu from "./settings";
+import Spinner from "./spinner";
 import ThemeButton from "./theme-button";
 
 type LayoutProps = {
@@ -33,7 +34,6 @@ export default function Layout({ children }: LayoutProps) {
   const { mutate: minimizeWindow } = t.window.minimize.useMutation();
   const { mutate: maximizeWindow } = t.window.maximize.useMutation();
   const { mutate: closeWindow } = t.window.closeWindow.useMutation();
-  const { mutate: addIssueToLibrary } = t.issue.addIssue.useMutation();
 
   const { mutate: startFileWatcher } =
     t.library.startLibraryWatcher.useMutation();
@@ -83,12 +83,7 @@ export default function Layout({ children }: LayoutProps) {
               <ArrowRight size={10} />
             </button>
             <Tooltip content="Add Issue To Library">
-              <button
-                onClick={() => addIssueToLibrary()}
-                className="cursor-pointer dark:text-zinc-400 hover:bg-zinc-400/8 px-3 py-2"
-              >
-                <Plus size={10} />
-              </button>
+              <AddButton />
             </Tooltip>
           </Flex>
         </Flex>
@@ -163,5 +158,28 @@ export default function Layout({ children }: LayoutProps) {
         {settingsState$.visible.get() && <SettingsMenu />}
       </AnimatePresence>
     </Flex>
+  );
+}
+
+function AddButton() {
+  const { mutate: addIssueToLibrary, isLoading } =
+    t.issue.addIssue.useMutation();
+
+  return (
+    <button
+      disabled={isLoading}
+      onClick={() => addIssueToLibrary()}
+      className="cursor-pointer dark:text-zinc-400 hover:bg-zinc-400/8 px-3 py-2"
+    >
+      {isLoading ? (
+        <>
+          <Spinner />
+        </>
+      ) : (
+        <>
+          <Plus size={10} />
+        </>
+      )}
+    </button>
   );
 }

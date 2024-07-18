@@ -39,7 +39,7 @@ if (!rootElement?.innerHTML) {
               grayColor="slate"
               panelBackground="translucent"
             >
-              <RouterProvider router={router} />
+              <RouterProvider defaultViewTransition router={router} />
             </Theme>
           </QueryClientProvider>
         </t.Provider>

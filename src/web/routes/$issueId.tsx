@@ -3,8 +3,7 @@ import { useObservable } from "@legendapp/state/react";
 import { Flex } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { useInterval } from "../hooks";
+import { useInterval, useTimeout } from "../hooks";
 
 export const Route = createFileRoute("/$issueId")({
   component: Component,
@@ -28,13 +27,9 @@ function Component() {
     console.log("to save reading state");
   }, 10_000);
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      isEnabled.set(true);
-    }, 3_000);
-
-    return () => clearTimeout(timeout);
-  }, [isEnabled]);
+  useTimeout(() => {
+    isEnabled.set(true);
+  }, 3_000);
 
   return (
     <Flex className="w-full h-screen" justify="center">
