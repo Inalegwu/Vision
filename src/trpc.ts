@@ -18,6 +18,7 @@ export const publicProcedure = t.procedure.use(async (opts) => {
     path: opts.path,
     type: opts.type,
     durationMS,
+    performance: performance.now(),
   };
 
   result.ok ? console.log(meta) : console.error(meta);

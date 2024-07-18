@@ -6,6 +6,7 @@ import { useRouter, useRouterState } from "@tanstack/react-router";
 import { AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
+  ArrowRight,
   Home,
   Library,
   Maximize2,
@@ -74,6 +75,12 @@ export default function Layout({ children }: LayoutProps) {
               className="cursor-pointer dark:text-zinc-400 hover:bg-zinc-400/8 px-3 py-2"
             >
               <ArrowLeft size={10} />
+            </button>
+            <button
+              onClick={() => navigation.history.forward()}
+              className="cursor-pointer dark:text-zinc-400 hover:bg-zinc-400/8 px-3 py-2"
+            >
+              <ArrowRight size={10} />
             </button>
             <Tooltip content="Add Issue To Library">
               <button

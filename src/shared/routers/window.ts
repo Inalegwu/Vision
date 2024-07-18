@@ -4,7 +4,7 @@ export const windowRouter = router({
   closeWindow: publicProcedure.mutation(async ({ ctx }) => {
     if (!ctx.window) return;
 
-    const totalRunTime = Date.now() - ctx.launchtime;
+    const totalRunTime = ctx.launchtime - Date.now();
 
     console.log({ totalRunTime });
 

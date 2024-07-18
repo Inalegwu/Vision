@@ -1,5 +1,4 @@
 import { Issue, IssueSkeleton } from "@components";
-import { deleteFromStoreCompletionEvent$ } from "@core/events";
 import { useObservable } from "@legendapp/state/react";
 import { Flex, Heading } from "@radix-ui/themes";
 import t from "@shared/config";
@@ -24,8 +23,6 @@ function Component() {
     enabled: isEnabled.get(),
   });
 
-  deleteFromStoreCompletionEvent$.on(() => utils.library.invalidate());
-
   useEffect(() => {
     if (globalState$.firstLaunch.get()) {
       createSourceDir();
@@ -43,6 +40,7 @@ function Component() {
     <motion.div
       initial={{ x: "100%" }}
       animate={{ x: "0%" }}
+      exit={{ x: "100%" }}
       transition={{ duration: 0.5, damping: 4 }}
     >
       <Flex direction="column" className="w-full h-screen px-2 py-2">

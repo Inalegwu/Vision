@@ -2,7 +2,7 @@ import { type MotionStyle, motion } from "framer-motion";
 
 type SkeletonProps = {
   style?: MotionStyle;
-  className: string;
+  className?: string;
 };
 
 export default function Skeleton({ style, className }: SkeletonProps) {
@@ -13,7 +13,7 @@ export default function Skeleton({ style, className }: SkeletonProps) {
         initial={{ opacity: 0.4 }}
         animate={{ opacity: 1 }}
         className={className}
-        transition={{ repeat: Number.POSITIVE_INFINITY }}
+        transition={{ repeat: Number.POSITIVE_INFINITY, duration: 0.6 }}
       />
     </>
   );

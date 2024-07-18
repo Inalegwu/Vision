@@ -1,3 +1,4 @@
+import { deleteFromStoreCompletionEvent$ } from "@core/events";
 import { ContextMenu, Flex, Text } from "@radix-ui/themes";
 import t from "@shared/config";
 import type { Issue as issue } from "@src/shared/types";
@@ -12,6 +13,8 @@ export default function Issue({ issue }: Props) {
   const utils = t.useUtils();
   const navigation = useRouter();
   const { mutate: deleteIssue } = t.issue.deleteIssue.useMutation();
+
+  deleteFromStoreCompletionEvent$.on(() => utils.library.invalidate());
 
   return (
     <ContextMenu.Root>
