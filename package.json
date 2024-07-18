@@ -19,7 +19,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "type:check": "pnpm exec tsc --noEmit",
-    "postinstall": "electron-rebuild"
+    "postinstall": "electron-rebuild",
+    "app-release": "pnpm exec np --no-publish --no-cleanup --no-tests --no-release-draft"
   },
   "dependencies": {
     "@electron/rebuild": "^3.4.1",
