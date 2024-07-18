@@ -21,3 +21,11 @@ export function convertToImageUrl(buffer: ArrayBufferLike) {
   const b64 = Buffer.from(buffer).toString("base64");
   return `data:image/png;base64,${b64}`;
 }
+
+export function parseFileNameFromPath(filePath: string) {
+  return filePath
+    .replace(/^.*[\\\/]/, "")
+    .replace(/\.[^/.]+$/, "")
+    .replace(/(\d+)$/, "")
+    .replace("-", "");
+}

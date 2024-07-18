@@ -7,7 +7,11 @@ import { v4 } from "uuid";
 import type { z } from "zod";
 import { issues, pages } from "../../schema";
 import db from "../../storage";
-import { convertToImageUrl, sortPages } from "../../utils";
+import {
+  convertToImageUrl,
+  parseFileNameFromPath,
+  sortPages,
+} from "../../utils";
 import { parsePathSchema, type parseWorkerResponse } from "../validations";
 
 const port = parentPort;
@@ -64,11 +68,7 @@ async function handleRar(
 ): Promise<z.infer<typeof parseWorkerResponse>> {
   try {
     const start = Date.now();
-    const fileName = filePath
-      .replace(/^.*[\\\/]/, "")
-      .replace(/\.[^/.]+$/, "")
-      .replace(/(\d+)$/, "")
-      .replace("-", "");
+    const fileName = parseFileNameFromPath(filePath);
 
     const exists = await db.query.issues.findFirst({
       where: (issue, { eq }) => eq(issue.issueTitle, fileName),
@@ -177,11 +177,8 @@ async function handleZip(
 ): Promise<z.infer<typeof parseWorkerResponse>> {
   try {
     const start = Date.now();
-    const fileName = filePath
-      .replace(/^.*[\\\/]/, "")
-      .replace(/\.[^/.]+$/, "")
-      .replace(/(\d+)$/, "")
-      .replace("-", "");
+
+    const fileName = parseFileNameFromPath(filePath);
 
     const exists = await db.query.issues.findFirst({
       where: (issues, { eq }) => eq(issues.issueTitle, fileName),
