@@ -2,8 +2,10 @@ import { useObservable } from "@legendapp/state/react";
 import { Flex } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
-import { motion } from "framer-motion";
+import { motion, useMotionValue } from "framer-motion";
 import { useInterval, useTimeout } from "../hooks";
+
+const DRAG_BUFFER = 50;
 
 export const Route = createFileRoute("/$issueId")({
   component: Component,
@@ -23,6 +25,11 @@ function Component() {
     },
   );
 
+  const contentLength = data?.pages.length || 0;
+  const itemIndex = useObservable(0);
+  const itemIndexValue = itemIndex.get();
+  const dragX = useMotionValue(0);
+
   useInterval(() => {
     console.log("to save reading state");
   }, 10_000);
@@ -33,20 +40,10 @@ function Component() {
 
   console.log({ data });
 
-  const handleDragEnd = () => {
-    console.log("dragging ended");
-  };
-
-  const handleDragStart = () => {
-    console.log("dragging started");
-  };
-
   return (
     <Flex className="relative min-h-screen overflow-hidden">
       <motion.div
         drag="x"
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
         dragConstraints={{ right: 0 }}
         className="flex cursor-grab active:cursor-grabbing items-center"
       >
