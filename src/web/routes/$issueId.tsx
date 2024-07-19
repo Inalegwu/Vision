@@ -49,13 +49,13 @@ function Component() {
       >
         {data?.pages.map((v) => (
           <div
-            className="w-full h-full flex items-center justify-center shrink-0"
+            className="w-full h-screen flex items-center justify-center shrink-0"
             key={v.id}
           >
             <img
               src={v.pageContent}
               alt="page"
-              className="aspect-[9/16] h-screen w-[45%] object-contain"
+              className="aspect-[9/16] h-full w-[45%] object-contain"
             />
           </div>
         ))}
