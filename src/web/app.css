@@ -66,3 +66,6 @@ button{
   background:none;
   outline: none;
 }
+img{
+  pointer-events: none;
+}

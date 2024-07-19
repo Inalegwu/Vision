@@ -69,6 +69,10 @@ const issueRouter = router({
       });
       const pages = await ctx.db.query.pages.findMany({
         where: (page, { eq }) => eq(page.issueId, input.issueId),
+        columns: {
+          id: true,
+          pageContent: true,
+        },
       });
 
       const merged = {

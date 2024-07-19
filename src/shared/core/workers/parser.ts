@@ -128,7 +128,6 @@ async function handleRar(
 
     console.log({
       duration: Date.now() - start,
-      message: "Duration calculation complete",
     });
 
     return {

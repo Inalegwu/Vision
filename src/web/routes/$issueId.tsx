@@ -1,8 +1,8 @@
-import { Skeleton } from "@components";
 import { useObservable } from "@legendapp/state/react";
 import { Flex } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 import { useInterval, useTimeout } from "../hooks";
 
 export const Route = createFileRoute("/$issueId")({
@@ -31,9 +31,39 @@ function Component() {
     isEnabled.set(true);
   }, 3_000);
 
+  console.log({ data });
+
+  const handleDragEnd = () => {
+    console.log("dragging ended");
+  };
+
+  const handleDragStart = () => {
+    console.log("dragging started");
+  };
+
   return (
-    <Flex className="w-full h-screen" justify="center">
-      <Flex
+    <Flex className="relative min-h-screen overflow-hidden">
+      <motion.div
+        drag="x"
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        dragConstraints={{ right: 0 }}
+        className="flex cursor-grab active:cursor-grabbing items-center"
+      >
+        {data?.pages.map((v) => (
+          <div
+            className="w-full h-full flex items-center justify-center shrink-0"
+            key={v.id}
+          >
+            <img
+              src={v.pageContent}
+              alt="page"
+              className="aspect-[9/16] h-screen w-[45%] object-contain"
+            />
+          </div>
+        ))}
+      </motion.div>
+      {/* <Flex
         align="center"
         justify="start"
         gap="2"
@@ -58,7 +88,7 @@ function Component() {
             />
           );
         })}
-      </Flex>
+      </Flex> */}
     </Flex>
   );
 }
