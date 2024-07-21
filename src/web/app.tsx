@@ -2,8 +2,8 @@ import { enableReactTracking } from "@legendapp/state/config/enableReactTracking
 import { MillionLintProvider } from "@million/lint/runtime";
 import { Theme } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
-import t, { queryClient, trpcClient } from "@shared/config";
-import { QueryClientProvider } from "@tanstack/react-query";
+import t, { persister, queryClient, trpcClient } from "@shared/config";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
@@ -32,7 +32,10 @@ if (!rootElement?.innerHTML) {
     <StrictMode>
       <MillionLintProvider>
         <t.Provider client={trpcClient} queryClient={queryClient}>
-          <QueryClientProvider client={queryClient}>
+          <PersistQueryClientProvider
+            persistOptions={{ persister }}
+            client={queryClient}
+          >
             <Theme
               radius="medium"
               accentColor="gray"
@@ -41,7 +44,7 @@ if (!rootElement?.innerHTML) {
             >
               <RouterProvider defaultViewTransition router={router} />
             </Theme>
-          </QueryClientProvider>
+          </PersistQueryClientProvider>
         </t.Provider>
       </MillionLintProvider>
     </StrictMode>,
