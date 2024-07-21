@@ -28,14 +28,17 @@ export type ParserErrorResponse = ParserResponse & {
   message: string;
 };
 
-export type ReadingIssue = Issue & {
+export type ReadingIssue = {
+  issueId: string;
+  thumbnailUrl: string;
+  issueTitle: string;
   pageNumber: number;
   totalPages: number;
 };
 
 export type ReadingState = {
-  currentlyReading: Set<ReadingIssue> | null;
-  doneReading: Set<Issue> | null;
+  currentlyReading: Map<string, ReadingIssue> | null;
+  doneReading: Map<string, ReadingIssue> | null;
 };
 
 export type SelectedIssueState = {

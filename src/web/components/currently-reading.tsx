@@ -1,10 +1,10 @@
 import { ContextMenu, Flex, Text } from "@radix-ui/themes";
-import type { Issue } from "@src/shared/types";
+import type { ReadingIssue } from "@src/shared/types";
 import { useRouter } from "@tanstack/react-router";
 import { Check } from "lucide-react";
 
 type Props = {
-  issue: Issue;
+  issue: ReadingIssue;
 };
 
 export default function CurrentlyReading({ issue }: Props) {
@@ -18,25 +18,25 @@ export default function CurrentlyReading({ issue }: Props) {
             navigation.navigate({
               to: "/$issueId",
               params: {
-                issueId: issue.id,
+                issueId: issue.issueId,
               },
             })
           }
-          className="relative w-[600px] cursor-pointer h-[340px] border-1 border-solid border-zinc-200 dark:border-zinc-800 rounded-md overflow-hidden"
+          className="relative w-[245px] cursor-pointer h-[370px] border-1 border-solid border-zinc-200 dark:border-zinc-800 rounded-md overflow-hidden"
         >
           <img
             src={issue.thumbnailUrl}
             alt={issue.issueTitle}
-            className="absolute z-0 w-full h-full"
+            className="absolute z-0 w-full h-full object-cover"
           />
           <Flex
-            className="absolute z-1 w-full h-full bg-black/20 dark:bg-black/30 px-3 py-4"
+            className="absolute z-1 w-full h-full bg-black/50 dark:bg-black/30 px-3 py-4"
             align="start"
             justify="end"
             direction="column"
             gap="2"
           >
-            <Text size="4" weight="bold" className="tracking-wide">
+            <Text size="2" weight="bold" className="text-white">
               {issue.issueTitle}
             </Text>
             <Flex className="bg-zinc-400/50 dark:bg-zinc-400/20 w-full rounded-full">

@@ -4,6 +4,7 @@ import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, useMotionValue } from "framer-motion";
 import { useInterval, useTimeout } from "../hooks";
+import { readingState$ } from "../state";
 
 const DRAG_BUFFER = 50;
 
@@ -29,10 +30,21 @@ function Component() {
   const itemIndex = useObservable(0);
   const itemIndexValue = itemIndex.get();
   const dragX = useMotionValue(0);
+  const readingState = readingState$.currentlyReading.get();
 
   useInterval(() => {
-    console.log("to save reading state");
-  }, 10_000);
+    console.log({ itemIndexValue });
+    if (itemIndexValue < contentLength - 1) {
+      console.log("saving to currently reading");
+      readingState.set(data?.id!, {
+        issueId: issueId,
+        thumbnailUrl: data?.thumbnailUrl || "",
+        issueTitle: data?.issueTitle || "",
+        totalPages: contentLength - 1,
+        pageNumber: itemIndexValue,
+      });
+    }
+  }, 3_000);
 
   useTimeout(() => {
     isEnabled.set(true);

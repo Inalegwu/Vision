@@ -33,8 +33,8 @@ export const settingsState$ = observable<{
 });
 
 export const readingState$ = observable<ReadingState>({
-  currentlyReading: new Set<ReadingIssue>(),
-  doneReading: new Set<Issue>(),
+  currentlyReading: new Map<string, ReadingIssue>(),
+  doneReading: new Map<string, Issue>(),
 });
 
 export const selectedIssue$ = observable<SelectedIssueState>({

@@ -1,9 +1,9 @@
 import { ContextMenu, Flex, Text } from "@radix-ui/themes";
-import type { Issue } from "@src/shared/types";
+import type { ReadingIssue } from "@src/shared/types";
 import { Minus } from "lucide-react";
 
 type Props = {
-  issue: Issue;
+  issue: ReadingIssue;
 };
 
 export default function DoneReading({ issue }: Props) {

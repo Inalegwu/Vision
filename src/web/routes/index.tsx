@@ -8,8 +8,10 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const currentlyReading = Array.from(readingState$.currentlyReading.get());
-  const doneReading = Array.from(readingState$.doneReading.get());
+  const currentlyReading = Array.from(
+    readingState$.currentlyReading.get().values(),
+  );
+  const doneReading = Array.from(readingState$.doneReading.get().values());
 
   if (currentlyReading.length === 0 && doneReading.length === 0) {
     return (
@@ -34,20 +36,20 @@ function Index() {
         direction="column"
         align="start"
         justify="center"
-        className="w-full h-3.5/6 px-2 py-3 space-y-1"
+        className="w-full h-4/6 px-2 py-2 space-y-1"
       >
         <Heading size="7">Currently Reading</Heading>
-        <Flex grow="1" className="py-2">
+        <Flex grow="1" className="py-2 overflow-x-scroll pr-14" gap="3">
           {currentlyReading.map((v) => (
-            <CurrentlyReading key={v.id} issue={v} />
+            <CurrentlyReading key={v.issueId} issue={v} />
           ))}
         </Flex>
       </Flex>
-      <Flex direction="column" className="w-full h-2.5/6 px-2 py-2 space-y-2">
+      <Flex direction="column" className="w-full h-2/6 px-2 py-2 space-y-2">
         <Heading size="6">Done Reading</Heading>
         <Flex grow="1" className="py-2">
           {doneReading.map((v) => (
-            <DoneReading key={v.id} issue={v} />
+            <DoneReading key={v.issueId} issue={v} />
           ))}
         </Flex>
       </Flex>
