@@ -30,7 +30,7 @@ export default function CurrentlyReading({ issue }: Props) {
             className="absolute z-0 w-full h-full object-cover"
           />
           <Flex
-            className="absolute z-1 w-full h-full bg-black/50 dark:bg-black/30 px-3 py-4"
+            className="absolute z-1 w-full h-full bg-black/50 dark:bg-black/60 px-3 py-4"
             align="start"
             justify="end"
             direction="column"
