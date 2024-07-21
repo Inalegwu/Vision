@@ -46,13 +46,31 @@ function Component() {
 
   const onDragEnd = () => {
     console.log("drag end");
+
+    const x = dragX.get();
+    console.log({ itemIndexValue });
+
+    if (x <= DRAG_BUFFER && itemIndexValue < contentLength - 1) {
+      console.log({ x });
+      itemIndex.set(itemIndexValue + 1);
+    } else if (x >= DRAG_BUFFER && itemIndexValue > 0) {
+      console.log({ otherX: x });
+      itemIndex.set(itemIndexValue - 1);
+    }
   };
 
   return (
     <Flex className="relative min-h-screen overflow-hidden">
       <motion.div
         drag="x"
-        dragConstraints={{ right: 0 }}
+        dragConstraints={{ left: 0, right: 0 }}
+        style={{ x: dragX }}
+        animate={{
+          translateX: `-${itemIndexValue * 100}%`,
+        }}
+        transition={{
+          bounceDamping: 10,
+        }}
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
         className="flex cursor-grab active:cursor-grabbing items-center"
