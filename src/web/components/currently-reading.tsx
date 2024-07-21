@@ -40,7 +40,11 @@ export default function CurrentlyReading({ issue }: Props) {
               {issue.issueTitle}
             </Text>
             <Flex className="bg-zinc-400/50 dark:bg-zinc-400/20 w-full rounded-full">
-              <div className="w-2/6 rounded-full bg-white p-[2px]" />
+              <div
+                className={`w-[${
+                  (issue.pageNumber / issue.totalPages) * 100
+                }%] rounded-full bg-white p-[2px]`}
+              />
             </Flex>
           </Flex>
         </Flex>
