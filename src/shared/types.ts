@@ -36,9 +36,16 @@ export type ReadingIssue = {
   totalPages: number;
 };
 
+export type DoneIssue = {
+  issueId: string;
+  thumbnailUrl: string;
+  issueTitle: string;
+  dateFinished: string;
+};
+
 export type ReadingState = {
   currentlyReading: Map<string, ReadingIssue> | null;
-  doneReading: Map<string, ReadingIssue> | null;
+  doneReading: Map<string, DoneIssue> | null;
 };
 
 export type SelectedIssueState = {

@@ -31,6 +31,7 @@ function Component() {
   const itemIndexValue = itemIndex.get();
   const dragX = useMotionValue(0);
   const readingState = readingState$.currentlyReading.get();
+  const doneReading = readingState$.doneReading.get();
 
   useInterval(() => {
     console.log({ itemIndexValue });
@@ -43,6 +44,17 @@ function Component() {
         totalPages: contentLength - 1,
         pageNumber: itemIndexValue,
       });
+      return;
+    }
+
+    if (itemIndexValue === contentLength - 1) {
+      doneReading.set(data?.id!, {
+        issueId: issueId,
+        thumbnailUrl: data?.thumbnailUrl || "",
+        issueTitle: data?.issueTitle || "",
+        dateFinished: new Date().toISOString(),
+      });
+      return;
     }
   }, 3_000);
 

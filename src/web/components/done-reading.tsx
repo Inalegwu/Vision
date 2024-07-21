@@ -1,9 +1,9 @@
 import { ContextMenu, Flex, Text } from "@radix-ui/themes";
-import type { ReadingIssue } from "@src/shared/types";
+import type { DoneIssue } from "@src/shared/types";
 import { Minus } from "lucide-react";
 
 type Props = {
-  issue: ReadingIssue;
+  issue: DoneIssue;
 };
 
 export default function DoneReading({ issue }: Props) {
@@ -29,7 +29,7 @@ export default function DoneReading({ issue }: Props) {
               {issue.issueTitle}
             </Text>
             <Text className="text-[11.5px]" weight="regular" color="gray">
-              {issue.dateCreated?.toString()}
+              {issue.dateFinished?.toString()}
             </Text>
           </Flex>
         </Flex>
