@@ -20,7 +20,7 @@ export default function Issue({ issue }: Props) {
     <ContextMenu.Root>
       <ContextMenu.Trigger>
         <Flex
-          className="w-[200px] h-[300px] cursor-pointer"
+          className="w-[200px] h-[300px] cursor-pointer mb-14"
           gap="1"
           direction="column"
           onClick={() =>

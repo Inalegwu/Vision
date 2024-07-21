@@ -32,7 +32,8 @@ export default function watchFS(path: string | null) {
       ignoreInitial: false,
     });
 
-    watcher.on("add", (p, s) => {
+    watcher.on("add", (p) => {
+      console.log({ p });
       parseWorker.postMessage({
         parsePath: p,
         action: "LINK",

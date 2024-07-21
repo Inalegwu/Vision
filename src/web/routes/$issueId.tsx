@@ -40,11 +40,21 @@ function Component() {
 
   console.log({ data });
 
+  const onDragStart = () => {
+    console.log("drag start");
+  };
+
+  const onDragEnd = () => {
+    console.log("drag end");
+  };
+
   return (
     <Flex className="relative min-h-screen overflow-hidden">
       <motion.div
         drag="x"
         dragConstraints={{ right: 0 }}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
         className="flex cursor-grab active:cursor-grabbing items-center"
       >
         {data?.pages.map((v) => (

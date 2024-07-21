@@ -39,7 +39,12 @@ function Component() {
       <Flex align="center" justify="between" className="w-full">
         <Heading size="8">Library</Heading>
       </Flex>
-      <Flex grow="1" className="py-5 overflow-y-scroll" gap="2" wrap="wrap">
+      <Flex
+        grow="1"
+        className="py-5 overflow-y-scroll pb-24"
+        gap="4"
+        wrap="wrap"
+      >
         {isLoading &&
           Array(15)
             .fill(0)

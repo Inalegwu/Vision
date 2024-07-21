@@ -19,47 +19,53 @@ const port = parentPort;
 if (!port) throw new Error("Illegal State");
 
 port.on("message", async (v) => {
-  const message = parsePathSchema.safeParse(v);
+  try {
+    const message = parsePathSchema.safeParse(v);
 
-  if (!message.success) {
-    port.postMessage({
-      completed: false,
-      message: "Invalid message data sent",
-    });
-    return;
-  }
-
-  switch (message.data.action) {
-    case "LINK": {
-      if (message.data.parsePath.includes("cbr")) {
-        const result = await handleRar(message.data.parsePath);
-        port.postMessage(result);
-      }
-
-      if (message.data.parsePath.includes("cbz")) {
-        const result = handleZip(message.data.parsePath);
-
-        port.postMessage(result);
-      }
-
-      return;
-    }
-
-    case "UNLINK": {
-      const result = await unlinkIssue(message.data.parsePath);
-
-      port.postMessage(result);
-
-      return;
-    }
-
-    default: {
+    if (!message.success) {
       port.postMessage({
         completed: false,
-        message: "File extenstion isn't a comic file",
+        message: "Invalid message data sent",
       });
       return;
     }
+
+    console.log({ path: message.data.parsePath });
+
+    switch (message.data.action) {
+      case "LINK": {
+        if (message.data.parsePath.includes("cbr")) {
+          const result = await handleRar(message.data.parsePath);
+          port.postMessage(result);
+        }
+
+        if (message.data.parsePath.includes("cbz")) {
+          const result = handleZip(message.data.parsePath);
+
+          port.postMessage(result);
+        }
+
+        return;
+      }
+
+      case "UNLINK": {
+        const result = await unlinkIssue(message.data.parsePath);
+
+        port.postMessage(result);
+
+        return;
+      }
+
+      default: {
+        port.postMessage({
+          completed: false,
+          message: "File extenstion isn't a comic file",
+        });
+        return;
+      }
+    }
+  } catch (e) {
+    console.log({ e });
   }
 });
 
