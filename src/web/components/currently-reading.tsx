@@ -2,13 +2,19 @@ import { ContextMenu, Flex, Text } from "@radix-ui/themes";
 import type { ReadingIssue } from "@src/shared/types";
 import { useRouter } from "@tanstack/react-router";
 import { Check } from "lucide-react";
+import { memo, useMemo } from "react";
 
 type Props = {
   issue: ReadingIssue;
 };
 
-export default function CurrentlyReading({ issue }: Props) {
+const CurrentlyReading = ({ issue }: Props) => {
   const navigation = useRouter();
+
+  const width = useMemo(
+    () => (issue.pageNumber / issue.totalPages) * 100,
+    [issue],
+  );
 
   return (
     <ContextMenu.Root>
@@ -41,9 +47,8 @@ export default function CurrentlyReading({ issue }: Props) {
             </Text>
             <Flex className="bg-zinc-400/50 dark:bg-zinc-400/20 w-full rounded-full">
               <div
-                className={`w-[${
-                  (issue.pageNumber / issue.totalPages) * 100
-                }%] rounded-full bg-white p-[2px]`}
+                className="rounded-full bg-white p-[2.3px]"
+                style={{ width: `${width}%` }}
               />
             </Flex>
           </Flex>
@@ -59,4 +64,6 @@ export default function CurrentlyReading({ issue }: Props) {
       </ContextMenu.Content>
     </ContextMenu.Root>
   );
-}
+};
+
+export default memo(CurrentlyReading);

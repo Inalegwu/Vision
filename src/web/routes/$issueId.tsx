@@ -3,7 +3,7 @@ import { Flex } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, useMotionValue } from "framer-motion";
-import { useInterval, useTimeout } from "../hooks";
+import { useInterval, useKeyPress, useTimeout } from "../hooks";
 import { readingState$ } from "../state";
 
 const DRAG_BUFFER = 50;
@@ -26,15 +26,19 @@ function Component() {
     },
   );
 
-  const contentLength = data?.pages.length || 0;
-  const itemIndex = useObservable(0);
-  const itemIndexValue = itemIndex.get();
-  const dragX = useMotionValue(0);
   const readingState = readingState$.currentlyReading.get();
   const doneReading = readingState$.doneReading.get();
 
+  const exists = readingState.has(issueId);
+
+  const contentLength = data?.pages.length || 0;
+  const itemIndex = useObservable(
+    exists ? readingState.get(issueId)?.pageNumber : 0,
+  );
+  const itemIndexValue = itemIndex.get();
+  const dragX = useMotionValue(0);
+
   useInterval(() => {
-    console.log({ itemIndexValue });
     if (itemIndexValue < contentLength - 1) {
       console.log("saving to currently reading");
       readingState.set(data?.id!, {
@@ -48,6 +52,7 @@ function Component() {
     }
 
     if (itemIndexValue === contentLength - 1) {
+      readingState.delete(issueId);
       doneReading.set(data?.id!, {
         issueId: issueId,
         thumbnailUrl: data?.thumbnailUrl || "",
@@ -62,23 +67,22 @@ function Component() {
     isEnabled.set(true);
   }, 3_000);
 
-  console.log({ data });
+  useKeyPress((e) => {
+    console.log(e.key, e.keyCode);
 
-  const onDragStart = () => {
-    console.log("drag start");
-  };
+    if (e.keyCode === 93 && itemIndexValue < contentLength - 1) {
+      itemIndex.set(itemIndexValue + 1);
+    } else if (e.keyCode === 91 && itemIndexValue > 0) {
+      itemIndex.set(itemIndexValue - 1);
+    }
+  });
 
   const onDragEnd = () => {
-    console.log("drag end");
-
     const x = dragX.get();
-    console.log({ itemIndexValue });
 
     if (x <= DRAG_BUFFER && itemIndexValue < contentLength - 1) {
-      console.log({ x });
       itemIndex.set(itemIndexValue + 1);
     } else if (x >= DRAG_BUFFER && itemIndexValue > 0) {
-      console.log({ otherX: x });
       itemIndex.set(itemIndexValue - 1);
     }
   };
@@ -95,7 +99,6 @@ function Component() {
         transition={{
           bounceDamping: 10,
         }}
-        onDragStart={onDragStart}
         onDragEnd={onDragEnd}
         className="flex cursor-grab active:cursor-grabbing items-center"
       >

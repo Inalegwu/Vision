@@ -5,8 +5,8 @@ import {
 } from "@legendapp/state/persist";
 import { ObservablePersistLocalStorage } from "@legendapp/state/persist-plugins/local-storage";
 import type {
+  DoneIssue,
   GlobalState,
-  Issue,
   ReadingIssue,
   ReadingState,
   SelectedIssueState,
@@ -34,7 +34,7 @@ export const settingsState$ = observable<{
 
 export const readingState$ = observable<ReadingState>({
   currentlyReading: new Map<string, ReadingIssue>(),
-  doneReading: new Map<string, Issue>(),
+  doneReading: new Map<string, DoneIssue>(),
 });
 
 export const selectedIssue$ = observable<SelectedIssueState>({
