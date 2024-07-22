@@ -65,7 +65,10 @@ export default function Layout({ children }: LayoutProps) {
         className="border-b-1 border-b-solid border-b-zinc-200 dark:border-b-zinc-800"
       >
         <Flex align="center" justify="start" gap="3">
-          <Text className="ml-2.5 text-zinc-600 text-[12.5px]" weight="medium">
+          <Text
+            className="ml-2.5 text-zinc-600 text-[12.5px] font-[Title] tracking-wide"
+            weight="medium"
+          >
             Vision
           </Text>
           <Flex>
