@@ -68,8 +68,6 @@ function Component() {
   }, 3_000);
 
   useKeyPress((e) => {
-    console.log(e.key, e.keyCode);
-
     if (e.keyCode === 93 && itemIndexValue < contentLength - 1) {
       itemIndex.set(itemIndexValue + 1);
     } else if (e.keyCode === 91 && itemIndexValue > 0) {
