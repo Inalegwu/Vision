@@ -40,7 +40,7 @@ port.on("message", async (v) => {
         }
 
         if (message.data.parsePath.includes("cbz")) {
-          const result = handleZip(message.data.parsePath);
+          const result = await handleZip(message.data.parsePath);
 
           port.postMessage(result);
         }
