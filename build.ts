@@ -26,7 +26,14 @@ build({
         {
           target: "AppImage",
         },
+        {
+          target: "deb",
+        },
+        {
+          target: "flatpak",
+        },
       ],
+      category: "entertainment",
     },
     msi: {
       oneClick: true,
