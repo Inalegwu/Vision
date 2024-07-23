@@ -15,7 +15,7 @@ enableReactTracking({
   auto: true,
 });
 
-const router = createRouter({ routeTree });
+const router = createRouter({ routeTree, notFoundMode: "fuzzy" });
 
 declare module "@tanstack/react-router" {
   interface Register {
