@@ -4,6 +4,7 @@ import parseWorker from "@core/workers/parser?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import { dialog } from "electron";
 import z from "zod";
+import type { parsePathSchema } from "../core/validations";
 
 const issueRouter = router({
   addIssue: publicProcedure.mutation(async ({ ctx }) => {
@@ -26,7 +27,7 @@ const issueRouter = router({
       .postMessage({
         parsePath: filePaths[0],
         action: "LINK",
-      });
+      } satisfies z.infer<typeof parsePathSchema>);
 
     return {
       completed: true,

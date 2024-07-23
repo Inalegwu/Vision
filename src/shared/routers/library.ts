@@ -1,13 +1,11 @@
 import watchFS from "@core/watcher";
 import { publicProcedure, router } from "@src/trpc";
-import { globalState$ } from "@src/web/state";
 import { mkdirSync } from "node:fs";
 
 const libraryRouter = router({
   createLibraryFolder: publicProcedure.mutation(async ({ ctx }) => {
     const path = `${ctx.app.getPath("documents")}/Vision`;
     mkdirSync(path);
-    globalState$.sourceDir.set(path);
   }),
   startLibraryWatcher: publicProcedure.mutation(async ({ ctx }) =>
     watchFS(`${ctx.app.getPath("documents")}/Vision`),

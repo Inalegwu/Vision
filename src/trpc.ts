@@ -18,7 +18,6 @@ export const publicProcedure = t.procedure.use(async (opts) => {
     path: opts.path,
     type: opts.type,
     durationMS,
-    performance: performance.now(),
   };
 
   result.ok ? console.log(meta) : console.error(meta);
@@ -26,4 +25,4 @@ export const publicProcedure = t.procedure.use(async (opts) => {
   return result;
 });
 // this is for the future, when account creation and syncing come into play
-// export const protectedProcedure=t.procedure.use(async(middlewareFns)=>{})
+// export const protectedProcedure=t.procedure.use(async(opts)=>{})

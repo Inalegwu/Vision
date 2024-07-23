@@ -1,13 +1,8 @@
 import type { collections, issues, pages } from "./schema";
 
-type User = {
-  id: string;
-};
-
 export type GlobalState = {
   colorMode: "dark" | "light";
   firstLaunch: boolean;
-  user: User | null;
 };
 
 export type Issue = Omit<

@@ -1,5 +1,6 @@
 import chokidar from "chokidar";
-import { parseWorkerResponse } from "./validations";
+import type z from "zod";
+import { type parsePathSchema, parseWorkerResponse } from "./validations";
 import Parser from "./workers/parser?nodeWorker";
 
 const parseWorker = Parser({
@@ -16,8 +17,6 @@ parseWorker.on("message", (e) => {
       });
       return;
     }
-
-    console.log(response.data);
   } catch (e) {
     console.log({ e });
   }
@@ -33,18 +32,17 @@ export default function watchFS(path: string | null) {
     });
 
     watcher.on("add", (p) => {
-      console.log({ p });
       parseWorker.postMessage({
         parsePath: p,
         action: "LINK",
-      });
+      } satisfies z.infer<typeof parsePathSchema>);
     });
 
     watcher.on("unlink", (p) => {
       parseWorker.postMessage({
         parsePath: p,
         action: "UNLINK",
-      });
+      } satisfies z.infer<typeof parsePathSchema>);
     });
   } catch (e) {
     console.log({ e });

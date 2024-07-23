@@ -46,6 +46,12 @@ export default function Layout({ children }: LayoutProps) {
       document.body.classList.remove("dark");
       globalState$.colorMode.set("light");
     }
+
+    // if(globalState$.firstLaunch.get()){
+    //   navigation.navigate({
+    //     to:"/first-launch"
+    //   })
+    // }
   });
 
   useEffect(() => {
@@ -174,15 +180,7 @@ function AddButton() {
       onClick={() => addIssueToLibrary()}
       className="cursor-pointer dark:text-zinc-400 hover:bg-zinc-400/8 px-3 py-2"
     >
-      {isLoading ? (
-        <>
-          <Spinner />
-        </>
-      ) : (
-        <>
-          <Plus size={10} />
-        </>
-      )}
+      {isLoading ? <Spinner /> : <Plus size={10} />}
     </button>
   );
 }

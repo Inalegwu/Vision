@@ -44,7 +44,7 @@ export const pages = sqliteTable(
     pageContent: text("page_content").notNull(),
     issueId: text("issue_id")
       .notNull()
-      .references(() => issues.id,{onDelete:"cascade"}),
+      .references(() => issues.id, { onDelete: "cascade" }),
     dateCreated: integer("date_created", {
       mode: "timestamp",
     }).default(new Date()),
@@ -53,7 +53,8 @@ export const pages = sqliteTable(
     }).default(new Date()),
   },
   (table) => ({
-    pageIdIndex: index("page_id_index").on(table.issueId),
+    pageIdIndex: index("page_id_index").on(table.id),
+    issueIdIndex: index("issue_id_index").on(table.issueId),
   }),
 );
 

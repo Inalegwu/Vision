@@ -30,8 +30,6 @@ port.on("message", async (v) => {
       return;
     }
 
-    console.log({ path: message.data.parsePath });
-
     switch (message.data.action) {
       case "LINK": {
         if (message.data.parsePath.includes("cbr")) {
@@ -132,10 +130,6 @@ async function handleRar(
       });
     }
 
-    console.log({
-      duration: Date.now() - start,
-    });
-
     return {
       completed: true,
       message: null,
@@ -227,11 +221,6 @@ async function handleZip(
         pageContent: convertToImageUrl(file.data),
       });
     }
-
-    console.log({
-      duration: Date.now() - start,
-      message: "Duration calculation complete",
-    });
 
     return {
       completed: true,
