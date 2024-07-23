@@ -13,7 +13,7 @@ export default defineConfig({
         entry: "src/main.ts",
       },
       rollupOptions: {
-        external: ["better-sqlite3", "node-unrar-js"],
+        external: ["better-sqlite3"],
       },
     },
     resolve: {

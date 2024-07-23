@@ -12,6 +12,7 @@ build({
     },
     mac: {
       target: ["dmg"],
+      hardenedRuntime: true,
     },
     win: {
       target: [
