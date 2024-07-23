@@ -9,7 +9,6 @@ import type {
   GlobalState,
   ReadingIssue,
   ReadingState,
-  SelectedIssueState,
 } from "@shared/types";
 
 configureObservablePersistence({
@@ -34,10 +33,6 @@ export const settingsState$ = observable<{
 export const readingState$ = observable<ReadingState>({
   currentlyReading: new Map<string, ReadingIssue>(),
   doneReading: new Map<string, DoneIssue>(),
-});
-
-export const selectedIssue$ = observable<SelectedIssueState>({
-  pages: null,
 });
 
 persistObservable(globalState$, {

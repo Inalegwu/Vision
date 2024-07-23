@@ -39,10 +39,6 @@ export type DoneIssue = {
 };
 
 export type ReadingState = {
-  currentlyReading: Map<string, ReadingIssue> | null;
-  doneReading: Map<string, DoneIssue> | null;
-};
-
-export type SelectedIssueState = {
-  pages: Page[] | null;
+  currentlyReading: Map<string, ReadingIssue>;
+  doneReading: Map<string, DoneIssue>;
 };
