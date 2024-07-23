@@ -4,7 +4,11 @@ import { Theme } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
 import t, { persister, queryClient, trpcClient } from "@shared/config";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import { RouterProvider, createRouter } from "@tanstack/react-router";
+import {
+  RouterProvider,
+  createHashHistory,
+  createRouter,
+} from "@tanstack/react-router";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import "virtual:uno.css";
@@ -15,7 +19,13 @@ enableReactTracking({
   auto: true,
 });
 
-const router = createRouter({ routeTree, notFoundMode: "fuzzy" });
+const hashHistory = createHashHistory();
+
+const router = createRouter({
+  routeTree,
+  notFoundMode: "fuzzy",
+  history: hashHistory,
+});
 
 declare module "@tanstack/react-router" {
   interface Register {
