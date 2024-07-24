@@ -27,12 +27,6 @@ build({
         {
           target: "AppImage",
         },
-        {
-          target: "deb",
-        },
-        {
-          target: "flatpak",
-        },
       ],
       category: "entertainment",
     },
