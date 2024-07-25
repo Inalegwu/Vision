@@ -113,32 +113,6 @@ function Component() {
           </div>
         ))}
       </motion.div>
-      {/* <Flex
-        align="center"
-        justify="start"
-        gap="2"
-        className="absolute z-20 w-5/6 overflow-x-scroll bottom-10 bg-transparent backdrop-blur-lg border-1 border-solid border-zinc-200 dark:border-zinc-800 rounded-lg p-2"
-      >
-        {isLoading &&
-          Array(10)
-            .fill(0)
-            .map((_, index) => (
-              <Skeleton
-                key={index}
-                className="w-[100px] h-[95px] rounded-md border-1 border-solid border-zinc-200 dark:border-zinc-800 bg-zinc-400/10"
-              />
-            ))}
-        {data?.pages.map((v) => {
-          return (
-            <img
-              className="w-[100px] h-[95px] rounded-md border-1 border-solid border-zinc-200 dark:border-zinc-800 cursor-pointer"
-              key={v.id}
-              alt={`page_${v.id}`}
-              src={v.pageContent}
-            />
-          );
-        })}
-      </Flex> */}
     </Flex>
   );
 }
