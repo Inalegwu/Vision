@@ -3,6 +3,7 @@ import { Flex } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, useMotionValue } from "framer-motion";
+import { useMemo } from "react";
 import { useInterval, useKeyPress, useTimeout } from "../hooks";
 import { readingState$ } from "../state";
 
@@ -37,6 +38,12 @@ function Component() {
   );
   const itemIndexValue = itemIndex.get();
   const dragX = useMotionValue(0);
+  const width = useMemo(
+    () => (itemIndexValue / contentLength - 1) * 100,
+    [contentLength, itemIndexValue],
+  );
+
+  console.log({ width });
 
   useInterval(() => {
     if (itemIndexValue < contentLength - 1) {
@@ -86,7 +93,8 @@ function Component() {
   };
 
   return (
-    <Flex className="relative min-h-screen overflow-hidden">
+    <Flex className="min-h-screen overflow-hidden">
+      {/* page viewer */}
       <motion.div
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
@@ -113,6 +121,18 @@ function Component() {
           </div>
         ))}
       </motion.div>
+      <Flex
+        className="absolute z-20 bottom-10 left-0 w-full"
+        align="center"
+        justify="center"
+      >
+        <div className="w-[98%] bg-zinc-400/20 backdrop-blur-3xl rounded-full">
+          <div
+            style={{ width: `${width}%` }}
+            className="rounded-full p-1 bg-white/20"
+          />
+        </div>
+      </Flex>
     </Flex>
   );
 }

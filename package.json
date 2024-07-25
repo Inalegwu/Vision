@@ -49,6 +49,7 @@
     "react-dom": "^18.2.0",
     "react-error-boundary": "^4.0.12",
     "sort-by": "^1.2.0",
+    "tinybase": "^5.1.1",
     "uuid": "^10.0.0",
     "zod": "^3.22.4"
   },
