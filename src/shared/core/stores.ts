@@ -1,4 +1,4 @@
-import { createSessionPersister } from "tinybase/persisters/persister-browser";
+import { createSessionPersister } from "tinybase/persisters/persister-browser/with-schemas";
 import { createWsSynchronizer } from "tinybase/synchronizers/synchronizer-ws-client";
 import { createMergeableStore } from "tinybase/with-schemas";
 import { WebSocket } from "ws";
