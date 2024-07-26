@@ -85,10 +85,13 @@ importers:
         version: 1.2.0
       tinybase:
         specifier: ^5.1.1
-        version: 5.1.1(prettier@3.3.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(ws@8.17.1)
+        version: 5.1.1(prettier@3.3.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(ws@8.18.0)
       uuid:
         specifier: ^10.0.0
         version: 10.0.0
+      ws:
+        specifier: ^8.18.0
+        version: 8.18.0
       zod:
         specifier: ^3.22.4
         version: 3.22.4
@@ -120,6 +123,9 @@ importers:
       '@types/uuid':
         specifier: ^10.0.0
         version: 10.0.0
+      '@types/ws':
+        specifier: ^8.5.11
+        version: 8.5.11
       '@vitejs/plugin-react':
         specifier: ^4.2.1
         version: 4.2.1(vite@5.0.12(@types/node@20.10.3)(terser@5.25.0))
@@ -1877,6 +1883,9 @@ packages:
 
   '@types/verror@1.10.9':
     resolution: {integrity: sha512-MLx9Z+9lGzwEuW16ubGeNkpBDE84RpB/NyGgg6z2BTpWzKkGU451cAY3UkUzZEp72RHF585oJ3V8JVNqIplcAQ==}
+
+  '@types/ws@8.5.11':
+    resolution: {integrity: sha512-4+q7P5h3SpJxaBft0Dzpbr6lmMaqh0Jr2tbhJZ/luAwvD7ohSCniYkwz/pLxuT2h0EOa6QADgJj1Ko+TzRfZ+w==}
 
   '@types/yauzl@2.10.3':
     resolution: {integrity: sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q==}
@@ -4054,6 +4063,18 @@ packages:
       utf-8-validate:
         optional: true
 
+  ws@8.18.0:
+    resolution: {integrity: sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   xdg-basedir@4.0.0:
     resolution: {integrity: sha512-PSNhEJDejZYV7h50BohL09Er9VaIefr2LMAf3OEmpCkjOi34eYyQYAXUTjEQtZJTKcF0E2UKTh+osDLsgNim9Q==}
     engines: {node: '>=8'}
@@ -5930,6 +5951,10 @@ snapshots:
 
   '@types/verror@1.10.9':
     optional: true
+
+  '@types/ws@8.5.11':
+    dependencies:
+      '@types/node': 20.10.3
 
   '@types/yauzl@2.10.3':
     dependencies:
@@ -7990,12 +8015,12 @@ snapshots:
 
   tiny-warning@1.0.3: {}
 
-  tinybase@5.1.1(prettier@3.3.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(ws@8.17.1):
+  tinybase@5.1.1(prettier@3.3.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(ws@8.18.0):
     optionalDependencies:
       prettier: 3.3.3
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
-      ws: 8.17.1
+      ws: 8.18.0
 
   tmp-promise@3.0.3:
     dependencies:
@@ -8242,6 +8267,8 @@ snapshots:
       typedarray-to-buffer: 3.1.5
 
   ws@8.17.1: {}
+
+  ws@8.18.0: {}
 
   xdg-basedir@4.0.0: {}
 

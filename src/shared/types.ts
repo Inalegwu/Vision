@@ -22,23 +22,3 @@ export type ParserResponse = {
 export type ParserErrorResponse = ParserResponse & {
   message: string;
 };
-
-export type ReadingIssue = {
-  issueId: string;
-  thumbnailUrl: string;
-  issueTitle: string;
-  pageNumber: number;
-  totalPages: number;
-};
-
-export type DoneIssue = {
-  issueId: string;
-  thumbnailUrl: string;
-  issueTitle: string;
-  dateFinished: string;
-};
-
-export type ReadingState = {
-  currentlyReading: Map<string, ReadingIssue>;
-  doneReading: Map<string, DoneIssue>;
-};

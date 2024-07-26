@@ -1,11 +1,11 @@
 import { useObservable } from "@legendapp/state/react";
 import { Flex } from "@radix-ui/themes";
 import t from "@shared/config";
+import { readingStateStore } from "@shared/core/stores";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, useMotionValue } from "framer-motion";
 import { useMemo } from "react";
 import { useInterval, useKeyPress, useTimeout } from "../hooks";
-import { readingState$ } from "../state";
 
 const DRAG_BUFFER = 50;
 
@@ -27,15 +27,10 @@ function Component() {
     },
   );
 
-  const readingState = readingState$.currentlyReading.get();
-  const doneReading = readingState$.doneReading.get();
-
-  const exists = readingState.has(issueId);
+  console.log({ readingStateStore });
 
   const contentLength = data?.pages.length || 0;
-  const itemIndex = useObservable(
-    exists ? readingState.get(issueId)?.pageNumber : 0,
-  );
+  const itemIndex = useObservable(0);
   const itemIndexValue = itemIndex.get();
   const dragX = useMotionValue(0);
   const width = useMemo(
@@ -48,8 +43,8 @@ function Component() {
   useInterval(() => {
     if (itemIndexValue < contentLength - 1) {
       console.log("saving to currently reading");
-      readingState.set(data?.id!, {
-        issueId: issueId,
+      readingStateStore.setTable("currentlyReading", {
+        issueId,
         thumbnailUrl: data?.thumbnailUrl || "",
         issueTitle: data?.issueTitle || "",
         totalPages: contentLength - 1,
@@ -59,12 +54,11 @@ function Component() {
     }
 
     if (itemIndexValue === contentLength - 1) {
-      readingState.delete(issueId);
-      doneReading.set(data?.id!, {
-        issueId: issueId,
-        thumbnailUrl: data?.thumbnailUrl || "",
+      readingStateStore.setTable("doneReading", {
+        issueId,
         issueTitle: data?.issueTitle || "",
-        dateFinished: new Date().toISOString(),
+        dateCompleted: new Date().toISOString(),
+        thumbnailUrl: data?.thumbnailUrl || "",
       });
       return;
     }

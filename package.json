@@ -51,6 +51,7 @@
     "sort-by": "^1.2.0",
     "tinybase": "^5.1.1",
     "uuid": "^10.0.0",
+    "ws": "^8.18.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -63,6 +64,7 @@
     "@types/react": "^18.2.42",
     "@types/react-dom": "^18.2.17",
     "@types/uuid": "^10.0.0",
+    "@types/ws": "^8.5.11",
     "@vitejs/plugin-react": "^4.2.1",
     "drizzle-kit": "^0.23.0",
     "electron": "^28.0.0",
