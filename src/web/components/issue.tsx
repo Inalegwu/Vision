@@ -3,6 +3,7 @@ import { ContextMenu, Flex, Text } from "@radix-ui/themes";
 import t from "@shared/config";
 import type { Issue as issue } from "@src/shared/types";
 import { useRouter } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 import { Edit, Trash2 } from "lucide-react";
 
 type Props = {
@@ -19,30 +20,32 @@ export default function Issue({ issue }: Props) {
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger>
-        <Flex
-          className="w-[200px] h-[300px] cursor-pointer mb-14"
-          gap="1"
-          direction="column"
-          onClick={() =>
-            navigation.navigate({
-              to: "/$issueId",
-              params: {
-                issueId: issue.id,
-              },
-            })
-          }
-        >
-          <img
-            className="w-full h-full bg-zinc-200/5 rounded-md border-1 border-solid border-zinc-300 dark:border-zinc-800"
-            alt="issue_thumbnail"
-            src={issue.thumbnailUrl}
-          />
-          <Flex direction="column" align="start">
-            <Text size="1" className="text-gray-600 dark:text-zinc-400">
-              {issue.issueTitle}
-            </Text>
+        <motion.div animate={{ opacity: 1 }}>
+          <Flex
+            className="w-[200px] h-[300px] cursor-pointer mb-14"
+            gap="1"
+            direction="column"
+            onClick={() =>
+              navigation.navigate({
+                to: "/$issueId",
+                params: {
+                  issueId: issue.id,
+                },
+              })
+            }
+          >
+            <img
+              className="w-full h-full bg-zinc-200/5 rounded-md border-1 border-solid border-zinc-300 dark:border-zinc-800"
+              alt="issue_thumbnail"
+              src={issue.thumbnailUrl}
+            />
+            <Flex direction="column" align="start">
+              <Text size="1" className="text-gray-600 dark:text-zinc-400">
+                {issue.issueTitle}
+              </Text>
+            </Flex>
           </Flex>
-        </Flex>
+        </motion.div>
       </ContextMenu.Trigger>
       <ContextMenu.Content size="1" variant="soft">
         <ContextMenu.Item className="cursor-pointer">

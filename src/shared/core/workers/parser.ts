@@ -130,6 +130,10 @@ async function handleRar(
       });
     }
 
+    console.log({
+      duration: Date.now() - start,
+    });
+
     return {
       completed: true,
       message: null,
@@ -221,6 +225,10 @@ async function handleZip(
         pageContent: convertToImageUrl(file.data),
       });
     }
+
+    console.log({
+      duration: Date.now() - start,
+    });
 
     return {
       completed: true,

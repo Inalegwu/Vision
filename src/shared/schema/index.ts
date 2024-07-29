@@ -54,7 +54,7 @@ export const pages = sqliteTable(
   },
   (table) => ({
     pageIdIndex: index("page_id_index").on(table.id),
-    issueIdIndex: index("issue_id_index").on(table.issueId),
+    issueIdIndex: index("page_issue_id_index").on(table.issueId),
   }),
 );
 

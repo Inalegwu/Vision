@@ -1,6 +1,8 @@
 import watchFS from "@core/watcher";
+import prefetchWorker from "@core/workers/prefetch?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import { mkdirSync } from "node:fs";
+import z from "zod";
 
 const libraryRouter = router({
   createLibraryFolder: publicProcedure.mutation(async ({ ctx }) => {
@@ -15,6 +17,23 @@ const libraryRouter = router({
 
     return issues;
   }),
+  prefetchLibrary: publicProcedure
+    .input(
+      z.object({
+        queryKey: z.string(),
+      }),
+    )
+    .mutation(async ({ input }) =>
+      prefetchWorker({
+        name: "prefetch-worker",
+      })
+        .on("message", (m) => {
+          console.log({ m });
+     })
+        .postMessage({
+          queryKey: input.queryKey,
+        }),
+    ),
 });
 
 export default libraryRouter;

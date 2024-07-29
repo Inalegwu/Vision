@@ -1,6 +1,6 @@
 import { Issue, IssueSkeleton } from "@components";
 import { useObservable } from "@legendapp/state/react";
-import { Flex, Heading } from "@radix-ui/themes";
+import { Flex, Heading,Text } from "@radix-ui/themes";
 import t from "@shared/config";
 import type { Issue as IssueType } from "@shared/types";
 import { createFileRoute } from "@tanstack/react-router";
@@ -13,7 +13,6 @@ export const Route = createFileRoute("/library")({
 });
 
 function Component() {
-  const utils = t.useUtils();
   const { mutate: createSourceDir } =
     t.library.createLibraryFolder.useMutation();
 
@@ -38,6 +37,9 @@ function Component() {
     <Flex direction="column" className="w-full h-screen px-2 py-2">
       <Flex align="center" justify="between" className="w-full">
         <Heading size="8">Library</Heading>
+        <Flex align="end" justify="end" gap="2">
+          <Text size="2" className="text-zinc-400">{data?.length||0} Issue(s)</Text>
+          </Flex>
       </Flex>
       <Flex
         grow="1"

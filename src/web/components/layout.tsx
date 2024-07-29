@@ -38,6 +38,8 @@ export default function Layout({ children }: LayoutProps) {
   const { mutate: startFileWatcher } =
     t.library.startLibraryWatcher.useMutation();
 
+  const { mutate: prefetchLibrary } = t.library.prefetchLibrary.useMutation();
+
   useObserveEffect(() => {
     if (globalState$.colorMode.get() === "dark") {
       document.body.classList.add("dark");
@@ -46,17 +48,14 @@ export default function Layout({ children }: LayoutProps) {
       document.body.classList.remove("dark");
       globalState$.colorMode.set("light");
     }
-
-    // if(globalState$.firstLaunch.get()){
-    //   navigation.navigate({
-    //     to:"/first-launch"
-    //   })
-    // }
   });
 
   useEffect(() => {
     startFileWatcher();
-  }, [startFileWatcher]);
+    prefetchLibrary({
+      queryKey: "issues",
+    });
+  }, [startFileWatcher, prefetchLibrary]);
 
   return (
     <Flex

@@ -11,6 +11,7 @@ if (!port) throw new Error("Illegal State");
 
 port.on("message", async (e) => {
   try {
+    const start = Date.now();
     const message = deletionWorkerSchema.safeParse(e);
 
     if (!message.success) {
@@ -26,6 +27,10 @@ port.on("message", async (e) => {
       .returning();
 
     deleteFromStoreCompletionEvent$.fire();
+
+    console.log({
+      duration: Date.now() - start,
+    });
 
     port.postMessage({
       completed: true,
