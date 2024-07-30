@@ -1,5 +1,5 @@
 import { deleteFromStoreCompletionEvent$ } from "@core/events";
-import { DropdownMenu, Flex, Text } from "@radix-ui/themes";
+import { ContextMenu, DropdownMenu, Flex, Text } from "@radix-ui/themes";
 import t from "@shared/config";
 import type { Issue as issue } from "@src/shared/types";
 import { useRouter } from "@tanstack/react-router";
@@ -16,24 +16,39 @@ export default function Issue({ issue }: Props) {
 
   deleteFromStoreCompletionEvent$.on(() => utils.library.invalidate());
 
+  const go = () =>
+    navigation.navigate({
+      to: "/$issueId",
+      params: {
+        issueId: issue.id,
+      },
+    });
+
   return (
-    <Flex
-      className="w-[200px] h-[300px] mb-14 cursor-pointer"
-      gap="1"
-      direction="column"
-    >
-      <img
-        className="w-full h-full bg-zinc-200/5 rounded-md border-1 border-solid border-zinc-300 dark:border-zinc-800"
-        alt="issue_thumbnail"
-        src={issue.thumbnailUrl}
-      />
-      <Flex align="end" justify="between">
-        <Text size="1" className="text-gray-600 dark:text-zinc-400">
-          {issue.issueTitle}
-        </Text>
-        <MoreButton issueId={issue.id} />
-      </Flex>
-    </Flex>
+    <ContextMenu.Root>
+      <ContextMenu.Trigger>
+        <Flex
+          className="w-[200px] h-[300px] mb-14 cursor-pointer"
+          gap="1"
+          direction="column"
+          onClick={go}
+        >
+          <img
+            className="w-full h-full bg-zinc-200/5 rounded-md border-1 border-solid border-zinc-300 dark:border-zinc-800"
+            alt="issue_thumbnail"
+            src={issue.thumbnailUrl}
+          />
+          <Flex direction="column">
+            <Text size="1" className="text-gray-600 dark:text-zinc-400">
+              {issue.issueTitle}
+            </Text>
+          </Flex>
+        </Flex>
+      </ContextMenu.Trigger>
+      <ContextMenu.Content size="1" variant="soft">
+        ctx menu
+      </ContextMenu.Content>
+    </ContextMenu.Root>
   );
 }
 

@@ -1,14 +1,16 @@
 import { Flex, Heading, Text } from "@radix-ui/themes";
-import { readingStateStore } from "@shared/core/stores";
 import { createFileRoute } from "@tanstack/react-router";
+import { DoneReading } from "../components";
+import CurrentlyReading from "../components/currently-reading";
+import { readingState$ } from "../state";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
 function Index() {
-  const currentlyReading = readingStateStore.getTable("currentlyReading");
-  const doneReading = readingStateStore.getTable("doneReading");
+  const currentlyReading = Array.from(readingState$.currentlyReading.values());
+  const doneReading = Array.from(readingState$.doneReading.values());
 
   console.log({ currentlyReading, doneReading });
 
@@ -38,11 +40,19 @@ function Index() {
         className="w-full px-2 py-2 space-y-1"
       >
         <Heading size="7">Currently Reading</Heading>
-        <Flex grow="1" className="py-2 overflow-x-scroll pr-14" gap="3"></Flex>
+        <Flex grow="1" className="py-2 overflow-x-scroll pr-14" gap="3">
+          {currentlyReading.map((v) => (
+            <CurrentlyReading key={v.id} issue={v} />
+          ))}
+        </Flex>
       </Flex>
       <Flex direction="column" className="w-full h-2/6 px-2 py-2 space-y-2">
         <Heading size="6">Done Reading</Heading>
-        <Flex grow="1" className="py-2" gap="3"></Flex>
+        <Flex grow="1" className="py-2" gap="3">
+          {doneReading.map((v) => (
+            <DoneReading key={v.id} issue={v} />
+          ))}
+        </Flex>
       </Flex>
     </Flex>
   );

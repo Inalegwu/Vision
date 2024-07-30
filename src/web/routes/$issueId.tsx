@@ -1,11 +1,11 @@
 import { useObservable } from "@legendapp/state/react";
 import { Flex } from "@radix-ui/themes";
 import t from "@shared/config";
-import { readingStateStore } from "@shared/core/stores";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, useMotionValue } from "framer-motion";
 import { useMemo } from "react";
 import { useInterval, useKeyPress, useTimeout } from "../hooks";
+import { readingState$ } from "../state";
 
 const DRAG_BUFFER = 50;
 
@@ -18,6 +18,10 @@ function Component() {
 
   const isEnabled = useObservable(false);
 
+  const doneReading = readingState$.doneReading.get();
+  const currentlyReading = readingState$.currentlyReading.get();
+  const isSaved = readingState$.currentlyReading.has(issueId);
+
   const { data, isLoading } = t.issue.getPages.useQuery(
     {
       issueId,
@@ -27,38 +31,37 @@ function Component() {
     },
   );
 
-  console.log({ readingStateStore });
-
   const contentLength = data?.pages.length || 0;
-  const itemIndex = useObservable(0);
+  const itemIndex = useObservable(
+    isSaved ? currentlyReading.get(issueId)?.currentPage : 0,
+  );
   const itemIndexValue = itemIndex.get();
   const dragX = useMotionValue(0);
   const width = useMemo(
-    () => (itemIndexValue / contentLength - 1) * 100,
+    () => Math.floor((itemIndexValue / contentLength) * 100),
     [contentLength, itemIndexValue],
   );
-
-  console.log({ width });
 
   useInterval(() => {
     if (itemIndexValue < contentLength - 1) {
       console.log("saving to currently reading");
-      readingStateStore.setTable("currentlyReading", {
-        issueId,
+      currentlyReading.set(issueId, {
+        id: issueId,
+        title: data?.issueTitle || "",
         thumbnailUrl: data?.thumbnailUrl || "",
-        issueTitle: data?.issueTitle || "",
+        currentPage: itemIndexValue,
         totalPages: contentLength - 1,
-        pageNumber: itemIndexValue,
       });
       return;
     }
 
     if (itemIndexValue === contentLength - 1) {
-      readingStateStore.setTable("doneReading", {
-        issueId,
-        issueTitle: data?.issueTitle || "",
-        dateCompleted: new Date().toISOString(),
+      currentlyReading.delete(issueId);
+      doneReading.set(issueId, {
+        id: issueId,
+        title: data?.issueTitle || "",
         thumbnailUrl: data?.thumbnailUrl || "",
+        dateFinished: new Date().toISOString(),
       });
       return;
     }
@@ -115,14 +118,15 @@ function Component() {
           </div>
         ))}
       </motion.div>
+      {/* progress indicator */}
       <Flex
         className="absolute z-20 bottom-10 left-0 w-full"
         align="center"
         justify="center"
       >
         <div className="w-[98%] bg-zinc-400/20 backdrop-blur-3xl rounded-full">
-          <div
-            style={{ width: `${width}%` }}
+          <motion.div
+            animate={{ width: `${width}%` }}
             className="rounded-full p-1 bg-white/20"
           />
         </div>

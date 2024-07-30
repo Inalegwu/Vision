@@ -1,18 +1,18 @@
 import { ContextMenu, Flex, Text } from "@radix-ui/themes";
-import type { ReadingIssue } from "@src/shared/types";
+import type { CurrentlyReading as CurrentlyReadingType } from "@src/shared/types";
 import { useRouter } from "@tanstack/react-router";
 import { Check } from "lucide-react";
 import { memo, useMemo } from "react";
 
 type Props = {
-  issue: ReadingIssue;
+  issue: CurrentlyReadingType;
 };
 
 const CurrentlyReading = ({ issue }: Props) => {
   const navigation = useRouter();
 
   const width = useMemo(
-    () => (issue.pageNumber / issue.totalPages) * 100,
+    () => (issue.currentPage / issue.totalPages) * 100,
     [issue],
   );
 
@@ -24,7 +24,7 @@ const CurrentlyReading = ({ issue }: Props) => {
             navigation.navigate({
               to: "/$issueId",
               params: {
-                issueId: issue.issueId,
+                issueId: issue.id,
               },
             })
           }
@@ -32,7 +32,7 @@ const CurrentlyReading = ({ issue }: Props) => {
         >
           <img
             src={issue.thumbnailUrl}
-            alt={issue.issueTitle}
+            alt={issue.title}
             className="absolute z-0 w-full h-full object-cover"
           />
           <Flex
@@ -43,7 +43,7 @@ const CurrentlyReading = ({ issue }: Props) => {
             gap="2"
           >
             <Text size="2" weight="bold" className="text-white">
-              {issue.issueTitle}
+              {issue.title}
             </Text>
             <Flex className="bg-zinc-400/50 dark:bg-zinc-400/20 w-full rounded-full">
               <div

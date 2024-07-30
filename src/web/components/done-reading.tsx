@@ -1,9 +1,9 @@
 import { ContextMenu, Flex, Text } from "@radix-ui/themes";
-import type { DoneIssue } from "@src/shared/types";
+import type { DoneReading as DoneReadingType } from "@src/shared/types";
 import { Minus } from "lucide-react";
 
 type Props = {
-  issue: DoneIssue;
+  issue: DoneReadingType;
 };
 
 export default function DoneReading({ issue }: Props) {
@@ -13,7 +13,7 @@ export default function DoneReading({ issue }: Props) {
         <Flex className="w-2/6 cursor-pointer max-h-4/6 rounded-md border-1 border-solid border-zinc-200 dark:border-zinc-800 rounded-md overflow-hidden">
           <img
             src={issue.thumbnailUrl}
-            alt={issue.issueTitle}
+            alt={issue.title}
             className="w-2/6 h-full border-r-1 border-r-solid dark:border-r-zinc-800 border-r-zinc-200"
           />
           <Flex
@@ -30,7 +30,7 @@ export default function DoneReading({ issue }: Props) {
               className="tracking-wider"
               color="gray"
             >
-              {issue.issueTitle}
+              {issue.title}
             </Text>
             {/* TODO install moment and give a proper value */}
             {/* <Text className="text-[11.5px]" weight="regular" color="gray">
