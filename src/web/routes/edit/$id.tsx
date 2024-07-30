@@ -8,5 +8,5 @@ export const Route = createFileRoute("/edit/$id")({
 function Component() {
   const { id } = Route.useParams();
 
-  return <Flex className="w-full h-screen">{id}</Flex>;
+  return <Flex className="w-full h-screen">Edit Issue {id}</Flex>;
 }

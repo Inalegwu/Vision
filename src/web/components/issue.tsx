@@ -3,7 +3,7 @@ import { DropdownMenu, Flex, Text } from "@radix-ui/themes";
 import t from "@shared/config";
 import type { Issue as issue } from "@src/shared/types";
 import { useRouter } from "@tanstack/react-router";
-import { Edit2, Link2Off, MoreVertical } from "lucide-react";
+import { Edit2, MoreVertical, Trash2 } from "lucide-react";
 import { memo } from "react";
 
 type Props = {
@@ -21,14 +21,6 @@ export default function Issue({ issue }: Props) {
       className="w-[200px] h-[300px] mb-14 cursor-pointer"
       gap="1"
       direction="column"
-      onClick={() =>
-        navigation.navigate({
-          to: "/$issueId",
-          params: {
-            issueId: issue.id,
-          },
-        })
-      }
     >
       <img
         className="w-full h-full bg-zinc-200/5 rounded-md border-1 border-solid border-zinc-300 dark:border-zinc-800"
@@ -52,7 +44,7 @@ const MoreButton = memo(({ issueId }: { issueId: string }) => {
     onSuccess: () => utils.library.invalidate(),
   });
 
-  const unlink = () =>
+  const remove = () =>
     deleteIssue({
       issueId,
     });
@@ -80,13 +72,13 @@ const MoreButton = memo(({ issueId }: { issueId: string }) => {
           </Flex>
         </DropdownMenu.Item>
         <DropdownMenu.Item
-          onClick={unlink}
+          onClick={remove}
           color="ruby"
           className="cursor-pointer"
         >
           <Flex align="center" justify="start" gap="1">
-            <Link2Off size={10} />
-            <Text>Unlink Issue</Text>
+            <Trash2 size={10} />
+            <Text>Delete Issue</Text>
           </Flex>
         </DropdownMenu.Item>
       </DropdownMenu.Content>

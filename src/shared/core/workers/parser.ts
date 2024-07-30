@@ -1,5 +1,4 @@
 import Zip from "adm-zip";
-import { eq } from "drizzle-orm";
 import { createExtractorFromData } from "node-unrar-js";
 import { readFileSync } from "node:fs";
 import { parentPort } from "node:worker_threads";
@@ -12,6 +11,7 @@ import {
   parseFileNameFromPath,
   sortPages,
 } from "../../utils";
+import watcherIndex from "../indexer";
 import { parsePathSchema, type parseWorkerResponse } from "../validations";
 
 const port = parentPort;
@@ -47,10 +47,7 @@ port.on("message", async (v) => {
       }
 
       case "UNLINK": {
-        const result = await unlinkIssue(message.data.parsePath);
-
-        port.postMessage(result);
-
+        console.log({ message: "todo" });
         return;
       }
 
@@ -63,6 +60,7 @@ port.on("message", async (v) => {
       }
     }
   } catch (e) {
+    watcherIndex.removeFromIndex(v.parsePath);
     console.log({ e });
   }
 });
@@ -140,39 +138,12 @@ async function handleRar(
     };
   } catch (e) {
     console.log({ e });
+    watcherIndex.removeFromIndex(filePath);
     return {
       message: "Error Occured while handling DB",
       completed: false,
     };
   }
-}
-
-async function unlinkIssue(
-  filePath: string,
-): Promise<z.infer<typeof parseWorkerResponse>> {
-  const fileName = filePath
-    .replace(/^.*[\\\/]/, "")
-    .replace(/\.[^/.]+$/, "")
-    .replace(/(\d+)$/, "")
-    .replace("-", "");
-
-  const exists = await db.query.issues.findFirst({
-    where: (issues, { eq }) => eq(issues.issueTitle, fileName),
-  });
-
-  if (!exists) {
-    return {
-      completed: true,
-      message: "File doesn't exist",
-    };
-  }
-
-  const finalized = db.delete(issues).where(eq(issues.id, exists.id)).returning;
-
-  return {
-    completed: true,
-    message: null,
-  };
 }
 
 async function handleZip(
@@ -236,6 +207,7 @@ async function handleZip(
     };
   } catch (e) {
     console.log({ e });
+    watcherIndex.removeFromIndex(filePath);
     return {
       completed: false,
       message: "Error handling .cbz",
