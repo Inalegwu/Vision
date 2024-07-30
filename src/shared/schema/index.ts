@@ -41,7 +41,7 @@ export const pages = sqliteTable(
   "pages",
   {
     id: text("id").notNull().primaryKey(),
-    pageContent: text("page_content").notNull(),
+    pageContent: text("page_content").notNull().unique(),
     issueId: text("issue_id")
       .notNull()
       .references(() => issues.id, { onDelete: "cascade" }),

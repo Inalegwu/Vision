@@ -2,7 +2,9 @@ import watchFS from "@core/watcher";
 import prefetchWorker from "@core/workers/prefetch?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import { mkdirSync } from "node:fs";
+import { v4 } from "uuid";
 import z from "zod";
+import { collections } from "../schema";
 
 const libraryRouter = router({
   createLibraryFolder: publicProcedure.mutation(async ({ ctx }) => {
@@ -14,8 +16,21 @@ const libraryRouter = router({
   ),
   getLibrary: publicProcedure.query(async ({ ctx }) => {
     const issues = await ctx.db.query.issues.findMany({});
+    const collections = await ctx.db.query.collections.findMany({
+      with: {
+        issues: {
+          columns: {
+            thumbnailUrl: true,
+          },
+          limit: 2,
+        },
+      },
+    });
 
-    return issues;
+    return {
+      issues,
+      collections,
+    };
   }),
   prefetchLibrary: publicProcedure
     .input(
@@ -29,11 +44,24 @@ const libraryRouter = router({
       })
         .on("message", (m) => {
           console.log({ m });
-     })
+        })
         .postMessage({
           queryKey: input.queryKey,
         }),
     ),
+  createCollection: publicProcedure
+    .input(
+      z.object({
+        collectionName: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log({ input });
+      await ctx.db.insert(collections).values({
+        id: v4(),
+        collectionName: input.collectionName,
+      });
+    }),
 });
 
 export default libraryRouter;

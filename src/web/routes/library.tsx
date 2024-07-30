@@ -1,9 +1,20 @@
-import { Issue, IssueSkeleton } from "@components";
+import { Collection, Issue, IssueSkeleton, Spinner } from "@components";
 import { useObservable } from "@legendapp/state/react";
-import { Flex, Heading,Text } from "@radix-ui/themes";
+import {
+  Button,
+  Flex,
+  Heading,
+  Popover,
+  Text,
+  TextField,
+} from "@radix-ui/themes";
 import t from "@shared/config";
-import type { Issue as IssueType } from "@shared/types";
+import type {
+  Collection as CollectionType,
+  Issue as IssueType,
+} from "@shared/types";
 import { createFileRoute } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
 import { memo, useEffect } from "react";
 import { useTimeout } from "../hooks";
 import { globalState$ } from "../state";
@@ -37,9 +48,19 @@ function Component() {
     <Flex direction="column" className="w-full h-screen px-2 py-2">
       <Flex align="center" justify="between" className="w-full">
         <Heading size="8">Library</Heading>
-        <Flex align="end" justify="end" gap="2">
-          <Text size="2" className="text-zinc-400">{data?.length||0} Issue(s)</Text>
-          </Flex>
+        <Flex align="center" justify="end" gap="3">
+          <CreateCollection />
+          {data && (
+            <>
+              <Text size="2" className="text-zinc-400">
+                {data.issues.length || 0} Issue(s)
+              </Text>
+              <Text size="2" className="text-zinc-400">
+                {data.collections.length || 0} Collection(s)
+              </Text>
+            </>
+          )}
+        </Flex>
       </Flex>
       <Flex
         grow="1"
@@ -51,7 +72,9 @@ function Component() {
           Array(15)
             .fill(0)
             .map((_, index) => <IssueSkeleton key={index} />)}
-        <RenderIssues issues={data || []} />
+        {/* @ts-ignore: all good */}
+        <RenderCollections collections={data?.collections || []} />
+        <RenderIssues issues={data?.issues || []} />
       </Flex>
     </Flex>
   );
@@ -66,3 +89,66 @@ const RenderIssues = memo(({ issues }: { issues: IssueType[] }) => {
     </>
   );
 });
+
+const RenderCollections = memo(
+  ({ collections }: { collections: CollectionType[] }) => {
+    return (
+      <>
+        {collections?.map((collection) => (
+          <Collection key={collection.id} collection={collection} />
+        ))}
+      </>
+    );
+  },
+);
+
+function CreateCollection() {
+  const utils = t.useUtils();
+  const { mutate: createCollection, isLoading } =
+    t.library.createCollection.useMutation({
+      onSuccess: () => utils.library.getLibrary.invalidate(),
+    });
+
+  const collectionName = useObservable("");
+
+  const create = () =>
+    createCollection({
+      collectionName: collectionName.get(),
+    });
+
+  return (
+    <Popover.Root>
+      <Popover.Trigger>
+        <button className="cursor-pointer dark:text-zinc-400 hover:bg-zinc-400/8 px-2 py-1 rounded-full">
+          {isLoading ? <Spinner /> : <Plus size={10} />}
+        </button>
+      </Popover.Trigger>
+      <Popover.Content>
+        <Flex direction="column" gap="2" align="start">
+          <Flex align="center" justify="start">
+            <Text size="1">Give your collection a name</Text>
+          </Flex>
+          <TextField.Root>
+            <TextField.Input
+              onChange={(e) => collectionName.set(e.target.value)}
+              size="2"
+            />
+          </TextField.Root>
+          <Popover.Close>
+            <Button
+              onClick={create}
+              className="cursor-pointer"
+              variant="soft"
+              size="1"
+            >
+              <Flex align="center" justify="center" gap="2">
+                <Plus size={10} />
+                <Text>Create Collection</Text>
+              </Flex>
+            </Button>
+          </Popover.Close>
+        </Flex>
+      </Popover.Content>
+    </Popover.Root>
+  );
+}
