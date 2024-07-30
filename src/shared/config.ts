@@ -21,7 +21,7 @@ export const queryClient = new QueryClient({
 });
 
 export const persister = createSyncStoragePersister({
-  storage: window.sessionStorage,
+  storage: window.localStorage,
   throttleTime: 100_000,
 });
 
