@@ -12,8 +12,6 @@ function Index() {
   const currentlyReading = Array.from(readingState$.currentlyReading.values());
   const doneReading = Array.from(readingState$.doneReading.values());
 
-  console.log({ currentlyReading, doneReading });
-
   if (currentlyReading.length === 0 && doneReading.length === 0) {
     return (
       <Flex
