@@ -83,6 +83,21 @@ const issueRouter = router({
 
       return merged;
     }),
+  getIssue: publicProcedure
+    .input(
+      z.object({
+        issueId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const issue = await ctx.db.query.issues.findFirst({
+        where: (issues, { eq }) => eq(issues.id, input.issueId),
+      });
+
+      return {
+        issue,
+      };
+    }),
 });
 
 export default issueRouter;

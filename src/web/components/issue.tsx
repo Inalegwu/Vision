@@ -60,7 +60,7 @@ const MoreButton = memo(({ issueId }: { issueId: string }) => {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
-        <button className="cursor-pointer">
+        <button className="cursor-pointer dark:text-zinc-400">
           <MoreVertical size={10} />
         </button>
       </DropdownMenu.Trigger>
