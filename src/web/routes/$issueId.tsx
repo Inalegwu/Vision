@@ -2,8 +2,8 @@ import { useObservable } from "@legendapp/state/react";
 import { Flex } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
-import { motion, useMotionValue } from "framer-motion";
-import { useMemo } from "react";
+import { AnimatePresence, motion, useMotionValue } from "framer-motion";
+import { useEffect, useMemo } from "react";
 import { useInterval, useKeyPress, useTimeout } from "../hooks";
 import { readingState$ } from "../state";
 
@@ -17,6 +17,7 @@ function Component() {
   const { issueId } = Route.useParams();
 
   const isEnabled = useObservable(false);
+  const isVisible = useObservable(false);
 
   const doneReading = readingState$.doneReading.get();
   const currentlyReading = readingState$.currentlyReading.get();
@@ -42,6 +43,8 @@ function Component() {
     [contentLength, itemIndexValue],
   );
 
+  // save reading state to store every few seconds
+  // while reading
   useInterval(() => {
     if (itemIndexValue < contentLength - 1) {
       console.log("saving to currently reading");
@@ -78,6 +81,17 @@ function Component() {
       itemIndex.set(itemIndexValue - 1);
     }
   });
+
+  useTimeout(() => {
+    isVisible.set(false);
+  }, 3_000);
+
+  useEffect(() => {
+    window.addEventListener("mousemove", () => isVisible.set(true));
+
+    return () =>
+      window.removeEventListener("mousemove", () => isVisible.set(true));
+  }, [isVisible]);
 
   const onDragEnd = () => {
     const x = dragX.get();
@@ -119,18 +133,28 @@ function Component() {
         ))}
       </motion.div>
       {/* progress indicator */}
-      <Flex
-        className="absolute z-20 bottom-10 left-0 w-full"
-        align="center"
-        justify="center"
-      >
-        <div className="w-[98%] bg-zinc-400/20 backdrop-blur-3xl rounded-full">
+      <AnimatePresence>
+        {isVisible.get() && (
           <motion.div
-            animate={{ width: `${width}%` }}
-            className="rounded-full p-1 bg-white/20"
-          />
-        </div>
-      </Flex>
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <Flex
+              className="absolute z-20 bottom-10 left-0 w-full"
+              align="center"
+              justify="center"
+            >
+              <div className="w-[98%] bg-zinc-400/20 backdrop-blur-3xl rounded-full">
+                <motion.div
+                  animate={{ width: `${width}%` }}
+                  className="rounded-full p-1 bg-zinc-800/40 dark:bg-white/20"
+                />
+              </div>
+            </Flex>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Flex>
   );
 }

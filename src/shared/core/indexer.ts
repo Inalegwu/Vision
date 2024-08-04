@@ -21,6 +21,7 @@ class Indexer {
   }
 
   removeFromIndex(value: string) {
+    console.log({ message: `removing ${value}` });
     this.$store.delete(value);
   }
 
