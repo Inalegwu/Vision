@@ -9,65 +9,56 @@ import db from "../../storage";
 import {
   convertToImageUrl,
   parseFileNameFromPath,
+  parseWorkerMessageWithSchema,
   sortPages,
 } from "../../utils";
 import watcherIndex from "../indexer";
 import { parsePathSchema, type parseWorkerResponse } from "../validations";
+import { okAsync, err, ok } from "neverthrow";
 
 const port = parentPort;
 
 if (!port) throw new Error("Illegal State");
 
-port.on("message", async (v) => {
-  try {
-    const message = parsePathSchema.safeParse(v);
+port.on("message", (message) => parseWorkerMessageWithSchema(parsePathSchema, message).match(async ({ data }) => {
+  console.log({ message: "match success" });
+  switch (data.action) {
+    case "LINK": {
+      if (data.parsePath.includes("cbr")) {
+        const result = await handleRar(data.parsePath)
 
-    if (!message.success) {
-      port.postMessage({
-        completed: false,
-        message: "Invalid message data sent",
-      });
-      return;
+        result.match((res) => {
+          console.log({ res });
+        }, (err) => {
+          console.error({ err })
+        })
+        return;
+      }
+      
+      if (data.parsePath.includes("cbz")) {
+        const result = await handleZip(data.parsePath);
+  
+        result.match((res) => {
+          console.log({ res })
+        }, (err) => {
+          console.error({ err })
+        })
+        return
+      }
+
     }
+    case "UNLINK": {
 
-    switch (message.data.action) {
-      case "LINK": {
-        if (message.data.parsePath.includes("cbr")) {
-          const result = await handleRar(message.data.parsePath);
-          port.postMessage(result);
-        }
-
-        if (message.data.parsePath.includes("cbz")) {
-          const result = await handleZip(message.data.parsePath);
-
-          port.postMessage(result);
-        }
-
-        return;
-      }
-
-      case "UNLINK": {
-        console.log({ message: "todo" });
-        return;
-      }
-
-      default: {
-        port.postMessage({
-          completed: false,
-          message: "File extenstion isn't a comic file",
-        });
-        return;
-      }
     }
-  } catch (e) {
-    watcherIndex.removeFromIndex(v.parsePath);
-    console.log({ e });
   }
-});
+
+}, ({ message }) => {
+  console.error({ message });
+}))
 
 async function handleRar(
   filePath: string,
-): Promise<z.infer<typeof parseWorkerResponse>> {
+) {
   try {
     const start = Date.now();
     const fileName = parseFileNameFromPath(filePath);
@@ -77,10 +68,10 @@ async function handleRar(
     });
 
     if (exists) {
-      return {
+      return okAsync({
         message: "already saved",
         completed: true,
-      };
+      });
     }
 
     const sortedFiles = await createExtractorFromData({
@@ -103,8 +94,8 @@ async function handleRar(
 
     const thumbnailUrl = convertToImageUrl(
       sortedFiles[0]?.extraction?.buffer ||
-        sortedFiles[1].extraction?.buffer ||
-        sortedFiles[2].extraction?.buffer!,
+      sortedFiles[1].extraction?.buffer ||
+      sortedFiles[2].extraction?.buffer!,
     );
 
     const newIssue = await db
@@ -132,23 +123,23 @@ async function handleRar(
       duration: Date.now() - start,
     });
 
-    return {
+    return okAsync({
       completed: true,
       message: null,
-    };
+    });
   } catch (e) {
     console.log({ e });
     watcherIndex.removeFromIndex(filePath);
-    return {
+    return err({
       message: "Error Occured while handling DB",
       completed: false,
-    };
+    });
   }
 }
 
 async function handleZip(
   filePath: string,
-): Promise<z.infer<typeof parseWorkerResponse>> {
+) {
   try {
     const start = Date.now();
 
@@ -159,10 +150,10 @@ async function handleZip(
     });
 
     if (exists) {
-      return {
+      return ok({
         completed: true,
         message: "Issue already saved",
-      };
+      });
     }
 
     const files = new Zip(readFileSync(filePath))
@@ -201,16 +192,16 @@ async function handleZip(
       duration: Date.now() - start,
     });
 
-    return {
+    return ok({
       completed: true,
       message: null,
-    };
+    });
   } catch (e) {
     console.log({ e });
     watcherIndex.removeFromIndex(filePath);
-    return {
+    return err({
       completed: false,
       message: "Error handling .cbz",
-    };
+    });
   }
 }

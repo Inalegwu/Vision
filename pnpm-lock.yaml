@@ -68,6 +68,9 @@ importers:
       moment:
         specifier: ^2.30.1
         version: 2.30.1
+      neverthrow:
+        specifier: ^7.0.1
+        version: 7.0.1
       node-unrar-js:
         specifier: ^2.0.2
         version: 2.0.2
@@ -3240,6 +3243,10 @@ packages:
   negotiator@0.6.3:
     resolution: {integrity: sha512-+EUsqGPLsM+j/zdChZjsnX51g4XrHFOIXwfnCVPGlQk/k5giakcKsuxCObBRu6DSm9opw/O6slWbJdghQM4bBg==}
     engines: {node: '>= 0.6'}
+
+  neverthrow@7.0.1:
+    resolution: {integrity: sha512-NY1sD1wZn6dwwzV9/5KZ4wRIpH4xC7ARy3fGmnEi2Pi8CHDTWlp+WSF+if8cudrwuCWGrk2y2BE/dnGh070iuA==}
+    engines: {node: '>=18'}
 
   nice-napi@1.0.2:
     resolution: {integrity: sha512-px/KnJAJZf5RuBGcfD+Sp2pAKq0ytz8j+1NehvgIGFkvtvFrDM3T8E4x/JJODXK9WZow8RRGrbA9QQ3hs+pDhA==}
@@ -7455,6 +7462,8 @@ snapshots:
   napi-build-utils@1.0.2: {}
 
   negotiator@0.6.3: {}
+
+  neverthrow@7.0.1: {}
 
   nice-napi@1.0.2:
     dependencies:

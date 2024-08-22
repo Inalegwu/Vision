@@ -1,3 +1,6 @@
+import { z } from "zod";
+import { err, ok } from "neverthrow";
+
 export function sortPages(a: string, b: string) {
   const aName = a.replace(/\.[^/.]+$/, "");
   const bName = b.replace(/\.[^/.]+$/, "");
@@ -28,4 +31,19 @@ export function parseFileNameFromPath(filePath: string) {
     .replace(/\.[^/.]+$/, "")
     .replace(/(\d+)$/, "")
     .replace("-", "");
+}
+
+export const parseWorkerMessageWithSchema = <T extends z.ZodRawShape>(schema: z.ZodObject<T>, message: string) => {
+  const result = schema.safeParse(message);
+
+  if (!result.success) {
+    return err({
+      message: result.error.flatten()
+    })
+  }
+
+  return ok({
+    data: result.data
+  })
+
 }
