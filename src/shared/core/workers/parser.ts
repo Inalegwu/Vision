@@ -13,7 +13,7 @@ import {
   sortPages,
 } from "../../utils";
 import watcherIndex from "../indexer";
-import { parsePathSchema, type parseWorkerResponse } from "../validations";
+import { parsePathSchema } from "../validations";
 import { okAsync, err, ok } from "neverthrow";
 
 const port = parentPort;
@@ -48,7 +48,8 @@ port.on("message", (message) => parseWorkerMessageWithSchema(parsePathSchema, me
 
     }
     case "UNLINK": {
-
+      // TODO
+      console.log({ message: "todo" })
     }
   }
 

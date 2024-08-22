@@ -33,7 +33,7 @@ export function parseFileNameFromPath(filePath: string) {
     .replace("-", "");
 }
 
-export const parseWorkerMessageWithSchema = <T extends z.ZodRawShape>(schema: z.ZodObject<T>, message: string) => {
+export const parseWorkerMessageWithSchema = <T extends z.ZodRawShape>(schema: z.ZodObject<T>, message: unknown) => {
   const result = schema.safeParse(message);
 
   if (!result.success) {

@@ -7,11 +7,12 @@ import type { parsePathSchema } from "./validations";
 import parseWorker from "./workers/parser?nodeWorker";
 
 export default function watchFS(path: string | null) {
+  watcherIndex.load(`${app.getPath("appData")}/Vision/index.json`);
   try {
     if (path === null) return;
 
     const watcher = chokidar.watch(path, {
-      ignoreInitial: true,
+      ignoreInitial: false,
     });
 
     watcher.on("add", addFile);
