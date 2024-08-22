@@ -10,10 +10,6 @@ build({
     directories: {
       output: "release/${version}",
     },
-    mac: {
-      target: ["dmg"],
-      hardenedRuntime: true,
-    },
     win: {
       target: [
         {
@@ -22,18 +18,10 @@ build({
         },
       ],
     },
-    linux: {
-      target: [
-        {
-          target: "AppImage",
-        },
-      ],
-      category: "entertainment",
-    },
     msi: {
       oneClick: true,
-      perMachine: true,
-      runAfterFinish: true,
+      createDesktopShortcut: true,
+      createStartMenuShortcut: true,
     },
   },
 });

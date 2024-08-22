@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@electron/rebuild": "^3.4.1",
+    "@fluentui/react-icons": "^2.0.253",
     "@legendapp/state": "^2.1.4",
     "@million/lint": "1.0.0-rc.80",
     "@radix-ui/themes": "^2.0.3",

@@ -70,6 +70,7 @@ button{
   appearance:none;
   background:none;
   outline: none;
+  cursor: pointer;
 }
 img{
   pointer-events: none;

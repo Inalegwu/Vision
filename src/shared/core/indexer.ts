@@ -1,4 +1,3 @@
-import { app } from "electron";
 import * as fs from "node:fs";
 import { parseWorkerMessageWithSchema } from "../utils";
 import { z } from "zod";

@@ -16,7 +16,7 @@ configureObservablePersistence({
 });
 
 export const globalState$ = observable<GlobalState>({
-  colorMode: "light",
+  colorMode: "system",
   firstLaunch: true,
 });
 

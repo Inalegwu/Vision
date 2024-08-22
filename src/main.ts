@@ -16,12 +16,19 @@ app.setName("Vision");
 const createWindow = () => {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   const mainWindow = new BrowserWindow({
-    frame: false,
     show: false,
     width: width - 50,
     height: height - 50,
     minWidth: width - 50,
     minHeight: height - 50,
+    backgroundMaterial: "mica",
+    autoHideMenuBar: true,
+    titleBarOverlay: true,
+    titleBarStyle: "customButtonsOnHover",
+    thickFrame: true,
+    resizable: false,
+    // maximizable: false,
+    transparent: true,
     webPreferences: {
       sandbox: false,
       preload: join(__dirname, "../preload/preload.js"),
