@@ -14,7 +14,6 @@ import { okAsync, err, ok } from "neverthrow";
 import db from "@src/shared/storage";
 import { v4 } from "uuid";
 
-
 const port = parentPort;
 
 if (!port) throw new Error("Illegal State");
@@ -93,6 +92,7 @@ async function handleRar(
     console.log({ thumbnailBlob })
 
     const res = await db.put({
+      _id: v4(),
       id: v4(),
       title,
       dateAdded: new Date().toISOString(),
@@ -102,6 +102,7 @@ async function handleRar(
 
     for (const file of sortedFiles) {
       const fileBlob = new Blob([file.extraction?.buffer!], { type: "image/png" });
+      console.log({ fileBlob });
       await db.putAttachment(res.id, `${file.fileHeader.name}`, res.rev, fileBlob, "image/png").then((res) => {
         console.log({ res })
       });

@@ -23,23 +23,6 @@ const libraryRouter = router({
       issues
     }
   }),
-  prefetchLibrary: publicProcedure
-    .input(
-      z.object({
-        queryKey: z.string(),
-      }),
-    )
-    .mutation(async ({ input }) =>
-      prefetchWorker({
-        name: "prefetch-worker",
-      })
-        .on("message", (m) => {
-          console.log({ m });
-        })
-        .postMessage({
-          queryKey: input.queryKey,
-        }),
-    ),
   createCollection: publicProcedure
     .input(
       z.object({

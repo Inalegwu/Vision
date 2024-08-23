@@ -1,5 +1,4 @@
 import deletionWorker from "@core/workers/deletion?nodeWorker";
-import metadataWorker from "@core/workers/metadata?nodeWorker";
 import parseWorker from "@core/workers/parser?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import { dialog } from "electron";
@@ -34,17 +33,6 @@ const issueRouter = router({
       cancelled: false,
     };
   }),
-  getIssueMetadata: publicProcedure
-    .input(
-      z.object({
-        issueName: z.string().refine((v) => v.trim()),
-      }),
-    )
-    .query(async ({ input }) =>
-      metadataWorker({ name: "meta-data-worker" }).postMessage({
-        issueTitle: input.issueName,
-      }),
-    ),
   deleteIssue: publicProcedure
     .input(
       z.object({

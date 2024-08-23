@@ -26,6 +26,8 @@ function Component() {
     enabled: isEnabled.get(),
   });
 
+  console.log({ data });
+
   const { mutate: addIssue, isLoading: addingIssue } = t.issue.addIssue.useMutation();
 
   useTimeout(() => {

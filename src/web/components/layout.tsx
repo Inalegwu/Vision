@@ -18,8 +18,6 @@ export default function Layout({ children }: LayoutProps) {
   const navigation = useRouter();
   const routerState = useRouterState();
 
-  const isNotHome = computed(() => routerState.location.pathname !== "/").get();
-
   console.log({ pathName: routerState.location.pathname });
 
   const { mutate: startFileWatcher } =
@@ -27,7 +25,7 @@ export default function Layout({ children }: LayoutProps) {
 
   const themeChanged = t.os.onThemeChanged.useSubscription();
 
-  const { mutate: prefetchLibrary } = t.library.prefetchLibrary.useMutation();
+  console.log({ themeChanged })
 
   useObserveEffect(() => {
     if (globalState$.colorMode.get() === "dark") {
@@ -41,10 +39,7 @@ export default function Layout({ children }: LayoutProps) {
 
   useEffect(() => {
     startFileWatcher();
-    prefetchLibrary({
-      queryKey: "issues",
-    });
-  }, [startFileWatcher, prefetchLibrary]);
+  }, [startFileWatcher]);
 
   return (
     <Flex className="w-full h-screen bg-transparent" align="center">
