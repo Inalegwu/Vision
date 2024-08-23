@@ -9,7 +9,7 @@ import type { parsePathSchema } from "../core/validations";
 const issueRouter = router({
   addIssue: publicProcedure.mutation(async ({ ctx }) => {
     const { canceled, filePaths } = await dialog.showOpenDialog({
-      filters: [{ name: "Comic Book Archive", extensions: ["cbz", "cbrx"] }],
+      filters: [{ name: "Comic Book Archive", extensions: ["cbz", "cbr"] }],
     });
     if (canceled) {
       return {
@@ -65,23 +65,9 @@ const issueRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const issue = await ctx.db.query.issues.findFirst({
-        where: (issue, { eq }) => eq(issue.id, input.issueId),
-      });
-      const pages = await ctx.db.query.pages.findMany({
-        where: (page, { eq }) => eq(page.issueId, input.issueId),
-        columns: {
-          id: true,
-          pageContent: true,
-        },
-      });
+      console.log({ input });
 
-      const merged = {
-        ...issue,
-        pages,
-      };
-
-      return merged;
+      return true
     }),
   getIssue: publicProcedure
     .input(
@@ -90,13 +76,7 @@ const issueRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const issue = await ctx.db.query.issues.findFirst({
-        where: (issues, { eq }) => eq(issues.id, input.issueId),
-      });
-
-      return {
-        issue,
-      };
+      return true
     }),
 });
 

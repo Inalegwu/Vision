@@ -1,27 +1,8 @@
-@font-face{
-  font-family:Title;
-  src:url("../assets/fonts/VirusKiller-0W1ov.ttf");
-}
-
 @font-face {
   font-family: Font;
-  src: url("../assets/fonts/SF-Pro-Display-Light.otf");
+  src: url("../assets/fonts/font.ttf");
 }
 
-@font-face {
-  font-family: Font;
-  src: url("../assets/fonts/SF-Pro-Display-Medium.otf");
-}
-
-@font-face {
-  font-family: Font;
-  src: url("../assets/fonts/SF-Pro-Display-Regular.otf");
-}
-
- @font-face {
-  font-family: Font;
-  src: url("../assets/fonts/SF-Pro-Display-Semibold.otf");
-}
 
 * {
   margin: 0;
@@ -31,23 +12,23 @@
   text-decoration: none;
 }
 
-.radix-themes{
-    --default-font-family:Font;
+.radix-themes {
+  --default-font-family: Font;
   --heading-font-family: Font;
-  --code-font-family:Font;
-  --strong-font-family:Font;
-  --em-font-family:Font;
-  --quote-font-family:Font;
+  --code-font-family: Font;
+  --strong-font-family: Font;
+  --em-font-family: Font;
+  --quote-font-family: Font;
 }
 
-a{
-  appearance:none;
-  padding:0;
-  margin:0;
+a {
+  appearance: none;
+  padding: 0;
+  margin: 0;
 }
 
 body {
-   -webkit-user-select: none;
+  -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
   overflow: hidden;
@@ -65,13 +46,14 @@ body {
   background: transparent;
 }
 
-button{
-  border:none;
-  appearance:none;
-  background:none;
+button {
+  border: none;
+  appearance: none;
+  background: none;
   outline: none;
   cursor: pointer;
 }
-img{
+
+img {
   pointer-events: none;
 }

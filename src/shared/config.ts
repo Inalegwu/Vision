@@ -22,7 +22,7 @@ export const queryClient = new QueryClient({
 
 export const persister = createSyncStoragePersister({
   storage: window.localStorage,
-  throttleTime: 50_000,
+  throttleTime: 30_000,
 });
 
 export const trpcClient = t.createClient({

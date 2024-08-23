@@ -5,10 +5,7 @@ import {
 } from "@legendapp/state/persist";
 import { ObservablePersistLocalStorage } from "@legendapp/state/persist-plugins/local-storage";
 import type {
-  CurrentlyReading,
-  DoneReading,
   GlobalState,
-  ReadingState,
 } from "@shared/types";
 
 configureObservablePersistence({
@@ -30,15 +27,8 @@ export const settingsState$ = observable<{
   visible: false,
 });
 
-export const readingState$ = observable<ReadingState>({
-  doneReading: new Map<string, DoneReading>(),
-  currentlyReading: new Map<string, CurrentlyReading>(),
-});
 
 persistObservable(globalState$, {
   local: "global_state",
 });
 
-persistObservable(readingState$, {
-  local: "reading_state",
-});

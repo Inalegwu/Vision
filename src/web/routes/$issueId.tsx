@@ -5,7 +5,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion, useMotionValue } from "framer-motion";
 import { useEffect, useMemo } from "react";
 import { useInterval, useKeyPress, useTimeout } from "../hooks";
-import { readingState$ } from "../state";
 
 const DRAG_BUFFER = 50;
 
@@ -19,9 +18,6 @@ function Component() {
   const isEnabled = useObservable(false);
   const isVisible = useObservable(false);
 
-  const doneReading = readingState$.doneReading.get();
-  const currentlyReading = readingState$.currentlyReading.get();
-  const isSaved = readingState$.currentlyReading.has(issueId);
 
   const { data, isLoading } = t.issue.getPages.useQuery(
     {
@@ -32,9 +28,9 @@ function Component() {
     },
   );
 
-  const contentLength = data?.pages.length || 0;
+  const contentLength = 0;
   const itemIndex = useObservable(
-    isSaved ? currentlyReading.get(issueId)?.currentPage : 0,
+    0
   );
   const itemIndexValue = itemIndex.get();
   const dragX = useMotionValue(0);
@@ -42,33 +38,6 @@ function Component() {
     () => Math.floor((itemIndexValue / contentLength) * 100),
     [contentLength, itemIndexValue],
   );
-
-  // save reading state to store every few seconds
-  // while reading
-  useInterval(() => {
-    if (itemIndexValue < contentLength - 1) {
-      console.log("saving to currently reading");
-      currentlyReading.set(issueId, {
-        id: issueId,
-        title: data?.issueTitle || "",
-        thumbnailUrl: data?.thumbnailUrl || "",
-        currentPage: itemIndexValue,
-        totalPages: contentLength - 1,
-      });
-      return;
-    }
-
-    if (itemIndexValue === contentLength - 1) {
-      currentlyReading.delete(issueId);
-      doneReading.set(issueId, {
-        id: issueId,
-        title: data?.issueTitle || "",
-        thumbnailUrl: data?.thumbnailUrl || "",
-        dateFinished: new Date().toISOString(),
-      });
-      return;
-    }
-  }, 3_000);
 
   useTimeout(() => {
     isEnabled.set(true);
@@ -119,18 +88,7 @@ function Component() {
         onDragEnd={onDragEnd}
         className="flex cursor-grab active:cursor-grabbing items-center"
       >
-        {data?.pages.map((v) => (
-          <div
-            className="w-full h-screen flex items-center justify-center shrink-0"
-            key={v.id}
-          >
-            <img
-              src={v.pageContent}
-              alt="page"
-              className="aspect-[9/16] h-full w-[45%] object-contain"
-            />
-          </div>
-        ))}
+        
       </motion.div>
       {/* progress indicator */}
       <AnimatePresence>
@@ -158,3 +116,20 @@ function Component() {
     </Flex>
   );
 }
+
+
+
+// {
+//   data?.pages.map((v) => (
+//     <div
+//       className="w-full h-screen flex items-center justify-center shrink-0"
+//       key={v.id}
+//     >
+//       <img
+//         src={v.pageContent}
+//         alt="page"
+//         className="aspect-[9/16] h-full w-[45%] object-contain"
+//       />
+//     </div>
+//   ))
+// }

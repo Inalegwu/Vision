@@ -2,10 +2,6 @@ import Zip from "adm-zip";
 import { createExtractorFromData } from "node-unrar-js";
 import { readFileSync } from "node:fs";
 import { parentPort } from "node:worker_threads";
-import { v4 } from "uuid";
-import type { z } from "zod";
-import { issues, pages } from "../../schema";
-import db from "../../storage";
 import {
   convertToImageUrl,
   parseFileNameFromPath,
@@ -15,6 +11,9 @@ import {
 import watcherIndex from "../indexer";
 import { parsePathSchema } from "../validations";
 import { okAsync, err, ok } from "neverthrow";
+import db from "@src/shared/storage";
+import { v4 } from "uuid";
+
 
 const port = parentPort;
 
@@ -62,18 +61,7 @@ async function handleRar(
 ) {
   try {
     const start = Date.now();
-    const fileName = parseFileNameFromPath(filePath);
-
-    const exists = await db.query.issues.findFirst({
-      where: (issue, { eq }) => eq(issue.issueTitle, fileName),
-    });
-
-    if (exists) {
-      return okAsync({
-        message: "already saved",
-        completed: true,
-      });
-    }
+    const title = parseFileNameFromPath(filePath);
 
     const sortedFiles = await createExtractorFromData({
       data: Uint8Array.from(readFileSync(filePath)).buffer,
@@ -93,30 +81,29 @@ async function handleRar(
       )
       .then((v) => v.filter((v) => !v.fileHeader.name.includes("xml")));
 
-    const thumbnailUrl = convertToImageUrl(
-      sortedFiles[0]?.extraction?.buffer ||
-      sortedFiles[1].extraction?.buffer ||
-      sortedFiles[2].extraction?.buffer!,
-    );
+    // const thumbnailUrl = convertToImageUrl(
+    //   sortedFiles[0]?.extraction?.buffer ||
+    //   sortedFiles[1].extraction?.buffer ||
+    //   sortedFiles[2].extraction?.buffer!,
+    // );
 
-    const newIssue = await db
-      .insert(issues)
-      .values({
-        id: v4(),
-        thumbnailUrl,
-        issueTitle: fileName,
-      })
-      .returning();
+    const buf = sortedFiles[0]?.extraction?.buffer || sortedFiles[1].extraction?.buffer || sortedFiles[2].extraction?.buffer!
+    const thumbnailBlob = new Blob([buf], { type: "image/png" });
+
+    console.log({ thumbnailBlob })
+
+    const res = await db.put({
+      id: v4(),
+      title,
+      dateAdded: new Date().toISOString(),
+    });
+
+    await db.putAttachment(res.id, "thumbnail-url", res.rev, thumbnailBlob, "image/png")
 
     for (const file of sortedFiles) {
-      if (file.fileHeader.flags.directory) {
-        continue;
-      }
-
-      await db.insert(pages).values({
-        id: v4(),
-        pageContent: convertToImageUrl(file.extraction?.buffer!),
-        issueId: newIssue[0].id,
+      const fileBlob = new Blob([file.extraction?.buffer!], { type: "image/png" });
+      await db.putAttachment(res.id, `${file.fileHeader.name}`, res.rev, fileBlob, "image/png").then((res) => {
+        console.log({ res })
       });
     }
 
@@ -132,7 +119,7 @@ async function handleRar(
     console.log({ e });
     watcherIndex.removeFromIndex(filePath);
     return err({
-      message: "Error Occured while handling DB",
+      message: "error occurred in worker",
       completed: false,
     });
   }
@@ -146,16 +133,9 @@ async function handleZip(
 
     const fileName = parseFileNameFromPath(filePath);
 
-    const exists = await db.query.issues.findFirst({
-      where: (issues, { eq }) => eq(issues.issueTitle, fileName),
-    });
+   
 
-    if (exists) {
-      return ok({
-        completed: true,
-        message: "Issue already saved",
-      });
-    }
+    
 
     const files = new Zip(readFileSync(filePath))
       .getEntries()
@@ -167,27 +147,6 @@ async function handleZip(
     const thumbnailUrl = convertToImageUrl(
       files[0].data || files[1].data || files[2].data!,
     );
-
-    const newIssue = await db
-      .insert(issues)
-      .values({
-        id: v4(),
-        issueTitle: fileName,
-        thumbnailUrl,
-      })
-      .returning();
-
-    for (const file of filesWithoutMetadata) {
-      if (file.isDir) {
-        continue;
-      }
-
-      await db.insert(pages).values({
-        id: v4(),
-        issueId: newIssue[0].id,
-        pageContent: convertToImageUrl(file.data),
-      });
-    }
 
     console.log({
       duration: Date.now() - start,

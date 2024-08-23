@@ -7,7 +7,7 @@ import type React from "react";
 import { useEffect } from "react";
 import { globalState$ } from "../state";
 import Spinner from "./spinner";
-import { HomeFilled, LibraryFilled, GridFilled, TextAlignJustifyFilled } from "@fluentui/react-icons"
+import { HomeFilled, LibraryFilled, GridFilled, TextAlignJustifyFilled, ChevronLeftFilled, ChevronRightFilled, SettingsFilled } from "@fluentui/react-icons"
 
 
 type LayoutProps = {
@@ -19,6 +19,8 @@ export default function Layout({ children }: LayoutProps) {
   const routerState = useRouterState();
 
   const isNotHome = computed(() => routerState.location.pathname !== "/").get();
+
+  console.log({ pathName: routerState.location.pathname });
 
   const { mutate: startFileWatcher } =
     t.library.startLibraryWatcher.useMutation();
@@ -47,22 +49,37 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <Flex className="w-full h-screen bg-transparent" align="center">
       <Flex direction="column" className="w-1/6 h-full">
-        <div className="w-full flex items-center justify-between px-1">
-          <button className="px-2 py-2 flex items-center justify-start hover:bg-zinc-200/3 rounded-md text-zinc-400">
-            <TextAlignJustifyFilled fontSize={15} />
-          </button>
-          <button className="px-2 py-2 hover:bg-zinc-200/3 rounded-md text-zinc-400 flex items-center justify-center">
+        <div className="w-full mt-1 flex items-center justify-between px-1">
+          <Flex align="center" justify="start" gap="2">
+            <button className="px-2 transition py-2 flex items-center justify-center hover:bg-zinc-200/3 rounded-md text-zinc-400">
+              <TextAlignJustifyFilled fontSize={15} />
+            </button>
+            <button onClick={() => navigation.history.back()} className="px-2 py-2 transition flex items-center justify-center hover:bg-zinc-200/3 rounded-md text-zinc-400">
+              <ChevronLeftFilled fontSize={15} />
+            </button>
+            <button onClick={() => navigation.history.forward()} className="px-2 py-2 transition flex items-center justify-center hover:bg-zinc-200/3 rounded-md text-zinc-400">
+              <ChevronRightFilled fontSize={15} />
+            </button>
+          </Flex>
+          <button className="px-2 py-2 transition hover:bg-zinc-200/3 rounded-md text-zinc-400 flex items-center justify-center">
             <GridFilled fontSize={15} />
           </button>
         </div>
-        <Link to="/" className="text-zinc-400 mt-2 flex items-center justify-start space-x-1 hover:bg-zinc-200/3 py-3 px-2 transition">
-          <HomeFilled fontSize={15} />
-          <Text weight="light" size="2">Home</Text>
-        </Link>
-        <Link to="/library" className="text-zinc-400 flex items-center justify-start space-x-1 hover:bg-zinc-200/3 py-3 px-2 transition">
-          <LibraryFilled fontSize={15} />
-          <Text weight="light" size="2">Library</Text>
-        </Link>
+        <Flex direction="column" grow="1">
+          <Link to="/" className={`text-zinc-400 mt-2 flex items-center justify-start space-x-2 hover:bg-zinc-200/3 py-3 px-2 transition ${routerState.location.pathname === "/" ? "bg-zinc-200/3" : ""}`}>
+            <HomeFilled fontSize={16} />
+            <Text size="2">Home</Text>
+          </Link>
+          <Link to="/library" className={`text-zinc-400 flex items-center justify-start space-x-2 hover:bg-zinc-200/3 py-3 px-2 transition ${routerState.location.pathname === "/library" ? "bg-zinc-200/3" : ""}`}>
+            <LibraryFilled fontSize={16} />
+            <Text size="2">Library</Text>
+          </Link>
+        </Flex>
+        <Flex className="px-2 py-2" align="center" justify="end">
+          <button className="px-2 py-2 rounded-md text-zinc-400 flex items-center justify-center hover:bg-zinc-200/3">
+            <SettingsFilled />
+          </button>
+        </Flex>
       </Flex>
       <Flex className="w-5/6 bg-neutral-900 h-full rounded-tl-xl px-2 py-1 border-1.7 border-solid border-zinc-800">
         {children}
@@ -81,7 +98,7 @@ function AddButton() {
       onClick={() => addIssueToLibrary()}
       className="cursor-pointer dark:text-zinc-400 hover:bg-zinc-400/8 px-3 py-2"
     >
-      {isLoading ? <Spinner /> : <Plus size={10} />}
+      {isLoading ? <Spinner /> : <PlusFilled size={10} />}
     </button>
   );
 }

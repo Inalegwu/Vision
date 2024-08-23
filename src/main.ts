@@ -8,7 +8,7 @@ import { join } from "node:path";
 // this ensures that the application database
 // is available when this file is instantiated
 process.env = {
-  DB_URL: `${app.getPath("appData")}/Vision/vision.db`,
+  DB_URL: `${app.getPath("appData")}/Vision/vision__store`,
 };
 
 app.setName("Vision");

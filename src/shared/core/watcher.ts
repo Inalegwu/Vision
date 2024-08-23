@@ -12,7 +12,7 @@ export default function watchFS(path: string | null) {
     if (path === null) return;
 
     const watcher = chokidar.watch(path, {
-      ignoreInitial: false,
+      ignoreInitial: true,
     });
 
     watcher.on("add", addFile);

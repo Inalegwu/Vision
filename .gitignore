@@ -10,3 +10,5 @@ out
 drizzle
 *.db-journal
 .million
+vision__store
+vision_db
