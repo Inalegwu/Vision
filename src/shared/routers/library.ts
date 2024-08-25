@@ -1,5 +1,4 @@
 import watchFS from "@core/watcher";
-import prefetchWorker from "@core/workers/prefetch?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import { mkdirSync } from "node:fs";
 import z from "zod";
@@ -10,14 +9,22 @@ const libraryRouter = router({
     mkdirSync(path);
   }),
   startLibraryWatcher: publicProcedure.mutation(async ({ ctx }) =>
-    watchFS(`${ctx.app.getPath("documents")}/Vision`),
+    watchFS(`${ctx.app.getPath("documents")}/Vision`)?.match(({ message }) => {
+      console.log({ message });
+    }, ({ error }) => {
+      console.error({ error })
+    }),
   ),
   getLibrary: publicProcedure.query(async ({ ctx }) => {
 
     const issues = await ctx.db.allDocs({
-      include_docs: true,
-      attachments: true
-    }).then((v) => v.rows)
+      include_docs: true, attachments:
+        true
+    }).then((v) => v.rows).then((rows) => rows.map((row) => ({
+      id:
+        row.doc?.id, docId: row.doc?._id, attachments: row.doc?._attachments,
+      title: row.doc?.title, dateAdded: row.doc?.dateAdded
+    })));
 
     return {
       issues

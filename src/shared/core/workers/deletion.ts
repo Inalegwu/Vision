@@ -6,6 +6,8 @@ const port = parentPort;
 
 if (!port) throw new Error("Illegal State");
 
+console.log({ message: "starting deletion worker" });
+
 port.on("message", (message) => parseWorkerMessageWithSchema(deletionWorkerSchema, message).match(async ({ data }) => {
   try {
     const start = Date.now();

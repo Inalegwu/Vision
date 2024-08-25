@@ -22,11 +22,9 @@ function Component() {
 
   const isEnabled = useObservable(false);
 
-  const { data } = t.library.getLibrary.useQuery(undefined, {
+  const { data, isLoading: fetchingLibrary } = t.library.getLibrary.useQuery(undefined, {
     enabled: isEnabled.get(),
   });
-
-  console.log({ data });
 
   const { mutate: addIssue, isLoading: addingIssue } = t.issue.addIssue.useMutation();
 
@@ -40,6 +38,12 @@ function Component() {
       globalState$.firstLaunch.set(false);
     }
   }, [createSourceDir]);
+
+  if (fetchingLibrary) {
+    return <Flex className="w-full h-screen" align="center" justify="center">
+      <Spinner size={30} />
+    </Flex>
+  }
 
 
   if (data?.issues.length === 0) {

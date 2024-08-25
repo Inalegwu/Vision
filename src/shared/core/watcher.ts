@@ -5,6 +5,7 @@ import type z from "zod";
 import watcherIndex from "./indexer";
 import type { parsePathSchema } from "./validations";
 import parseWorker from "./workers/parser?nodeWorker";
+import { err, ok } from "neverthrow";
 
 export default function watchFS(path: string | null) {
   watcherIndex.load(`${app.getPath("appData")}/Vision/index.json`);
@@ -12,12 +13,20 @@ export default function watchFS(path: string | null) {
     if (path === null) return;
 
     const watcher = chokidar.watch(path, {
-      ignoreInitial: false,
+      ignoreInitial: true,
     });
 
     watcher.on("add", addFile);
+
+    return ok({
+      message: "started file watcher"
+    })
   } catch (e) {
     console.log({ e });
+    return err({
+      error: `${e}`,
+      message: "failed to start file watcher"
+    })
   }
 }
 
