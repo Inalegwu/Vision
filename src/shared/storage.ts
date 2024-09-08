@@ -1,7 +1,9 @@
-import PouchDB from "pouchdb-node";
-import type { Issue } from "./types";
+import Database from "better-sqlite3";
+import {drizzle} from "drizzle-orm/better-sqlite3";
+import * as schema from "./schema";
 
-// TODO move back to drizzle-orm and normal sqlite for this
-const db = new PouchDB<Issue>("db");
+const sqlite=new Database("vision.db");
+const db=drizzle(sqlite,{schema})
 
-export default db;
+
+export default db

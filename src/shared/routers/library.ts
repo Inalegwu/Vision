@@ -9,26 +9,27 @@ const libraryRouter = router({
     mkdirSync(path);
   }),
   startLibraryWatcher: publicProcedure.mutation(async ({ ctx }) =>
-    watchFS(`${ctx.app.getPath("documents")}/Vision`)?.match(({ message }) => {
-      console.log({ message });
-    }, ({ error }) => {
-      console.error({ error })
-    }),
+    watchFS(`${ctx.app.getPath("documents")}/Vision`)?.match(
+      ({ message }) => {
+        console.log({ message });
+      },
+      ({ error }) => {
+        console.error({ error });
+      },
+    ),
   ),
   getLibrary: publicProcedure.query(async ({ ctx }) => {
-
-    const issues = await ctx.db.allDocs({
-      include_docs: true, attachments:
-        true
-    }).then((v) => v.rows).then((rows) => rows.map((row) => ({
-      id:
-        row.doc?.id, docId: row.doc?._id, attachments: row.doc?._attachments,
-      title: row.doc?.title, dateAdded: row.doc?.dateAdded
-    })));
+    const issues = await ctx.db.query.issues.findMany({
+      with: {
+        attachments: {
+          limit: 1,
+        },
+      },
+    });
 
     return {
-      issues
-    }
+      issues,
+    };
   }),
   createCollection: publicProcedure
     .input(
@@ -38,7 +39,6 @@ const libraryRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       console.log({ input });
-      
     }),
 });
 

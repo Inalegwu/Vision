@@ -3,10 +3,3 @@ export type GlobalState = {
   firstLaunch: boolean;
   fullscreen: boolean;
 };
-
-export type Issue = {
-  id: string;
-  title: string;
-  dateAdded: string;
-};
-

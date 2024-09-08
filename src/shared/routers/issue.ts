@@ -3,7 +3,7 @@ import parseWorker from "@core/workers/parser?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import { dialog } from "electron";
 import z from "zod";
-import type { parsePathSchema } from "../core/validations";
+import type { parsePathSchema } from "@core/validations";
 
 const issueRouter = router({
   addIssue: publicProcedure.mutation(async ({ ctx }) => {
@@ -53,9 +53,13 @@ const issueRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      console.log({ input });
+      const attachments = await ctx.db.query.attachments.findFirst({
+        where: (attachment, { eq }) => eq(attachment.issueId, input.issueId),
+      });
 
-      return true
+      return {
+        attachments,
+      };
     }),
   getIssue: publicProcedure
     .input(
@@ -64,7 +68,16 @@ const issueRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      return true
+      const issue = await ctx.db.query.issues.findFirst({
+        where: (issues, { eq }) => eq(issues.id, input.issueId),
+        with: {
+          attachments: true,
+        },
+      });
+
+      return {
+        issue,
+      };
     }),
 });
 
