@@ -4,6 +4,8 @@ import { publicProcedure, router } from "@src/trpc";
 import { dialog } from "electron";
 import z from "zod";
 import type { parsePathSchema } from "@core/validations";
+import {convertToImageUrl} from "@shared/utils";
+import {TRPCError} from "@trpc/server";
 
 const issueRouter = router({
   addIssue: publicProcedure.mutation(async ({ ctx }) => {
@@ -46,21 +48,6 @@ const issueRouter = router({
         issueId: input.issueId,
       }),
     ),
-  getPages: publicProcedure
-    .input(
-      z.object({
-        issueId: z.string(),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const attachments = await ctx.db.query.attachments.findFirst({
-        where: (attachment, { eq }) => eq(attachment.issueId, input.issueId),
-      });
-
-      return {
-        attachments,
-      };
-    }),
   getIssue: publicProcedure
     .input(
       z.object({
@@ -74,6 +61,14 @@ const issueRouter = router({
           attachments: true,
         },
       });
+
+      if(!issue){
+        throw new TRPCError({
+          code:"INTERNAL_SERVER_ERROR",
+          message:`No issue with ${input.issueId} exists`
+        })
+      }
+
 
       return {
         issue,

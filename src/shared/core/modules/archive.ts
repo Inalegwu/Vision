@@ -1,12 +1,15 @@
 import watcherIndex from "../indexer";
 import { createExtractorFromData } from "node-unrar-js";
-import { parseFileNameFromPath, sortPages } from "@shared/utils";
+import {
+  convertToImageUrl,
+  parseFileNameFromPath,
+  sortPages,
+} from "@shared/utils";
 import { readFileSync } from "node:fs";
 import db from "@shared/storage";
 import { err, ok } from "neverthrow";
-import { v4 } from "uuid";
 import Zip from "adm-zip";
-import { attachments, issues } from "@shared/schema";
+import { v4 } from "uuid";
 
 export namespace Archive {
   export async function handleRar(filePath: string) {
@@ -38,26 +41,26 @@ export namespace Archive {
       //   sortedFiles[2].extraction?.buffer!,
       // );
 
-      const result = db
-        .insert(issues)
-        .values({
-          id: v4(),
-          title,
-          dateCreated: new Date(),
-        })
-        .returning({
-          id: issues.id,
-        }).get();
+      console.log({ title });
 
-      for (const file of sortedFiles) {
-        if (!file.extraction) continue;
-        const blob = new Blob([file.extraction.buffer]);
-        await db.insert(attachments).values({
-          blob,
-          issueId: result.id,
-          id: v4(),
-        });
-      }
+      db.insert({
+        dateCreated: Date.now(),
+        dateUpdated: Date.now(),
+        pages: sortedFiles.map((file) =>
+          convertToImageUrl(file.extraction?.buffer!),
+        ),
+        title,
+        id: v4(),
+      });
+
+      // for (const file of sortedFiles) {
+      //   if (!file.extraction) continue;
+      //   const blob = new Blob([file.extraction.buffer]);
+
+      //   const imageData = await blob.arrayBuffer().then(convertToImageUrl);
+
+      //   console.log({ message: "created image data from blob", imageData });
+      // }
 
       console.log({
         duration: Date.now() - start,

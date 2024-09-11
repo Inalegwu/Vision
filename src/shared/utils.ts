@@ -1,4 +1,4 @@
-import { z } from "zod";
+import type { z } from "zod";
 import { err, ok } from "neverthrow";
 
 export function sortPages(a: string, b: string) {
@@ -10,9 +10,9 @@ export function sortPages(a: string, b: string) {
 
   if (aMatch && aMatch.length === 1 && bMatch && bMatch.length === 1) {
     const aPrefix = aName.substring(0, aName.length - aMatch[0].length);
-    const bPrexif = aName.substring(0, bName.length - bMatch[0].length);
+    const bPrefix = aName.substring(0, bName.length - bMatch[0].length);
 
-    if (aPrefix.toLocaleUpperCase() === bPrexif.toLocaleLowerCase()) {
+    if (aPrefix.toLocaleUpperCase() === bPrefix.toLocaleLowerCase()) {
       return +aMatch[0] > +bMatch[0] ? 1 : -1;
     }
   }
@@ -33,7 +33,7 @@ export function parseFileNameFromPath(filePath: string) {
     .replace("-", "");
 }
 
-export const parseWorkerMessageWithSchema = <T extends z.ZodRawShape>(schema: z.ZodObject<T>, message: unknown) => {
+export const parseWorkerMessageWithSchema = <T extends z.ZodRawShape>(schema: z.ZodObject<T>, message: unknown) =>  {
   const result = schema.safeParse(message);
 
   if (!result.success) {

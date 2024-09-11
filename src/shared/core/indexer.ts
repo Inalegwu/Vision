@@ -4,11 +4,10 @@ import { z } from "zod";
 
 const loadSchema = z.object({
   index: z.array(z.object({
-    v: z.string()
+    path: z.string()
   }))
 })
 
-// TODO persist index across app runs
 class Indexer {
   $store: Set<string> = new Set<string>();
 
@@ -60,7 +59,7 @@ class Indexer {
       options?: fs.WriteFileOptions,
     ) => void,
   ) {
-    const indexAsJSON = Array.from(this.$store).map((v) => ({ v }));
+    const indexAsJSON = Array.from(this.$store).map((path) => ({ path }));
 
   
     writer(path, JSON.stringify({
@@ -69,6 +68,6 @@ class Indexer {
   }
 }
 
-const watcherIndex = new Indexer().init()
+const watcherIndex =new Indexer().init()
 
 export default watcherIndex;

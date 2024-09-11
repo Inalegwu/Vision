@@ -19,13 +19,10 @@ const libraryRouter = router({
     ),
   ),
   getLibrary: publicProcedure.query(async ({ ctx }) => {
-    const issues = await ctx.db.query.issues.findMany({
-      with: {
-        attachments: {
-          limit: 1,
-        },
-      },
-    });
+    const issues = ctx.db.find({}).map((issue) => ({
+      id: issue.id,
+      title: issue.title,
+    }));
 
     return {
       issues,

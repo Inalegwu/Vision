@@ -19,10 +19,10 @@ port.on("message", (message) =>
 
             result.match(
               (res) => {
-                console.log({ res });
+                console.log(res);
               },
               (err) => {
-                console.error({ err });
+                console.error(err);
               },
             );
             return;

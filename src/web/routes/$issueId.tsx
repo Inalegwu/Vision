@@ -19,7 +19,7 @@ function Component() {
   const isVisible = useObservable(false);
 
 
-  const { data, isLoading } = t.issue.getPages.useQuery(
+  const { data, isLoading } = t.issue.getIssue.useQuery(
     {
       issueId,
     },
@@ -28,7 +28,7 @@ function Component() {
     },
   );
 
-  const contentLength = 0;
+  const contentLength = data?.issue?.attachments.length||0;
   const itemIndex = useObservable(
     0
   );
@@ -88,7 +88,7 @@ function Component() {
         onDragEnd={onDragEnd}
         className="flex cursor-grab active:cursor-grabbing items-center"
       >
-        
+
       </motion.div>
       {/* progress indicator */}
       <AnimatePresence>

@@ -8,6 +8,8 @@ app.setName("Vision");
 
 const createWindow = () => {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+
+  // TODO: update base config based on platform
   const mainWindow = new BrowserWindow({
     show: false,
     width: width - 50,
@@ -15,13 +17,10 @@ const createWindow = () => {
     minWidth: width - 50,
     minHeight: height - 50,
     backgroundMaterial: "mica",
-    autoHideMenuBar: true,
-    titleBarOverlay: true,
-    titleBarStyle: "customButtonsOnHover",
-    thickFrame: true,
-    resizable: false,
-    // maximizable: false,
     transparent: true,
+    autoHideMenuBar: true,
+    titleBarStyle: "hiddenInset",
+    title: "",
     webPreferences: {
       sandbox: false,
       preload: join(__dirname, "../preload/preload.js"),
@@ -46,7 +45,7 @@ const createWindow = () => {
     mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
   }
 
-  // mainWindow.webContents.openDevTools({ mode: "right" });
+  // mainWindow.webContents.openDevTools({ mode: "bottom" });
 };
 
 app.whenReady().then(() => {

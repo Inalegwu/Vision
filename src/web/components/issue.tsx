@@ -1,13 +1,16 @@
 import { deleteFromStoreCompletionEvent$ } from "@core/events";
 import { ContextMenu, DropdownMenu, Flex, Text } from "@radix-ui/themes";
 import t from "@shared/config";
-import type { Issue as issue } from "@src/shared/types";
 import { useRouter } from "@tanstack/react-router";
-import { Edit2, MoreVertical, Trash2 } from "lucide-react";
+import {
+  Edit12Filled,
+  MoreVerticalFilled,
+  BinFullRegular,
+} from "@fluentui/react-icons";
 import { memo } from "react";
 
 type Props = {
-  issue: issue;
+  issue: any;
 };
 
 export default function Issue({ issue }: Props) {
@@ -76,13 +79,13 @@ const MoreButton = memo(({ issueId }: { issueId: string }) => {
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
         <button className="cursor-pointer dark:text-zinc-400">
-          <MoreVertical size={10} />
+          <MoreVerticalFilled fontSize={10} />
         </button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content variant="soft" size="1">
         <DropdownMenu.Item onClick={go} className="cursor-pointer">
           <Flex align="center" justify="start" gap="1">
-            <Edit2 size={9} />
+            <Edit12Filled fontSize={9} />
             <Text>Edit Issue Info</Text>
           </Flex>
         </DropdownMenu.Item>
@@ -92,7 +95,7 @@ const MoreButton = memo(({ issueId }: { issueId: string }) => {
           className="cursor-pointer"
         >
           <Flex align="center" justify="start" gap="1">
-            <Trash2 size={10} />
+            <BinFullRegular fontSize={10} />
             <Text>Delete Issue</Text>
           </Flex>
         </DropdownMenu.Item>
