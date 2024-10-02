@@ -1,6 +1,7 @@
 import watcherIndex from "../indexer";
 import { createExtractorFromData } from "node-unrar-js";
 import {
+  convertImageToBlob,
   convertToImageUrl,
   parseFileNameFromPath,
   sortPages,
@@ -35,32 +36,20 @@ export namespace Archive {
         )
         .then((v) => v.filter((v) => !v.fileHeader.name.includes("xml")));
 
-      // const thumbnailUrl = convertToImageUrl(
-      //   sortedFiles[0]?.extraction?.buffer ||
-      //   sortedFiles[1].extraction?.buffer ||
-      //   sortedFiles[2].extraction?.buffer!,
-      // );
-
       console.log({ title });
 
-      db.insert({
-        dateCreated: Date.now(),
-        dateUpdated: Date.now(),
-        pages: sortedFiles.map((file) =>
-          convertToImageUrl(file.extraction?.buffer!),
-        ),
-        title,
-        id: v4(),
-      });
+      const addedId = await db
+        .put({
+          title,
+          dateCreated: Date.now(),
+          dateUpdated: Date.now(),
+        })
+        .then((value) => value.id);
 
-      // for (const file of sortedFiles) {
-      //   if (!file.extraction) continue;
-      //   const blob = new Blob([file.extraction.buffer]);
-
-      //   const imageData = await blob.arrayBuffer().then(convertToImageUrl);
-
-      //   console.log({ message: "created image data from blob", imageData });
-      // }
+      for (const file of sortedFiles) {
+        const blob = convertImageToBlob(file.extraction?.buffer!, "image/png");
+        db.putAttachment(addedId, file.fileHeader.name, blob, "image/png");
+      }
 
       console.log({
         duration: Date.now() - start,

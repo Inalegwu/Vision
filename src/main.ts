@@ -16,11 +16,7 @@ const createWindow = () => {
     height: height - 50,
     minWidth: width - 50,
     minHeight: height - 50,
-    backgroundMaterial: "mica",
-    transparent: true,
-    autoHideMenuBar: true,
-    titleBarStyle: "hiddenInset",
-    title: "",
+    frame: false,
     webPreferences: {
       sandbox: false,
       preload: join(__dirname, "../preload/preload.js"),

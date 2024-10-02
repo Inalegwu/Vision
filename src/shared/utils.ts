@@ -25,6 +25,10 @@ export function convertToImageUrl(buffer: ArrayBufferLike) {
   return `data:image/png;base64,${b64}`;
 }
 
+export function convertImageToBlob(buffer: ArrayBufferLike, mimeType: string) {
+  return new Blob([buffer], { type: mimeType });
+}
+
 export function parseFileNameFromPath(filePath: string) {
   return filePath
     .replace(/^.*[\\\/]/, "")
@@ -33,17 +37,19 @@ export function parseFileNameFromPath(filePath: string) {
     .replace("-", "");
 }
 
-export const parseWorkerMessageWithSchema = <T extends z.ZodRawShape>(schema: z.ZodObject<T>, message: unknown) =>  {
+export const parseWorkerMessageWithSchema = <T extends z.ZodRawShape>(
+  schema: z.ZodObject<T>,
+  message: unknown,
+) => {
   const result = schema.safeParse(message);
 
   if (!result.success) {
     return err({
-      message: result.error.flatten()
-    })
+      message: result.error.flatten(),
+    });
   }
 
   return ok({
-    data: result.data
-  })
-
-}
+    data: result.data,
+  });
+};

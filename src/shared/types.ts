@@ -4,10 +4,17 @@ export type GlobalState = {
   fullscreen: boolean;
 };
 
-export type Issue = {
-  id: string;
+export type IssueInsert = Omit<
+  PouchDB.Core.Document<{
+    title: string;
+    dateCreated: number;
+    dateUpdated: number;
+  }>,
+  "_id"
+>;
+
+export type IssueSelect = PouchDB.Core.Document<{
   title: string;
   dateCreated: number;
   dateUpdated: number;
-  pages: Array<string>;
-};
+}>;

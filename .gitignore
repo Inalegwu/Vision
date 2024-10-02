@@ -11,3 +11,4 @@ drizzle
 *.db-journal
 .million
 vision.db
+library

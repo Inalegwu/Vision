@@ -4,16 +4,14 @@ import {
   persistObservable,
 } from "@legendapp/state/persist";
 import { ObservablePersistLocalStorage } from "@legendapp/state/persist-plugins/local-storage";
-import type {
-  GlobalState,
-} from "@shared/types";
+import type { GlobalState } from "@shared/types";
 
 configureObservablePersistence({
   pluginLocal: ObservablePersistLocalStorage,
 });
 
 export const globalState$ = observable<GlobalState>({
-  colorMode: "system",
+  colorMode: "light",
   firstLaunch: true,
   fullscreen: false,
 });
@@ -28,8 +26,6 @@ export const settingsState$ = observable<{
   visible: false,
 });
 
-
 persistObservable(globalState$, {
   local: "global_state",
 });
-

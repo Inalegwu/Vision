@@ -1,6 +1,6 @@
-import {Collection} from "signaldb";
-import type {Issue} from "./types";
+import type { IssueInsert } from "./types";
+import PouchDB from "pouchdb-node";
 
-const db=new Collection<Issue>()
+const db = new PouchDB<IssueInsert>("library");
 
-export default db
+export default db;
