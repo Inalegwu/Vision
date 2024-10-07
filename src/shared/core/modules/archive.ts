@@ -1,16 +1,17 @@
-import watcherIndex from "../indexer";
-import { createExtractorFromData } from "node-unrar-js";
+import { readFileSync } from "node:fs";
+import db from "@shared/storage";
 import {
   convertImageToBlob,
   convertToImageUrl,
   parseFileNameFromPath,
   sortPages,
 } from "@shared/utils";
-import { readFileSync } from "node:fs";
-import db from "@shared/storage";
-import { err, ok } from "neverthrow";
+import { attachments, issues } from "@src/shared/schema";
 import Zip from "adm-zip";
+import { err, ok } from "neverthrow";
+import { createExtractorFromData } from "node-unrar-js";
 import { v4 } from "uuid";
+import watcherIndex from "../indexer";
 
 export namespace Archive {
   export async function handleRar(filePath: string) {
@@ -38,11 +39,28 @@ export namespace Archive {
 
       console.log({ title });
 
-      
+      const addedIssue = await db
+        .insert(issues)
+        .values({
+          id: v4(),
+          title,
+        })
+        .returning({
+          id: issues.id,
+        });
 
       console.log({
         duration: Date.now() - start,
       });
+
+      for (const file of sortedFiles) {
+        const blob = convertImageToBlob(file.extraction?.buffer!, "image/png");
+        db.insert(attachments).values({
+          id: v4(),
+          issueId: addedIssue.at(0),
+          data: blob.arrayBuffer,
+        });
+      }
 
       return ok({
         completed: true,
