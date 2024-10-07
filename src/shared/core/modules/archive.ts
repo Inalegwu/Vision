@@ -38,18 +38,7 @@ export namespace Archive {
 
       console.log({ title });
 
-      const addedId = await db
-        .put({
-          title,
-          dateCreated: Date.now(),
-          dateUpdated: Date.now(),
-        })
-        .then((value) => value.id);
-
-      for (const file of sortedFiles) {
-        const blob = convertImageToBlob(file.extraction?.buffer!, "image/png");
-        db.putAttachment(addedId, file.fileHeader.name, blob, "image/png");
-      }
+      
 
       console.log({
         duration: Date.now() - start,
