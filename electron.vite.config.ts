@@ -1,4 +1,3 @@
-import MillionLint from "@million/lint";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, externalizeDepsPlugin } from "electron-vite";
@@ -49,7 +48,6 @@ export default defineConfig({
         routesDirectory: "./src/web/routes/",
         generatedRouteTree: "./src/web/routeTree.gen.ts",
       }),
-      MillionLint.vite(),
     ],
     build: {
       outDir: "out/renderer",
