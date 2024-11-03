@@ -107,7 +107,7 @@ function Component() {
   return (
     <Flex className="min-h-screen overflow-hidden">
       {isLoading && (
-        <div className="absolute z-10 top-[45%] left-[45%]">
+        <div className="absolute z-10 top-[50%] left-[45%]">
           <Spinner size={30} />
         </div>
       )}
