@@ -6,6 +6,7 @@ import { AnimatePresence, motion, useMotionValue } from "framer-motion";
 import { useEffect, useMemo } from "react";
 import { useInterval, useKeyPress, useTimeout } from "../hooks";
 import { readingState$ } from "../state";
+import { Spinner } from "../components";
 
 const DRAG_BUFFER = 50;
 
@@ -105,6 +106,11 @@ function Component() {
 
   return (
     <Flex className="min-h-screen overflow-hidden">
+      {isLoading && (
+        <div className="absolute z-10 top-[45%] left-[45%]">
+          <Spinner size={30} />
+        </div>
+      )}
       {/* page viewer */}
       <motion.div
         drag="x"

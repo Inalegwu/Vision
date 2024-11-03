@@ -20,45 +20,51 @@ const port = parentPort;
 
 if (!port) throw new Error("Illegal State");
 
-port.on("message", (message) => parseWorkerMessageWithSchema(parsePathSchema, message).match(async ({ data }) => {
-  console.log({ message: "match success" });
-  switch (data.action) {
-    case "LINK": {
-      if (data.parsePath.includes("cbr")) {
-        const result = await handleRar(data.parsePath)
+port.on("message", (message) =>
+  parseWorkerMessageWithSchema(parsePathSchema, message).match(
+    async ({ data }) => {
+      console.log({ message: "match success" });
+      switch (data.action) {
+        case "LINK": {
+          if (data.parsePath.includes("cbr")) {
+            const result = await handleRar(data.parsePath);
 
-        result.match((res) => {
-          console.log({ res });
-        }, (err) => {
-          console.error({ err })
-        })
-        return;
+            result.match(
+              (res) => {
+                console.log({ res });
+              },
+              (err) => {
+                console.error({ err });
+              },
+            );
+          }
+
+          if (data.parsePath.includes("cbz")) {
+            const result = await handleZip(data.parsePath);
+
+            result.match(
+              (res) => {
+                console.log({ res });
+              },
+              (err) => {
+                console.error({ err });
+              },
+            );
+          }
+
+          return;
+        }
+        case "UNLINK": {
+        }
       }
-      
-      if (data.parsePath.includes("cbz")) {
-        const result = await handleZip(data.parsePath);
-  
-        result.match((res) => {
-          console.log({ res })
-        }, (err) => {
-          console.error({ err })
-        })
-        return
-      }
+    },
+    ({ message }) => {
+      console.error({ message });
+    },
+  ),
+);
 
-    }
-    case "UNLINK": {
-
-    }
-  }
-
-}, ({ message }) => {
-  console.error({ message });
-}))
-
-async function handleRar(
-  filePath: string,
-) {
+async function handleRar(filePath: string) {
   try {
     const start = Date.now();
     const fileName = parseFileNameFromPath(filePath);
@@ -94,8 +100,8 @@ async function handleRar(
 
     const thumbnailUrl = convertToImageUrl(
       sortedFiles[0]?.extraction?.buffer ||
-      sortedFiles[1].extraction?.buffer ||
-      sortedFiles[2].extraction?.buffer!,
+        sortedFiles[1].extraction?.buffer ||
+        sortedFiles[2].extraction?.buffer!,
     );
 
     const newIssue = await db
@@ -128,7 +134,7 @@ async function handleRar(
       message: null,
     });
   } catch (e) {
-    console.log({ e });
+    console.log({ e, source: "rar" });
     watcherIndex.removeFromIndex(filePath);
     return err({
       message: "Error Occured while handling DB",
@@ -137,9 +143,7 @@ async function handleRar(
   }
 }
 
-async function handleZip(
-  filePath: string,
-) {
+async function handleZip(filePath: string) {
   try {
     const start = Date.now();
 
