@@ -35,7 +35,9 @@ class Indexer {
   ) {
     const indexAsJSON = Array.from(this.$store).map((v) => ({ v }));
 
-    console.log({ indexAsJSON });
+    if (indexAsJSON.length === 0) return;
+
+    // console.log({ indexAsJSON });
 
     writer(path, JSON.stringify(indexAsJSON), {});
   }

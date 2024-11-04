@@ -1,16 +1,13 @@
 import { deleteFromStoreCompletionEvent$ } from "@core/events";
-import {
-  ContextMenu,
-  Dialog,
-  DropdownMenu,
-  Flex,
-  Text,
-} from "@radix-ui/themes";
+import { ContextMenu, Dialog, Flex, Text, Button } from "@radix-ui/themes";
 import t from "@shared/config";
 import type { Issue as issue } from "@src/shared/types";
 import { useRouter } from "@tanstack/react-router";
-import { Edit2, MoreVertical, Plus, Trash2 } from "lucide-react";
+import { Edit2, Plus, Trash2 } from "lucide-react";
 import { memo, useRef } from "react";
+import FlatList from "./flatlist";
+import Spinner from "./spinner";
+import moment from "moment";
 
 type Props = {
   issue: issue;
@@ -22,8 +19,15 @@ export default function Issue({ issue }: Props) {
   const dialogRef = useRef<HTMLButtonElement>(null);
 
   const { mutate: deleteIssue } = t.issue.deleteIssue.useMutation({
-    onSuccess: () => utils.library.invalidate(),
+    onSuccess: () => utils.library.getLibrary.invalidate(),
   });
+
+  const { mutate: addToCollection } =
+    t.collection.addIssueToCollection.useMutation({
+      onSuccess: () => utils.library.getLibrary.invalidate(),
+    });
+
+  const { data, isLoading } = t.collection.getCollections.useQuery();
 
   deleteFromStoreCompletionEvent$.on(() => utils.library.invalidate());
 
@@ -84,8 +88,53 @@ export default function Issue({ issue }: Props) {
         </ContextMenu.Content>
       </ContextMenu.Root>
       <Dialog.Root>
-        <Dialog.Trigger ref={dialogRef} />
-        <Dialog.Content size="1">content</Dialog.Content>
+        <Dialog.Trigger>
+          <button ref={dialogRef} />
+        </Dialog.Trigger>
+        <Dialog.Content className="space-y-2" size="1">
+          <Text size="6">My Collections</Text>
+          {isLoading && <Spinner size={10} />}
+          <FlatList
+            data={data?.collections || []}
+            renderItem={({ item, index }) => (
+              <Flex
+                align="center"
+                justify="between"
+                className="px-2 rounded-md py-2 hover:bg-zinc-200/20 cursor-pointer"
+              >
+                <Flex
+                  direction="column"
+                  align="start"
+                  justify="center"
+                  className="w-[75%]"
+                >
+                  <Text size="4">{item.collectionName}</Text>
+                  <Text size="2" color="gray">
+                    {moment(item.dateCreated).fromNow()}
+                  </Text>
+                </Flex>
+                <Flex align="center" justify="end" gap="2">
+                  <Button
+                    size="1"
+                    color="blue"
+                    className="cursor-pointer"
+                    variant="outline"
+                    onClick={() =>
+                      addToCollection({
+                        issueId: issue.id,
+                        collectionId: item.id,
+                      })
+                    }
+                  >
+                    <Flex align="center" justify="center" gap="2">
+                      <Text>Add</Text>
+                    </Flex>
+                  </Button>
+                </Flex>
+              </Flex>
+            )}
+          />
+        </Dialog.Content>
       </Dialog.Root>
     </>
   );

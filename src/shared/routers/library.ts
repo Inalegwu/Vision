@@ -28,7 +28,12 @@ const libraryRouter = router({
     });
 
     return {
-      issues,
+      issues: issues.filter(
+        (issue) =>
+          !collections.find((collection) =>
+            collection.issues.find((issueK) => issueK.id === issue.id),
+          ),
+      ),
       collections,
     };
   }),
