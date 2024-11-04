@@ -29,6 +29,14 @@ export default function Issue({ issue }: Props) {
       },
     });
 
+  const { mutate: removeFromCollection } =
+    t.collection.removeFromCollection.useMutation({
+      onSuccess: () => {
+        utils.library.invalidate();
+        utils.collection.invalidate();
+      },
+    });
+
   const { data, isLoading } = t.collection.getCollections.useQuery();
 
   deleteFromStoreCompletionEvent$.on(() => utils.library.invalidate());
@@ -74,7 +82,9 @@ export default function Issue({ issue }: Props) {
             </Flex>
           </ContextMenu.Item>
           {issue.collectionId !== null && (
-            <ContextMenu.Item>
+            <ContextMenu.Item
+              onClick={() => removeFromCollection({ issueId: issue.id })}
+            >
               <Flex align="center" gap="2" justify="between" width="100%">
                 <Text size="1"> Remove From Collection</Text>
 

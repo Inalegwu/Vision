@@ -15,10 +15,6 @@ function Component() {
     collectionId,
   });
 
-  if (!data) {
-    navigation.history.back();
-  }
-
   return (
     <Flex gap="4" className="h-screen px-2 py-2" direction="column">
       <Flex className="w-full" align="center" justify="between">

@@ -162,7 +162,7 @@ async function handleZip(filePath: string) {
     const filesWithoutMetadata = files.filter((v) => !v.name.includes("xml"));
 
     const thumbnailUrl = convertToImageUrl(
-      files[0].data || files[1].data || files[2].data!,
+      files[0].data || files[1].data || files[2].data || files[3].data!,
     );
 
     const newIssue = await db
