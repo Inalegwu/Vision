@@ -23,7 +23,6 @@ if (!port) throw new Error("Illegal State");
 port.on("message", (message) =>
   parseWorkerMessageWithSchema(parsePathSchema, message).match(
     async ({ data }) => {
-      console.log({ message: "match success" });
       switch (data.action) {
         case "LINK": {
           if (data.parsePath.includes("cbr")) {
@@ -66,7 +65,6 @@ port.on("message", (message) =>
 
 async function handleRar(filePath: string) {
   try {
-    const start = Date.now();
     const fileName = parseFileNameFromPath(filePath);
 
     const exists = await db.query.issues.findFirst({
@@ -124,10 +122,6 @@ async function handleRar(filePath: string) {
         issueId: newIssue[0].id,
       });
     }
-
-    console.log({
-      duration: Date.now() - start,
-    });
 
     return okAsync({
       completed: true,

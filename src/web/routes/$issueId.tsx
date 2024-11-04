@@ -3,7 +3,7 @@ import { Flex } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion, useMotionValue } from "framer-motion";
-import { useEffect, useMemo } from "react";
+import { memo, useEffect, useMemo } from "react";
 import { useInterval, useKeyPress, useTimeout } from "../hooks";
 import { readingState$ } from "../state";
 import { Spinner } from "../components";
@@ -11,7 +11,7 @@ import { Spinner } from "../components";
 const DRAG_BUFFER = 50;
 
 export const Route = createFileRoute("/$issueId")({
-  component: Component,
+  component: memo(Component),
 });
 
 function Component() {
