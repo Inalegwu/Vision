@@ -20,6 +20,7 @@ const libraryRouter = router({
       with: {
         issues: {
           columns: {
+            id: true,
             thumbnailUrl: true,
           },
           limit: 2,

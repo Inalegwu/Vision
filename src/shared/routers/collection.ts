@@ -38,15 +38,17 @@ const collections = router({
     )
     .mutation(async ({ ctx, input }) => {
       console.log(input);
-      await ctx.db
+
+      const returns = await ctx.db
         .update(issues)
         .set({
           collectionId: input.collectionId,
         })
-        .where(eq(issues.id, input.issueId));
+        .where(eq(issues.id, input.issueId))
+        .returning();
 
       return {
-        data: 1,
+        data: returns,
       };
     }),
 });

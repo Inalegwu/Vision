@@ -3,7 +3,7 @@ import { ContextMenu, Dialog, Flex, Text, Button } from "@radix-ui/themes";
 import t from "@shared/config";
 import type { Issue as issue } from "@src/shared/types";
 import { useRouter } from "@tanstack/react-router";
-import { Edit2, Plus, Trash2 } from "lucide-react";
+import { Edit2, Minus, Plus, Trash2 } from "lucide-react";
 import { memo, useRef } from "react";
 import FlatList from "./flatlist";
 import Spinner from "./spinner";
@@ -24,7 +24,9 @@ export default function Issue({ issue }: Props) {
 
   const { mutate: addToCollection } =
     t.collection.addIssueToCollection.useMutation({
-      onSuccess: () => utils.library.getLibrary.invalidate(),
+      onSuccess: () => {
+        utils.library.getLibrary.invalidate();
+      },
     });
 
   const { data, isLoading } = t.collection.getCollections.useQuery();
@@ -71,6 +73,15 @@ export default function Issue({ issue }: Props) {
               <Plus size={11} />
             </Flex>
           </ContextMenu.Item>
+          {issue.collectionId !== null && (
+            <ContextMenu.Item>
+              <Flex align="center" gap="2" justify="between" width="100%">
+                <Text size="1"> Remove From Collection</Text>
+
+                <Minus size={11} />
+              </Flex>
+            </ContextMenu.Item>
+          )}
           <ContextMenu.Item
             onClick={() =>
               deleteIssue({
@@ -100,7 +111,7 @@ export default function Issue({ issue }: Props) {
               <Flex
                 align="center"
                 justify="between"
-                className="px-2 rounded-md py-2 hover:bg-zinc-200/20 cursor-pointer"
+                className="px-2 rounded-md py-2 cursor-pointer"
               >
                 <Flex
                   direction="column"
@@ -117,7 +128,7 @@ export default function Issue({ issue }: Props) {
                   <Button
                     size="1"
                     color="blue"
-                    className="cursor-pointer"
+                    className="cursor-pointer px-4"
                     variant="outline"
                     onClick={() =>
                       addToCollection({
