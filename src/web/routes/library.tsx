@@ -89,6 +89,7 @@ function Component() {
         {isLoading &&
           Array(15)
             .fill(0)
+            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
             .map((_, index) => <IssueSkeleton key={index} />)}
         {/* @ts-ignore: all good */}
         <RenderCollections collections={data?.collections || []} />
@@ -109,7 +110,15 @@ const RenderIssues = memo(({ issues }: { issues: IssueType[] }) => {
 });
 
 const RenderCollections = memo(
-  ({ collections }: { collections: CollectionType[] }) => {
+  ({
+    collections,
+  }: {
+    collections: Array<
+      CollectionType & {
+        issues: IssueType[];
+      }
+    >;
+  }) => {
     return (
       <>
         {collections?.map((collection) => (

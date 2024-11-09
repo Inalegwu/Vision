@@ -121,19 +121,6 @@ export default function Layout({ children }: LayoutProps) {
           >
             <Library size={10.5} />
           </button>
-          {/* <button
-            onClick={() =>
-              navigation.navigate({
-                to: "/me",
-              })
-            }
-            className="cursor-pointer dark:text-zinc-400 hover:bg-zinc-400/8 px-3 py-2"
-          >
-            <User size={10} />
-          </button>
-          <button className="cursor-pointer dark:text-zinc-400 hover:bg-zinc-400/8 px-3 py-2">
-            <ShoppingBag size={10} />
-          </button> */}
           <Flex grow="1" id="drag-region" p="2" />
         </Flex>
         <Flex align="center" justify="end">
@@ -170,8 +157,12 @@ export default function Layout({ children }: LayoutProps) {
 }
 
 function AddButton() {
-  const { mutate: addIssueToLibrary, isLoading } =
-    t.issue.addIssue.useMutation();
+  const utils = t.useUtils();
+  const { mutate: addIssueToLibrary, isLoading } = t.issue.addIssue.useMutation(
+    {
+      onSuccess: () => utils.library.invalidate(),
+    },
+  );
 
   return (
     <button

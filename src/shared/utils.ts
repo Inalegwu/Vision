@@ -1,5 +1,5 @@
-import type { z } from "zod";
 import { err, ok } from "neverthrow";
+import type { z } from "zod";
 
 export function sortPages(a: string, b: string) {
   const aName = a.replace(/\.[^/.]+$/, "");
@@ -26,11 +26,13 @@ export function convertToImageUrl(buffer: ArrayBufferLike) {
 }
 
 export function parseFileNameFromPath(filePath: string) {
-  return filePath
-    .replace(/^.*[\\\/]/, "")
-    .replace(/\.[^/.]+$/, "")
-    .replace(/(\d+)$/, "")
-    .replace("-", "");
+  return ok(
+    filePath
+      .replace(/^.*[\\\/]/, "")
+      .replace(/\.[^/.]+$/, "")
+      .replace(/(\d+)$/, "")
+      .replace("-", ""),
+  );
 }
 
 export const parseWorkerMessageWithSchema = <T extends z.ZodRawShape>(

@@ -9,7 +9,7 @@ import type { parsePathSchema } from "../core/validations";
 const issueRouter = router({
   addIssue: publicProcedure.mutation(async ({ ctx }) => {
     const { canceled, filePaths } = await dialog.showOpenDialog({
-      filters: [{ name: "Comic Book Archive", extensions: ["cbz", "cbrx"] }],
+      filters: [{ name: "Comic Book Archive", extensions: ["cbz", "cbr"] }],
     });
     if (canceled) {
       return {

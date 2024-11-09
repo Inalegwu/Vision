@@ -1,10 +1,12 @@
 import { ContextMenu, Flex, Text } from "@radix-ui/themes";
-import type { Collection as CollectionType } from "@shared/types";
+import type { Collection as CollectionType, Issue } from "@shared/types";
 import { useRouter } from "@tanstack/react-router";
 import { Trash2 } from "lucide-react";
 
 type Props = {
-  collection: CollectionType;
+  collection: CollectionType & {
+    issues: Array<Issue>;
+  };
 };
 
 export default function Collection({ collection }: Props) {
@@ -27,7 +29,19 @@ export default function Collection({ collection }: Props) {
           direction="column"
           gap="1"
         >
-          <div className="w-full h-full rounded-md border-1 border-solid border-zinc-200 dark:border-zinc-800" />
+          <Flex className="w-full h-full overflow-hidden relative rounded-md border-1 border-solid border-zinc-200 dark:border-zinc-800">
+            {collection.issues.slice(0, 2).map((issue, idx) => (
+              <img
+                key={issue.id}
+                src={issue.thumbnailUrl}
+                alt={issue.issueTitle}
+                className={`z-${idx * 10} w-full h-full absolute`}
+                style={{
+                  transform: `rotateX(${idx * 10}deg)`,
+                }}
+              />
+            ))}
+          </Flex>
           <Flex direction="column" gap="1" align="start">
             {/* <span className="px-3 py-1 rounded-full cursor-pointer bg-zinc-400/20 text-xs">
               collection
@@ -41,8 +55,8 @@ export default function Collection({ collection }: Props) {
       <ContextMenu.Content size="1" variant="soft">
         <ContextMenu.Item color="tomato" className="cursor-pointer">
           <Flex align="center" justify="start" gap="1">
-            <Text size="2">Delete</Text>
             <Trash2 size={10} />
+            <Text size="2">Delete Collection</Text>
           </Flex>
         </ContextMenu.Item>
       </ContextMenu.Content>
