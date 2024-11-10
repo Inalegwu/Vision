@@ -1,3 +1,4 @@
+import Zip from "adm-zip";
 import { Result, ResultAsync } from "neverthrow";
 import { createExtractorFromData } from "node-unrar-js";
 import { v4 } from "uuid";
@@ -33,6 +34,14 @@ export namespace Archive {
 
           return Result.fromThrowable(
             async () => {
+              const exists = await db.query.issues.findFirst({
+                where: (issue, { eq }) => eq(issue.issueTitle, issueTitle),
+              });
+
+              if (exists) {
+                throw new Error("This Issue is Already Saved");
+              }
+
               const newIssue = await db
                 .insert(issues)
                 .values({
@@ -59,7 +68,61 @@ export namespace Archive {
     )();
   }
 
-  export function handleZip(path: string) {}
+  export async function handleZip(path: string) {
+    return await ResultAsync.fromThrowable(
+      async () => {
+        const file = Fs.readFile(path);
+
+        if (!file.isOk()) {
+          throw new Error("ZIP ARCHIVE ERROR");
+        }
+
+        return createZipExtractor(file.value.buffer).andThen((extractor) => {
+          const fileName = parseFileNameFromPath(path)._unsafeUnwrap();
+
+          return Result.fromThrowable(
+            async () => {
+              const exists = await db.query.issues.findFirst({
+                where: (issue, { eq }) => eq(issue.issueTitle, fileName),
+              });
+
+              if (exists) {
+                throw new Error("This Issue is Already Saved");
+              }
+
+              const thumbnailUrl = convertToImageUrl(extractor[1].data.buffer);
+
+              console.log({ fileName, thumbnailUrl });
+
+              const newIssue = await db
+                .insert(issues)
+                .values({
+                  id: v4(),
+                  issueTitle: fileName,
+                  thumbnailUrl,
+                })
+                .returning()
+                .execute();
+
+              for (const file of extractor.slice(1, extractor.length - 1)) {
+                if (file.isDir) {
+                  console.log("found directory");
+                  continue;
+                }
+                await db.insert(pages).values({
+                  id: v4(),
+                  pageContent: convertToImageUrl(file.data.buffer),
+                  issueId: newIssue[0].id,
+                });
+              }
+            },
+            (error) => `Error saving ZIP ${error}`,
+          )();
+        });
+      },
+      (error) => `Error handling .cbz file ${error}`,
+    )();
+  }
 
   function createRarExtractor(data: ArrayBuffer, wasmBinary: ArrayBuffer) {
     return ResultAsync.fromPromise(
@@ -75,5 +138,20 @@ export namespace Archive {
       ),
       (error) => `Error creating rar extractor ${error}`,
     );
+  }
+
+  function createZipExtractor(data: ArrayBuffer) {
+    return Result.fromThrowable(
+      () =>
+        new Zip(Buffer.from(data))
+          .getEntries()
+          .sort((a, b) => sortPages(a.name, b.name))
+          .map((entry) => ({
+            name: entry.name,
+            data: entry.getData(),
+            isDir: entry.isDirectory,
+          })),
+      (error) => `Error creating zip extractor ${error}`,
+    )();
   }
 }

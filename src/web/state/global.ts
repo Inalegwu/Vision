@@ -18,6 +18,7 @@ configureObservablePersistence({
 export const globalState$ = observable<GlobalState>({
   colorMode: "light",
   firstLaunch: true,
+  isFullscreen: false,
 });
 
 export const fullScreenState$ = observable<{ isFullscreen: boolean }>({

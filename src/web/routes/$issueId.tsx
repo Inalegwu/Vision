@@ -3,10 +3,11 @@ import { Flex } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion, useMotionValue } from "framer-motion";
+import { Expand, Minimize2 } from "lucide-react";
 import { memo, useEffect, useMemo } from "react";
-import { useInterval, useKeyPress, useTimeout } from "../hooks";
-import { readingState$ } from "../state";
 import { Spinner } from "../components";
+import { useInterval, useKeyPress, useTimeout } from "../hooks";
+import { globalState$, readingState$ } from "../state";
 
 const DRAG_BUFFER = 50;
 
@@ -23,6 +24,7 @@ function Component() {
   const doneReading = readingState$.doneReading.get();
   const currentlyReading = readingState$.currentlyReading.get();
   const isSaved = readingState$.currentlyReading.has(issueId);
+  const isFullscreen = globalState$.isFullscreen.get();
 
   const { data, isLoading } = t.issue.getPages.useQuery(
     {
@@ -161,6 +163,14 @@ function Component() {
           </motion.div>
         )}
       </AnimatePresence>
+      <button
+        onClick={() => globalState$.isFullscreen.set(!isFullscreen)}
+        className={`absolute z-10 top-${
+          isFullscreen ? "4" : "10"
+        } cursor-pointer left-2 px-3 py-2.5 rounded-md border-1 border-zinc-200 border-solid bg-zinc-100/30 dark:border-zinc-700 dark:bg-zinc-700/60 dark:text-zinc-500`}
+      >
+        {isFullscreen ? <Minimize2 size={12} /> : <Expand size={12} />}
+      </button>
     </Flex>
   );
 }
