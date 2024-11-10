@@ -23,9 +23,9 @@ export namespace Archive {
         return (
           await createRarExtractor(file.value.buffer, wasmBinary.value.buffer)
         ).andThen((extractor) => {
-          const files = Array.from(extractor.files).sort((a, b) =>
-            sortPages(a.fileHeader.name, b.fileHeader.name),
-          );
+          const files = Array.from(extractor.files)
+            .sort((a, b) => sortPages(a.fileHeader.name, b.fileHeader.name))
+            .filter((file) => !file.fileHeader.name.includes("xml"));
 
           const thumbnailUrl = convertToImageUrl(
             files[0].extraction?.buffer || files[1].extraction?.buffer!,

@@ -1,13 +1,13 @@
 import { deleteFromStoreCompletionEvent$ } from "@core/events";
-import { ContextMenu, Dialog, Flex, Text, Button } from "@radix-ui/themes";
+import { Button, ContextMenu, Dialog, Flex, Text } from "@radix-ui/themes";
 import t from "@shared/config";
 import type { Issue as issue } from "@src/shared/types";
 import { useRouter } from "@tanstack/react-router";
 import { Edit2, Minus, Plus, Trash2 } from "lucide-react";
-import { memo, useRef } from "react";
+import moment from "moment";
+import { useRef } from "react";
 import FlatList from "./flatlist";
 import Spinner from "./spinner";
-import moment from "moment";
 
 type Props = {
   issue: issue;
@@ -79,6 +79,17 @@ export default function Issue({ issue }: Props) {
             <Flex align="center" gap="4" justify="between" width="100%">
               <Text size="1">Add To Collection</Text>
               <Plus size={11} />
+            </Flex>
+          </ContextMenu.Item>
+          <ContextMenu.Item className="cursor-pointer" onClick={()=>navigation.navigate({
+            to:"/edit/$id",
+            params:{
+              id:issue.id
+            }
+          })}>
+            <Flex align="center" justify="between" width="100%">
+              <Text size="1">Edit Issue</Text>
+              <Edit2 size={11}/>
             </Flex>
           </ContextMenu.Item>
           {issue.collectionId !== null && (
