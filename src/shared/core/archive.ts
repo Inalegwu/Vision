@@ -1,15 +1,14 @@
-import type { RunResult } from "better-sqlite3";
-import { ResultAsync } from "neverthrow";
+import { Result, ResultAsync } from "neverthrow";
 import { createExtractorFromData } from "node-unrar-js";
 import { v4 } from "uuid";
 import { Fs } from "../fs";
 import { issues, pages } from "../schema";
 import db from "../storage";
-import { convertToImageUrl, parseFileNameFromPath } from "../utils";
+import { convertToImageUrl, parseFileNameFromPath, sortPages } from "../utils";
 
 export namespace Archive {
-  export function handleRar(path: string) {
-    return ResultAsync.fromThrowable(
+  export async function handleRar(path: string) {
+    return await ResultAsync.fromThrowable(
       async () => {
         const file = Fs.readFile(path);
         const wasmBinary = Fs.readFile(
@@ -22,51 +21,45 @@ export namespace Archive {
 
         return (
           await createRarExtractor(file.value.buffer, wasmBinary.value.buffer)
-        ).asyncAndThen((extractor) => {
-          const files = Array.from(extractor.files);
+        ).andThen((extractor) => {
+          const files = Array.from(extractor.files).sort((a, b) =>
+            sortPages(a.fileHeader.name, b.fileHeader.name),
+          );
 
           const thumbnailUrl = convertToImageUrl(
             files[0].extraction?.buffer || files[1].extraction?.buffer!,
           );
           const issueTitle = parseFileNameFromPath(path)._unsafeUnwrap();
 
-          return ResultAsync.fromPromise(
-            db
-              .insert(issues)
-              .values({ id: v4(), thumbnailUrl, issueTitle })
-              .returning()
-              .execute()
-              .then((res) => res.at(0)),
-            (error) => `Error creating new issue ${error}`,
-          ).andThen((issue) => {
-            const filePromises: ResultAsync<RunResult, string>[] = [];
+          return Result.fromThrowable(
+            async () => {
+              const newIssue = await db
+                .insert(issues)
+                .values({
+                  id: v4(),
+                  issueTitle,
+                  thumbnailUrl,
+                })
+                .returning()
+                .execute();
 
-            if (!issue) {
-              throw new Error("ERROR Creating New Issue");
-            }
-
-            for (const file of extractor.files) {
-              const fileResult = ResultAsync.fromPromise(
-                db
-                  .insert(pages)
-                  .values({
-                    id: v4(),
-                    pageContent: convertToImageUrl(file.extraction?.buffer!),
-                    issueId: issue.id,
-                  })
-                  .execute()
-                  .then((result) => result),
-                (error) => `Error handing files in extractor ${error}`,
-              );
-              filePromises.push(fileResult);
-            }
-            return ResultAsync.combine(filePromises);
-          });
+              for (const file of files) {
+                await db.insert(pages).values({
+                  id: v4(),
+                  pageContent: convertToImageUrl(file.extraction?.buffer!),
+                  issueId: newIssue[0].id,
+                });
+              }
+            },
+            (error) => `Error saving rar content to DB ${error}`,
+          )();
         });
       },
       (error) => `Error processing RAR file ${error}`,
     )();
   }
+
+  export function handleZip(path: string) {}
 
   function createRarExtractor(data: ArrayBuffer, wasmBinary: ArrayBuffer) {
     return ResultAsync.fromPromise(

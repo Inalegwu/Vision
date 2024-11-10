@@ -25,7 +25,7 @@ port.on("message", (message) =>
       switch (data.action) {
         case "LINK": {
           if (data.parsePath.includes("cbr")) {
-            return Archive.handleRar(data.parsePath);
+            return await Archive.handleRar(data.parsePath);
           }
 
           if (data.parsePath.includes("cbz")) {
