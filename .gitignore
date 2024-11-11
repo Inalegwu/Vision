@@ -10,3 +10,5 @@ out
 drizzle
 *.db-journal
 .million
+scratch.*
+scratchpad.*

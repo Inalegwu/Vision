@@ -1,48 +1,52 @@
 import { parentPort } from "node:worker_threads";
+import { Micro } from "effect";
+import type z from "zod";
 import { parseWorkerMessageWithSchema } from "../../utils";
 import { Archive } from "../archive";
 import { parsePathSchema } from "../validations";
 
 const port = parentPort;
 
-if (!port) throw new Error("Illegal State");
+if (!port) throw new Error("Parse Process Port is Missing");
 
 class ParserError {
   readonly _tag = "ParserError";
-  constructor(readonly message: string) {}
+  constructor(readonly cause: unknown) {}
 }
 
-port.on("message", (message) =>
-  parseWorkerMessageWithSchema(parsePathSchema, message).match(
-    async ({ data }) => {
-      switch (data.action) {
+function handleMessage({ action, parsePath }: z.infer<typeof parsePathSchema>) {
+  return Micro.tryPromise({
+    try: async () => {
+      switch (action) {
         case "LINK": {
-          if (data.parsePath.includes("cbr")) {
-            return await Archive.handleRar(data.parsePath);
+          if (parsePath.includes("cbr")) {
+            return (await Archive.handleRar(parsePath))
+              ._unsafeUnwrap()
+              ._unsafeUnwrap();
           }
 
-          if (data.parsePath.includes("cbz")) {
-            // const result = await handleZip(data.parsePath);
-
-            // result.match(
-            //   (res) => {
-            //     console.log({ res });
-            //   },
-            //   (err) => {
-            //     console.error({ err });
-            //   },
-            // );
-            return await Archive.handleZip(data.parsePath);
+          if (parsePath.includes("cbz")) {
+            return (await Archive.handleZip(parsePath))
+              ._unsafeUnwrap()
+              ._unsafeUnwrap();
           }
 
           return;
         }
         case "UNLINK": {
+          return;
         }
       }
     },
-    ({ message }) => {
-      console.error({ message });
+    catch: (cause) => new ParserError({ cause }),
+  });
+}
+
+port.on("message", (message) =>
+  parseWorkerMessageWithSchema(parsePathSchema, message).match(
+    ({ data }) => Micro.runPromise(handleMessage(data)),
+    (error) => {
+      console.error(error);
     },
   ),
 );

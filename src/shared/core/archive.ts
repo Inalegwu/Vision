@@ -92,8 +92,6 @@ export namespace Archive {
 
               const thumbnailUrl = convertToImageUrl(extractor[1].data.buffer);
 
-              console.log({ fileName, thumbnailUrl });
-
               const newIssue = await db
                 .insert(issues)
                 .values({
@@ -106,7 +104,6 @@ export namespace Archive {
 
               for (const file of extractor.slice(1, extractor.length - 1)) {
                 if (file.isDir) {
-                  console.log("found directory");
                   continue;
                 }
                 await db.insert(pages).values({

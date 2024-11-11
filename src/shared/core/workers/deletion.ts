@@ -10,18 +10,18 @@ const port = parentPort;
 
 if (!port) throw new Error("Illegal State");
 
-class DeletionError extends Micro.TaggedError("deletion-error")<{
-  cause: unknown;
-}> {}
+class DeletionError {
+  readonly _tag = "DeletionError";
 
-async function removeById(id: string) {
-  return await db.delete(issues).where(eq(issues.id, id));
+  constructor(readonly cause: unknown) {}
 }
 
 function deleteIssue(id: string) {
   return Micro.tryPromise({
-    try: () => removeById(id),
-    catch: (error) => new DeletionError({ cause: error }),
+    try: async () => {
+      return await db.delete(issues).where(eq(issues.id, id));
+    },
+    catch: (cause: unknown) => new DeletionError({ cause }),
   });
 }
 
