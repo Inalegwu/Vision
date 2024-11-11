@@ -7,6 +7,11 @@ const port = parentPort;
 
 if (!port) throw new Error("Illegal State");
 
+class ParserError {
+  readonly _tag = "ParserError";
+  constructor(readonly message: string) {}
+}
+
 port.on("message", (message) =>
   parseWorkerMessageWithSchema(parsePathSchema, message).match(
     async ({ data }) => {

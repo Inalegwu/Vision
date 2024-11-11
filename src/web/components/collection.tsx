@@ -30,7 +30,7 @@ export default function Collection({ collection }: Props) {
           gap="1"
         >
           <Flex className="w-full h-full overflow-hidden relative rounded-md border-1 border-solid border-zinc-200 dark:border-zinc-800">
-            {collection.issues.map((issue, idx) => (
+            {collection.issues.slice(0, 2).map((issue, idx) => (
               <img
                 key={issue.id}
                 src={issue.thumbnailUrl}
@@ -38,15 +38,12 @@ export default function Collection({ collection }: Props) {
                 className={`z-${idx * 10} w-full h-full absolute`}
                 style={{
                   transform: `rotateX(${idx * 10}deg)`,
-                  scale:idx*1
+                  scale: idx * 0.4,
                 }}
               />
             ))}
           </Flex>
           <Flex direction="column" gap="1" align="start">
-            {/* <span className="px-3 py-1 rounded-full cursor-pointer bg-zinc-400/20 text-xs">
-              collection
-            </span> */}
             <Text size="1" className="text-gray-600 dark:text-zinc-400">
               {collection.collectionName}
             </Text>

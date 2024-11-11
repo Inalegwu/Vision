@@ -1,26 +1,38 @@
+import { parseWorkerMessageWithSchema } from "@src/shared/utils";
 import { eq } from "drizzle-orm";
+import { Micro } from "effect";
 import { parentPort } from "node:worker_threads";
 import { issues } from "../../schema";
 import db from "../../storage";
-import { deleteFromStoreCompletionEvent$ } from "../events";
 import { deletionWorkerSchema } from "../validations";
-import { parseWorkerMessageWithSchema } from "@src/shared/utils";
 
 const port = parentPort;
 
 if (!port) throw new Error("Illegal State");
 
-port.on("message", (message) => parseWorkerMessageWithSchema(deletionWorkerSchema, message).match(async ({ data }) => {
-  try {
-    const start = Date.now();
-    await db.delete(issues).where(eq(issues.id, data.issueId))
-    deleteFromStoreCompletionEvent$.fire();
+class DeletionError extends Micro.TaggedError("deletion-error")<{
+  cause: unknown;
+}> {}
 
-    console.log({ took: Date.now() - start })
+async function removeById(id: string) {
+  return await db.delete(issues).where(eq(issues.id, id));
+}
 
-  } catch (e) {
-    console.error({ e });
-  }
-}, ({ message }) => {
-  console.error({ message });
-}))
+function deleteIssue(id: string) {
+  return Micro.tryPromise({
+    try: () => removeById(id),
+    catch: (error) => new DeletionError({ cause: error }),
+  });
+}
+
+port.on("message", (message) =>
+  parseWorkerMessageWithSchema(deletionWorkerSchema, message).match(
+    (data) =>
+      Micro.runPromise(deleteIssue(data.data.issueId)).then((result) => {
+        console.log(result);
+      }),
+    (message) => {
+      console.error({ message });
+    },
+  ),
+);
