@@ -1,9 +1,8 @@
-import { parentPort } from "node:worker_threads";
+import { Archive } from "@shared/core/archive";
+import { type ParserSchema, parserSchema } from "@shared/core/validations";
+import { parseWorkerMessageWithSchema } from "@shared/utils";
 import { Micro } from "effect";
-import type z from "zod";
-import { parseWorkerMessageWithSchema } from "../../utils";
-import { Archive } from "../archive";
-import { parsePathSchema } from "../validations";
+import { parentPort } from "node:worker_threads";
 
 const port = parentPort;
 
@@ -14,7 +13,7 @@ class ParserError {
   constructor(readonly cause: unknown) {}
 }
 
-function handleMessage({ action, parsePath }: z.infer<typeof parsePathSchema>) {
+function handleMessage({ action, parsePath }: ParserSchema) {
   return Micro.tryPromise({
     try: async () => {
       switch (action) {
@@ -43,7 +42,7 @@ function handleMessage({ action, parsePath }: z.infer<typeof parsePathSchema>) {
 }
 
 port.on("message", (message) =>
-  parseWorkerMessageWithSchema(parsePathSchema, message).match(
+  parseWorkerMessageWithSchema(parserSchema, message).match(
     ({ data }) => Micro.runPromise(handleMessage(data)),
     (error) => {
       console.error(error);

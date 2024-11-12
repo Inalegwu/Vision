@@ -1,7 +1,7 @@
+import { metadataWorkerSchema } from "@shared/core/validations";
 import { parseWorkerMessageWithSchema } from "@src/shared/utils";
 import { Micro } from "effect";
 import { parentPort } from "node:worker_threads";
-import { metadataWorkerSchema } from "../validations";
 
 const port = parentPort;
 

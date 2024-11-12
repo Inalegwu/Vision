@@ -30,7 +30,7 @@ export default function Collection({ collection }: Props) {
           gap="1"
         >
           <Flex className="w-full h-full overflow-hidden relative rounded-md border-1 border-solid border-zinc-200 dark:border-zinc-800">
-            {collection.issues.slice(0, 2).map((issue, idx) => (
+            {collection.issues.map((issue, idx) => (
               <img
                 key={issue.id}
                 src={issue.thumbnailUrl}

@@ -1,11 +1,15 @@
+import { Fs } from "@shared/fs";
+import { issues, pages } from "@shared/schema";
+import db from "@shared/storage";
+import {
+  convertToImageUrl,
+  parseFileNameFromPath,
+  sortPages,
+} from "@shared/utils";
 import Zip from "adm-zip";
 import { Result, ResultAsync } from "neverthrow";
 import { createExtractorFromData } from "node-unrar-js";
 import { v4 } from "uuid";
-import { Fs } from "../fs";
-import { issues, pages } from "../schema";
-import db from "../storage";
-import { convertToImageUrl, parseFileNameFromPath, sortPages } from "../utils";
 
 export namespace Archive {
   export async function handleRar(path: string) {
