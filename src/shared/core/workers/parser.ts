@@ -37,8 +37,8 @@ function handleMessage({ action, parsePath }: ParserSchema) {
         }
       }
     },
-    catch: (cause) => new ParserError({ cause }),
-  }).pipe(Micro.tapError((error) => Micro.sync(() => console.log(error))));
+    catch: (cause) => new ParserError({ cause: String(cause) }),
+  });
 }
 
 port.on("message", (message) =>

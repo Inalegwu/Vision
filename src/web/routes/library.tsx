@@ -25,12 +25,10 @@ export const Route = createFileRoute("/library")({
 });
 
 function Component() {
-  const utils = t.useUtils();
   const { mutate: createSourceDir } =
     t.library.createLibraryFolder.useMutation();
 
   const isEnabled = useObservable(false);
-  const isUpdating = useObservable(false);
 
   const { data, isLoading } = t.library.getLibrary.useQuery(undefined, {
     enabled: isEnabled.get(),
@@ -46,21 +44,6 @@ function Component() {
       globalState$.firstLaunch.set(false);
     }
   }, [createSourceDir]);
-
-  t.library.parserUpdates.useSubscription(undefined, {
-    onStarted: () => {
-      isUpdating.set(true);
-    },
-    onData: (data) => {
-      console.log(data);
-      if (data.isCompleted) {
-        isUpdating.set(false);
-      }
-      if (data.isCompleted) {
-        utils.library.getLibrary.invalidate();
-      }
-    },
-  });
 
   if (data?.collections.length === 0 && data?.issues.length === 0) {
     return (
@@ -84,14 +67,6 @@ function Component() {
       <Flex align="center" justify="between" className="w-full">
         <Heading size="8">Library</Heading>
         <Flex align="center" justify="end" gap="3">
-          {isUpdating.get() && (
-            <Flex>
-              <Text size="1" color="gray">
-                Adding Issue To Library
-              </Text>
-              <Spinner size={11} />
-            </Flex>
-          )}
           <CreateCollection />
           {data && (
             <>

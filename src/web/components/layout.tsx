@@ -1,5 +1,5 @@
 import { computed } from "@legendapp/state";
-import { useObserveEffect } from "@legendapp/state/react";
+import { useObservable, useObserveEffect } from "@legendapp/state/react";
 import { Flex, Text, Tooltip } from "@radix-ui/themes";
 import t from "@shared/config";
 import { useRouter, useRouterState } from "@tanstack/react-router";
@@ -26,11 +26,14 @@ type LayoutProps = {
 };
 
 export default function Layout({ children }: LayoutProps) {
+  const utils = t.useUtils();
   const navigation = useRouter();
   const routerState = useRouterState();
 
   const isNotHome = computed(() => routerState.location.pathname !== "/").get();
   const isFullscreen = globalState$.isFullscreen.get();
+  const isUpdating = useObservable(false);
+  const isUpdatingValue = isUpdating.get();
 
   const { mutate: minimizeWindow } = t.window.minimize.useMutation();
   const { mutate: maximizeWindow } = t.window.maximize.useMutation();
@@ -40,6 +43,18 @@ export default function Layout({ children }: LayoutProps) {
     t.library.startLibraryWatcher.useMutation();
 
   const { mutate: prefetchLibrary } = t.library.prefetchLibrary.useMutation();
+
+  t.library.parserUpdates.useSubscription(undefined, {
+    onData: (data) => {
+      console.log(data);
+      if (data.isCompleted) {
+        isUpdating.set(false);
+      }
+      if (data.isCompleted) {
+        utils.library.getLibrary.invalidate();
+      }
+    },
+  });
 
   useObserveEffect(() => {
     if (globalState$.colorMode.get() === "dark") {

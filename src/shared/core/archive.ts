@@ -62,7 +62,7 @@ export namespace Archive {
 
               for (const [index, value] of files.entries()) {
                 parserChannel.postMessage({
-                  completed: index,
+                  completed: index + 1,
                   total: files.length,
                   error: null,
                 });
@@ -126,18 +126,36 @@ export namespace Archive {
                 .returning()
                 .execute();
 
-              for (const file of extractor.slice(1, extractor.length - 1)) {
+              for (const [index, file] of extractor
+                .slice(1, extractor.length - 1)
+                .entries()) {
                 if (file.isDir) {
                   continue;
                 }
+                parserChannel.postMessage({
+                  completed: index + 1,
+                  total: extractor.slice(1, extractor.length - 1).length,
+                  error: null,
+                });
                 await db.insert(pages).values({
                   id: v4(),
                   pageContent: convertToImageUrl(file.data.buffer),
                   issueId: newIssue[0].id,
                 });
               }
+
+              parserChannel.postMessage({
+                isCompleted: true,
+                error: null,
+              });
             },
-            (error) => `Error saving ZIP ${error}`,
+            (error) => {
+              parserChannel.postMessage({
+                isCompleted: false,
+                error: error,
+              });
+              return `Error saving zip content to DB ${error}`;
+            },
           )();
         });
       },
