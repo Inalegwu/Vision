@@ -1,9 +1,8 @@
 import chokidar from "chokidar";
 import { app } from "electron";
 import { writeFileSync } from "node:fs";
-import type z from "zod";
 import watcherIndex from "./indexer";
-import type { parsePathSchema } from "./validations";
+import type { ParserSchema } from "./validations";
 import parseWorker from "./workers/parser?nodeWorker";
 
 export default function watchFS(path: string | null) {
@@ -36,7 +35,7 @@ const addFile = (p: string) => {
     .postMessage({
       parsePath: p,
       action: "LINK",
-    } satisfies z.infer<typeof parsePathSchema>);
+    } satisfies ParserSchema);
 };
 
 setInterval(() => {

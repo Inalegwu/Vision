@@ -20,6 +20,8 @@ export default function Collection({ collection }: Props) {
       },
     });
 
+  const cover = collection.issues[0];
+
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger>
@@ -27,18 +29,19 @@ export default function Collection({ collection }: Props) {
           onClick={go}
           className="w-[200px] h-[320px] mb-14 cursor-pointer"
           direction="column"
-          gap="1"
+          gap="2"
         >
-          <Flex className="w-full h-full overflow-hidden relative rounded-md border-1 border-solid border-zinc-200 dark:border-zinc-800">
+          <Flex className="w-full h-full relative rounded-md ">
             {collection.issues.map((issue, idx) => (
               <img
-                key={issue.id}
                 src={issue.thumbnailUrl}
                 alt={issue.issueTitle}
-                className={`z-${idx * 10} w-full h-full absolute`}
+                key={issue.id}
+                className={`w-full h-full absolute z-${idx} rounded-lg border-1 border-solid border-zinc-200 dark:border-zinc-800`}
                 style={{
-                  transform: `rotateX(${idx * 10}deg)`,
-                  scale: idx * 0.4,
+                  transform: `rotateZ(${
+                    idx === 0 ? -1.5 : idx % 2 === 0 ? -idx * 1 : idx * 1
+                  }deg)`,
                 }}
               />
             ))}

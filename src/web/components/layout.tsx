@@ -44,7 +44,7 @@ export default function Layout({ children }: LayoutProps) {
 
   const { mutate: prefetchLibrary } = t.library.prefetchLibrary.useMutation();
 
-  t.library.parserUpdates.useSubscription(undefined, {
+  t.library.additions.useSubscription(undefined, {
     onData: (data) => {
       console.log(data);
       if (data.isCompleted) {
@@ -52,6 +52,15 @@ export default function Layout({ children }: LayoutProps) {
       }
       if (data.isCompleted) {
         utils.library.getLibrary.invalidate();
+      }
+    },
+  });
+
+  t.library.deletions.useSubscription(undefined, {
+    onData: (data) => {
+      if (data.isDone) {
+        console.log(data);
+        utils.library.invalidate();
       }
     },
   });

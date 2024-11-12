@@ -7,9 +7,12 @@ import { mkdirSync } from "node:fs";
 import { v4 } from "uuid";
 import z from "zod";
 import { collections } from "../schema";
-import type { ParserChannel } from "../types";
+import type { DeletionChannel, ParserChannel } from "../types";
 
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
+const deletionChannel = new BroadcastChannel<DeletionChannel>(
+  "deletion-channel",
+);
 
 const libraryRouter = router({
   createLibraryFolder: publicProcedure.mutation(async ({ ctx }) => {
@@ -28,7 +31,6 @@ const libraryRouter = router({
             id: true,
             thumbnailUrl: true,
           },
-          limit: 2,
         },
       },
     });
@@ -73,7 +75,7 @@ const libraryRouter = router({
         collectionName: input.collectionName,
       });
     }),
-  parserUpdates: publicProcedure.subscription(() => {
+  additions: publicProcedure.subscription(() => {
     return observable<ParserChannel>((emit) => {
       const listener = (evt: ParserChannel) => {
         emit.next(evt);
@@ -83,6 +85,19 @@ const libraryRouter = router({
 
       return () => {
         parserChannel.removeEventListener("message", listener);
+      };
+    });
+  }),
+  deletions: publicProcedure.subscription(() => {
+    return observable<DeletionChannel>((emit) => {
+      const listener = (event: DeletionChannel) => {
+        emit.next(event);
+      };
+
+      deletionChannel.addEventListener("message", listener);
+
+      return () => {
+        deletionChannel.removeEventListener("message", listener);
       };
     });
   }),

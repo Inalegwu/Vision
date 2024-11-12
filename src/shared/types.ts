@@ -50,3 +50,7 @@ export type ParserChannel = {
   error: unknown | null;
   isCompleted?: boolean;
 };
+
+export type DeletionChannel = {
+  isDone: boolean;
+};

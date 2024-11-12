@@ -81,15 +81,20 @@ export default function Issue({ issue }: Props) {
               <Plus size={11} />
             </Flex>
           </ContextMenu.Item>
-          <ContextMenu.Item className="cursor-pointer" onClick={()=>navigation.navigate({
-            to:"/edit/$id",
-            params:{
-              id:issue.id
+          <ContextMenu.Item
+            className="cursor-pointer"
+            onClick={() =>
+              navigation.navigate({
+                to: "/edit/$id",
+                params: {
+                  id: issue.id,
+                },
+              })
             }
-          })}>
+          >
             <Flex align="center" justify="between" width="100%">
               <Text size="1">Edit Issue</Text>
-              <Edit2 size={11}/>
+              <Edit2 size={11} />
             </Flex>
           </ContextMenu.Item>
           {issue.collectionId !== null && (
@@ -132,6 +137,7 @@ export default function Issue({ issue }: Props) {
               <Flex
                 align="center"
                 justify="between"
+                key={item.id}
                 className="px-2 rounded-md py-2 cursor-pointer"
               >
                 <Flex
