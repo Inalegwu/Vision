@@ -1,10 +1,15 @@
 import watchFS from "@core/watcher";
 import prefetchWorker from "@core/workers/prefetch?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
+import { observable } from "@trpc/server/observable";
+import { BroadcastChannel } from "broadcast-channel";
 import { mkdirSync } from "node:fs";
 import { v4 } from "uuid";
 import z from "zod";
 import { collections } from "../schema";
+import type { ParserChannel } from "../types";
+
+const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 
 const libraryRouter = router({
   createLibraryFolder: publicProcedure.mutation(async ({ ctx }) => {
@@ -68,6 +73,19 @@ const libraryRouter = router({
         collectionName: input.collectionName,
       });
     }),
+  parserUpdates: publicProcedure.subscription(() => {
+    return observable<ParserChannel>((emit) => {
+      const listener = (evt: ParserChannel) => {
+        emit.next(evt);
+      };
+
+      parserChannel.addEventListener("message", listener);
+
+      return () => {
+        parserChannel.removeEventListener("message", listener);
+      };
+    });
+  }),
 });
 
 export default libraryRouter;

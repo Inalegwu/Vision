@@ -47,7 +47,5 @@ export const parseWorkerMessageWithSchema = <T extends z.ZodRawShape>(
     });
   }
 
-  return ok({
-    data: result.data,
-  });
+  return ok(result.data);
 };

@@ -43,3 +43,10 @@ export type ReadingState = {
   doneReading: Map<string, DoneReading>;
   currentlyReading: Map<string, CurrentlyReading>;
 };
+
+export type ParserChannel = {
+  completed?: number;
+  total?: number;
+  error: unknown | null;
+  isCompleted?: boolean;
+};

@@ -24,12 +24,12 @@ function deleteIssue({ issueId }: DeletionSchema) {
       return await db.delete(issues).where(eq(issues.id, issueId)).returning();
     },
     catch: (cause: unknown) => new DeletionError({ cause }),
-  });
+  }).pipe(Micro.tapError((error) => Micro.sync(() => console.log(error))));
 }
 
 port.on("message", (message) =>
   parseWorkerMessageWithSchema(deletionWorkerSchema, message).match(
-    ({ data }) => Micro.runPromise(deleteIssue({ issueId: data.issueId })),
+    (data) => Micro.runPromise(deleteIssue({ issueId: data.issueId })),
     (message) => {
       console.error({ message });
     },

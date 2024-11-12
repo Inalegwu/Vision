@@ -1,15 +1,19 @@
 import { Fs } from "@shared/fs";
 import { issues, pages } from "@shared/schema";
 import db from "@shared/storage";
+import type { ParserChannel } from "@shared/types";
 import {
   convertToImageUrl,
   parseFileNameFromPath,
   sortPages,
 } from "@shared/utils";
 import Zip from "adm-zip";
+import { BroadcastChannel } from "broadcast-channel";
 import { Result, ResultAsync } from "neverthrow";
 import { createExtractorFromData } from "node-unrar-js";
 import { v4 } from "uuid";
+
+const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 
 export namespace Archive {
   export async function handleRar(path: string) {
@@ -56,15 +60,31 @@ export namespace Archive {
                 .returning()
                 .execute();
 
-              for (const file of files) {
+              for (const [index, value] of files.entries()) {
+                parserChannel.postMessage({
+                  completed: index,
+                  total: files.length,
+                  error: null,
+                });
                 await db.insert(pages).values({
                   id: v4(),
-                  pageContent: convertToImageUrl(file.extraction?.buffer!),
+                  pageContent: convertToImageUrl(value.extraction?.buffer!),
                   issueId: newIssue[0].id,
                 });
               }
+
+              parserChannel.postMessage({
+                isCompleted: true,
+                error: null,
+              });
             },
-            (error) => `Error saving rar content to DB ${error}`,
+            (error) => {
+              parserChannel.postMessage({
+                isCompleted: false,
+                error: error,
+              });
+              return `Error saving rar content to DB ${error}`;
+            },
           )();
         });
       },

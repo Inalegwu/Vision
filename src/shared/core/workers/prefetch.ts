@@ -35,7 +35,7 @@ function prefetchData({ field }: Pick<PrefetchSchema, "field">) {
 
 port.on("message", (m) =>
   parseWorkerMessageWithSchema(prefetchWorkerSchema, m).match(
-    ({ data }) =>
+    (data) =>
       Micro.runPromise(prefetchData({ field: data.field })).then((result) => {
         port.postMessage({});
       }),

@@ -38,14 +38,14 @@ function handleMessage({ action, parsePath }: ParserSchema) {
       }
     },
     catch: (cause) => new ParserError({ cause }),
-  });
+  }).pipe(Micro.tapError((error) => Micro.sync(() => console.log(error))));
 }
 
 port.on("message", (message) =>
   parseWorkerMessageWithSchema(parserSchema, message).match(
-    ({ data }) => Micro.runPromise(handleMessage(data)),
-    (error) => {
-      console.error(error);
+    (data) => Micro.runPromise(handleMessage(data)),
+    (message) => {
+      console.error({ message });
     },
   ),
 );

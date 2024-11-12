@@ -1,4 +1,7 @@
-import { metadataWorkerSchema } from "@shared/core/validations";
+import {
+  type MetadataSchema,
+  metadataWorkerSchema,
+} from "@shared/core/validations";
 import { parseWorkerMessageWithSchema } from "@src/shared/utils";
 import { Micro } from "effect";
 import { parentPort } from "node:worker_threads";
@@ -20,7 +23,7 @@ type Metadata = {
   publisher: "DC" | "MARVEL" | "IMAGE" | "DARK HORSE" | "OTHER";
 };
 
-function getAndSaveIssueMetadata(issueName: string) {
+function getAndSaveIssueMetadata({ issueName }: MetadataSchema) {
   return Micro.tryPromise({
     try: async () => {
       const issueMetadata = (await fetch(
@@ -35,7 +38,8 @@ function getAndSaveIssueMetadata(issueName: string) {
 
 port.on("message", (message) =>
   parseWorkerMessageWithSchema(metadataWorkerSchema, message).match(
-    ({ data }) => Micro.runPromise(getAndSaveIssueMetadata(data.issueName)),
+    (data) =>
+      Micro.runPromise(getAndSaveIssueMetadata({ issueName: data.issueName })),
     (message) => {
       console.log({ message });
     },
