@@ -36,10 +36,10 @@ export function parseFileNameFromPath(filePath: string) {
 }
 
 export const parseWorkerMessageWithSchema = <T extends z.ZodRawShape>(
-  schema: z.ZodObject<T>,
-  message: string,
+  s: z.ZodObject<T>,
+  m: string,
 ) => {
-  const result = schema.safeParse(message);
+  const result = s.safeParse(m);
 
   if (!result.success) {
     return err({

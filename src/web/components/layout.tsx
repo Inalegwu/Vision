@@ -42,8 +42,6 @@ export default function Layout({ children }: LayoutProps) {
   const { mutate: startFileWatcher } =
     t.library.startLibraryWatcher.useMutation();
 
-  const { mutate: prefetchLibrary } = t.library.prefetchLibrary.useMutation();
-
   t.library.additions.useSubscription(undefined, {
     onData: (data) => {
       console.log(data);
@@ -77,10 +75,7 @@ export default function Layout({ children }: LayoutProps) {
 
   useEffect(() => {
     startFileWatcher();
-    prefetchLibrary({
-      queryKey: "issues",
-    });
-  }, [startFileWatcher, prefetchLibrary]);
+  }, [startFileWatcher]);
 
   return (
     <Flex

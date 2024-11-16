@@ -1,6 +1,7 @@
 import { ContextMenu, Flex, Text } from "@radix-ui/themes";
 import type { Collection as CollectionType, Issue } from "@shared/types";
 import { useRouter } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 import { Trash2 } from "lucide-react";
 
 type Props = {
@@ -9,6 +10,7 @@ type Props = {
   };
 };
 
+// TODO work on shared element transitions
 export default function Collection({ collection }: Props) {
   const navigation = useRouter();
 
@@ -19,8 +21,6 @@ export default function Collection({ collection }: Props) {
         collectionId: collection.id,
       },
     });
-
-  const cover = collection.issues[0];
 
   return (
     <ContextMenu.Root>
@@ -33,7 +33,7 @@ export default function Collection({ collection }: Props) {
         >
           <Flex className="w-full h-full relative rounded-md ">
             {collection.issues.map((issue, idx) => (
-              <img
+              <motion.img
                 src={issue.thumbnailUrl}
                 alt={issue.issueTitle}
                 key={issue.id}

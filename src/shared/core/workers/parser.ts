@@ -1,17 +1,16 @@
 import { Archive } from "@shared/core/archive";
 import { type ParserSchema, parserSchema } from "@shared/core/validations";
 import { parseWorkerMessageWithSchema } from "@shared/utils";
-import { Micro } from "effect";
+import { Data, Micro } from "effect";
 import { parentPort } from "node:worker_threads";
 
 const port = parentPort;
 
 if (!port) throw new Error("Parse Process Port is Missing");
 
-class ParserError {
-  readonly _tag = "ParserError";
-  constructor(readonly cause: unknown) {}
-}
+class ParserError extends Data.TaggedError("parser-error")<{
+  cause: unknown;
+}> {}
 
 function handleMessage({ action, parsePath }: ParserSchema) {
   return Micro.tryPromise({
@@ -37,8 +36,8 @@ function handleMessage({ action, parsePath }: ParserSchema) {
         }
       }
     },
-    catch: (cause) => new ParserError({ cause: String(cause) }),
-  });
+    catch: (cause) => new ParserError({ cause: cause }),
+  }).pipe(Micro.tapError((error) => Micro.sync(() => console.log(error))));
 }
 
 port.on("message", (message) =>

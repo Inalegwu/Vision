@@ -9,9 +9,14 @@ import {
 } from "@shared/utils";
 import Zip from "adm-zip";
 import { BroadcastChannel } from "broadcast-channel";
+import { Data, Micro } from "effect";
 import { Result, ResultAsync } from "neverthrow";
 import { createExtractorFromData } from "node-unrar-js";
 import { v4 } from "uuid";
+
+class ArchiveError extends Data.TaggedError("archive-error")<{
+  cause: unknown;
+}> {}
 
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 
@@ -192,5 +197,117 @@ export namespace Archive {
           })),
       (error) => `Error creating zip extractor ${error}`,
     )();
+  }
+
+  function microHandleZip(path: string) {
+    return Micro.gen(function* () {
+      const file = yield* Fs.microReadFile(path);
+
+      const wasmBinary = yield* Fs.microReadFile(
+        require.resolve("node_modules/node-unrar-js/dist/js/unrar.wasm"),
+      );
+
+      const fileName = yield* Micro.sync(() =>
+        path
+          .replace(/^.*[\\\/]/, "")
+          .replace(/\.[^/.]+$/, "")
+          .replace(/(\d+)$/, "")
+          .replace("-", ""),
+      );
+
+      // safely ensure that an issue with this name does
+      // not exist anywhere
+      const exists = yield* Micro.promise(
+        async () =>
+          await db.query.issues.findFirst({
+            where: (issues, { eq }) => eq(issues.issueTitle, fileName),
+          }),
+      );
+
+      if (!exists) {
+        // Kill the entire process if the issue
+        // already exists to ensure no reduntdant work is done
+        yield* Micro.die(
+          new ArchiveError({ cause: "This issue already exists" }),
+        );
+      }
+
+      // get the files, as an array, extracted and sorted safely
+      // within a micro
+      const files = yield* Micro.promise(() =>
+        createExtractorFromData({
+          data: file.buffer,
+          wasmBinary: wasmBinary.buffer,
+        })
+          .then((extractor) =>
+            extractor.extract({
+              files: [...extractor.getFileList().fileHeaders].map(
+                (header) => header.name,
+              ),
+            }),
+          )
+          .then((files) => Array.from(files.files))
+          .then((files) =>
+            files
+              .sort((a, b) => sortPages(a.fileHeader.name, b.fileHeader.name))
+              .filter((file) => !file.fileHeader.name.includes("xml")),
+          ),
+      );
+
+      // construct the thumbnail url
+      const thumbnailUrl = yield* Micro.sync(() =>
+        convertToImageUrl(
+          files[0].extraction?.buffer || files[1].extraction?.buffer!,
+        ),
+      );
+
+      // create the new issue within a micro promise
+      // so that errors can be traced and handled without
+      // crashing the entire app
+      const newIssue = yield* Micro.promise(
+        async () =>
+          await db
+            .insert(issues)
+            .values({
+              id: v4(),
+              issueTitle: fileName,
+              thumbnailUrl,
+            })
+            .returning()
+            .execute(),
+      );
+
+      if (!newIssue) {
+        // kill the entire parsing process to prevent more unnecesary work
+        // from being done
+        yield* Micro.die(new ArchiveError({ cause: "Error creating issue" }));
+      }
+
+      for (const file of files) {
+        // create a micro fiber handle
+        // to use the Effect ecosystem
+        // green threads to give us the
+        // benefit of false concurrency
+        const fiber = yield* Micro.fork(
+          Micro.promise(
+            async () =>
+              await db.insert(pages).values({
+                id: v4(),
+                issueId: newIssue[0].id,
+                pageContent: convertToImageUrl(file.extraction?.buffer!),
+              }),
+          ),
+        );
+
+        // await the fiber handle to complete
+        // before exiting the entire Micro scope
+        yield* fiber.await;
+      }
+    }).pipe(
+      // extract the errors detected within the Micro and log them out
+      // this also creates a way for future error logging to external
+      // services to be handled
+      Micro.tapError((error) => Micro.sync(() => console.log(error))),
+    );
   }
 }

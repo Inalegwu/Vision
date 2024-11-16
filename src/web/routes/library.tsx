@@ -133,7 +133,10 @@ function CreateCollection() {
   const utils = t.useUtils();
   const { mutate: createCollection, isLoading } =
     t.library.createCollection.useMutation({
-      onSuccess: () => utils.library.getLibrary.invalidate(),
+      onSuccess: () => {
+        utils.library.getLibrary.invalidate();
+        utils.collection.getCollections.invalidate();
+      },
     });
 
   const collectionName = useObservable("");

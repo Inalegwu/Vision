@@ -31,6 +31,7 @@ const libraryRouter = router({
             id: true,
             thumbnailUrl: true,
           },
+          orderBy: (fields, { desc }) => desc(fields.dateCreated),
         },
       },
     });

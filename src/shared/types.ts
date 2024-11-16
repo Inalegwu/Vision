@@ -54,3 +54,8 @@ export type ParserChannel = {
 export type DeletionChannel = {
   isDone: boolean;
 };
+
+export type PrefetchChannel = {
+  field: "library" | "issues";
+  data: Array<Record<string, unknown>>;
+};

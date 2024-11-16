@@ -8,7 +8,7 @@ import type { DeletionChannel } from "@src/shared/types";
 import { parseWorkerMessageWithSchema } from "@src/shared/utils";
 import { BroadcastChannel } from "broadcast-channel";
 import { eq } from "drizzle-orm";
-import { Micro } from "effect";
+import { Data, Micro } from "effect";
 import { parentPort } from "node:worker_threads";
 
 const port = parentPort;
@@ -19,10 +19,9 @@ const deletionChannel = new BroadcastChannel<DeletionChannel>(
 
 if (!port) throw new Error("Illegal State");
 
-class DeletionError {
-  readonly _tag = "DeletionError";
-  constructor(readonly cause: unknown) {}
-}
+class DeletionError extends Data.TaggedError("deletion-error")<{
+  cause: unknown;
+}> {}
 
 function deleteIssue({ issueId }: DeletionSchema) {
   return Micro.tryPromise({
@@ -39,7 +38,7 @@ function deleteIssue({ issueId }: DeletionSchema) {
 
 port.on("message", (message) =>
   parseWorkerMessageWithSchema(deletionWorkerSchema, message).match(
-    (data) => Micro.runPromise(deleteIssue({ issueId: data.issueId })),
+    (data) => Micro.runPromise(deleteIssue(data)),
     (message) => {
       console.error({ message });
     },
