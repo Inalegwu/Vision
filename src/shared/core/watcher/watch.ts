@@ -2,7 +2,6 @@ import { Effect, Layer } from "effect";
 import { app } from "electron";
 import { ChokidarClient } from "../clients/chokidar";
 import { PubSubClient } from "../pubsub/client";
-import { Message } from "../pubsub/message";
 
 const make = Effect.gen(function* () {
   const watcher = yield* ChokidarClient;
@@ -14,17 +13,20 @@ const make = Effect.gen(function* () {
   yield* Effect.forkDaemon(
     Effect.forever(
       Effect.gen(function* () {
+        yield* Effect.logInfo(`Documents`);
         const _ = yield* watcher.watch(`${app.getPath("documents")}/Vision`);
-        _.on("add", (path) =>
-          Effect.runSync(
-            Effect.gen(function* () {
-              yield* pubsub.publish(
-                Message.NewFile({
-                  path,
-                }),
-              );
-            }),
-          ),
+        _.on(
+          "add",
+          (path) => console.log(path),
+          // Effect.runSync(
+          //   Effect.gen(function* () {
+          //     yield* pubsub.publish(
+          //       Message.NewFile({
+          //         path,
+          //       }),
+          //     );
+          //   }),
+          // ),
         );
       }),
     ),
