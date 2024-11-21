@@ -15,7 +15,6 @@ import {
   X,
 } from "lucide-react";
 import type React from "react";
-import { useEffect } from "react";
 import { globalState$, settingsState$ } from "../state";
 import SettingsMenu from "./settings";
 import Spinner from "./spinner";
@@ -38,9 +37,6 @@ export default function Layout({ children }: LayoutProps) {
   const { mutate: minimizeWindow } = t.window.minimize.useMutation();
   const { mutate: maximizeWindow } = t.window.maximize.useMutation();
   const { mutate: closeWindow } = t.window.closeWindow.useMutation();
-
-  const { mutate: startFileWatcher } =
-    t.library.startLibraryWatcher.useMutation();
 
   t.library.additions.useSubscription(undefined, {
     onData: (data) => {
@@ -72,10 +68,6 @@ export default function Layout({ children }: LayoutProps) {
       globalState$.colorMode.set("light");
     }
   });
-
-  useEffect(() => {
-    startFileWatcher();
-  }, [startFileWatcher]);
 
   return (
     <Flex

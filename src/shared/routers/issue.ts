@@ -1,10 +1,6 @@
-import deletionWorker from "@core/workers/deletion?nodeWorker";
-import metadataWorker from "@core/workers/metadata?nodeWorker";
-import parseWorker from "@core/workers/parser?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import { dialog } from "electron";
 import z from "zod";
-import type { parsePathSchema } from "../core/validations";
 
 const issueRouter = router({
   addIssue: publicProcedure.mutation(async ({ ctx }) => {
@@ -18,17 +14,6 @@ const issueRouter = router({
       };
     }
 
-    parseWorker({
-      name: "parse-worker",
-    })
-      .on("message", (m) => {
-        console.log(m);
-      })
-      .postMessage({
-        parsePath: filePaths[0],
-        action: "LINK",
-      } satisfies z.infer<typeof parsePathSchema>);
-
     return {
       completed: true,
       cancelled: false,
@@ -40,24 +25,20 @@ const issueRouter = router({
         issueName: z.string().refine((v) => v.trim()),
       }),
     )
-    .query(async ({ input }) =>
-      metadataWorker({ name: "meta-data-worker" }).postMessage({
-        issueTitle: input.issueName,
-      }),
-    ),
+    .query(async ({ input }) => {
+      console.log(input);
+      return;
+    }),
   deleteIssue: publicProcedure
     .input(
       z.object({
         issueId: z.string(),
       }),
     )
-    .mutation(async ({ ctx, input }) =>
-      deletionWorker({
-        name: "deletion-worker",
-      }).postMessage({
-        issueId: input.issueId,
-      }),
-    ),
+    .mutation(async ({ ctx, input }) => {
+      console.log(input);
+      return false;
+    }),
   getPages: publicProcedure
     .input(
       z.object({

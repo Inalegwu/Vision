@@ -1,4 +1,3 @@
-import { deleteFromStoreCompletionEvent$ } from "@core/events";
 import { Button, ContextMenu, Dialog, Flex, Text } from "@radix-ui/themes";
 import t from "@shared/config";
 import type { Issue as issue } from "@src/shared/types";
@@ -38,8 +37,6 @@ export default function Issue({ issue }: Props) {
     });
 
   const { data, isLoading } = t.collection.getCollections.useQuery();
-
-  deleteFromStoreCompletionEvent$.on(() => utils.library.invalidate());
 
   const go = () =>
     navigation.navigate({

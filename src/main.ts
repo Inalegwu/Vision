@@ -3,6 +3,7 @@ import { appRouter } from "@shared/routers/_app";
 import { BrowserWindow, app, screen } from "electron";
 import { createIPCHandler } from "electron-trpc/main";
 import { join } from "node:path";
+import "./shared/core/core.ts";
 
 // THIS IS A HACK
 // this ensures that the application database

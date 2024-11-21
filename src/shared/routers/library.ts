@@ -1,5 +1,3 @@
-import watchFS from "@core/watcher";
-import prefetchWorker from "@core/workers/prefetch?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import { observable } from "@trpc/server/observable";
 import { BroadcastChannel } from "broadcast-channel";
@@ -19,9 +17,6 @@ const libraryRouter = router({
     const path = `${ctx.app.getPath("documents")}/Vision`;
     mkdirSync(path);
   }),
-  startLibraryWatcher: publicProcedure.mutation(async ({ ctx }) =>
-    watchFS(`${ctx.app.getPath("documents")}/Vision`),
-  ),
   getLibrary: publicProcedure.query(async ({ ctx }) => {
     const issues = await ctx.db.query.issues.findMany({});
     const collections = await ctx.db.query.collections.findMany({
@@ -46,23 +41,6 @@ const libraryRouter = router({
       collections,
     };
   }),
-  prefetchLibrary: publicProcedure
-    .input(
-      z.object({
-        queryKey: z.string(),
-      }),
-    )
-    .mutation(async ({ input }) =>
-      prefetchWorker({
-        name: "prefetch-worker",
-      })
-        .on("message", (m) => {
-          console.log({ m });
-        })
-        .postMessage({
-          queryKey: input.queryKey,
-        }),
-    ),
   createCollection: publicProcedure
     .input(
       z.object({
