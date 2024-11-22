@@ -62,4 +62,8 @@ declare global {
     field: "library" | "issues";
     data: Array<Record<string, unknown>>;
   };
+
+  export type ExistsChannel = {
+    exists: boolean;
+  };
 }

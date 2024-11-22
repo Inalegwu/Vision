@@ -36,7 +36,7 @@ const make = Effect.gen(function* () {
           ),
         );
       }),
-      Schedule.duration(Duration.seconds(5)),
+      Schedule.duration(Duration.seconds(2)),
     ),
   );
 });

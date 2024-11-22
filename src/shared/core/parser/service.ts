@@ -1,4 +1,5 @@
 import { Effect, Layer } from "effect";
+import { Zip } from "./archive/zip";
 import { Parse } from "./parse";
 
 const make = Effect.gen(function* () {
@@ -11,4 +12,5 @@ const make = Effect.gen(function* () {
 
 export const ParserService = Layer.scopedDiscard(make).pipe(
   Layer.provide(Parse.Live),
+  Layer.provide(Zip.Live),
 );
