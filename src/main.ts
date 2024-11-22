@@ -32,8 +32,10 @@ const createWindow = () => {
   coreWorker({
     name: "worker-worker",
   }).postMessage({
-    start: true,
+    path: `${app.getPath("documents")}/Vision`,
   });
+
+  global.__path = `${app.getPath("documents")}/Vision`;
 
   createIPCHandler({
     router: appRouter,

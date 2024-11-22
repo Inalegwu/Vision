@@ -1,6 +1,8 @@
 import type { collections, issues, pages } from "./schema";
 
 declare global {
+  var __path: string;
+
   export type GlobalState = {
     colorMode: "dark" | "light";
     firstLaunch: boolean;

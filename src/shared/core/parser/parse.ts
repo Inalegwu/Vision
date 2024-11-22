@@ -12,15 +12,15 @@ const make = Effect.gen(function* () {
         const message = yield* sub.take;
 
         const _ = message.path;
+        const ext = yield* Option.fromNullable(_.split(".")[1]);
         const fileName = yield* Option.fromNullable(
           _.replace(/^.*[\\\/]/, "")
             .replace(/\.[^/.]+$/, "")
             .replace(/(\d+)$/, "")
             .replace("-", ""),
         );
-        const [name, ext] = fileName.split(".");
 
-        yield* Effect.logInfo(name, ext);
+        yield* Effect.logInfo(ext, fileName);
       }),
     ),
   );
