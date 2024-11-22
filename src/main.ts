@@ -53,7 +53,7 @@ const createWindow = () => {
     mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
   }
 
-  mainWindow.webContents.openDevTools({ mode: "right" });
+  // mainWindow.webContents.openDevTools({ mode: "right" });
 };
 
 app.whenReady().then(() => {

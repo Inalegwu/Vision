@@ -11,7 +11,12 @@ type IChokidarClient = Readonly<{
 }>;
 
 const make = Effect.gen(function* () {
-  const watch = (path: string) => Effect.try(() => chokidarWatch(path));
+  const watch = (path: string) =>
+    Effect.try(() =>
+      chokidarWatch(path, {
+        ignoreInitial: true,
+      }),
+    );
 
   return { watch } satisfies IChokidarClient;
 });

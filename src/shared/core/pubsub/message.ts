@@ -5,7 +5,7 @@ export type Message = Data.TaggedEnum<{
     path: string;
   };
   DeleteFile: {
-    name: string;
+    path: string;
   };
 }>;
 

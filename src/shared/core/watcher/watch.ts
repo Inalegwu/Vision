@@ -1,4 +1,4 @@
-import { Effect, Layer } from "effect";
+import { Duration, Effect, Layer, Schedule } from "effect";
 import { ChokidarClient } from "../clients/chokidar";
 import { PubSubClient } from "../pubsub/client";
 import { Message } from "../pubsub/message";
@@ -8,10 +8,8 @@ const make = Effect.gen(function* () {
 
   const pubsub = yield* PubSubClient;
 
-  yield* Effect.logInfo("watcher listening");
-
-  yield* Effect.forkDaemon(
-    Effect.forever(
+  yield* Effect.forkScoped(
+    Effect.schedule(
       Effect.gen(function* () {
         const _ = yield* watcher.watch("/home/disgruntleddev/Documents/Vision");
         _.on("add", (path) =>
@@ -25,7 +23,20 @@ const make = Effect.gen(function* () {
             }),
           ),
         );
+
+        _.on("unlink", (path) =>
+          Effect.runSync(
+            Effect.gen(function* () {
+              yield* pubsub.publish(
+                Message.DeleteFile({
+                  path,
+                }),
+              );
+            }),
+          ),
+        );
       }),
+      Schedule.duration(Duration.seconds(5)),
     ),
   );
 });

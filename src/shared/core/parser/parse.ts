@@ -1,4 +1,4 @@
-import { Effect, Layer, Option } from "effect";
+import { Effect, Layer, Match, Option } from "effect";
 import { PubSubClient } from "../pubsub/client";
 
 const make = Effect.gen(function* () {
@@ -12,15 +12,20 @@ const make = Effect.gen(function* () {
         const message = yield* sub.take;
 
         const _ = message.path;
-        const ext = yield* Option.fromNullable(_.split(".")[1]);
+        const [name, ext] = yield* Option.fromNullable(_.split("."));
         const fileName = yield* Option.fromNullable(
-          _.replace(/^.*[\\\/]/, "")
+          name
+            .replace(/^.*[\\\/]/, "")
             .replace(/\.[^/.]+$/, "")
             .replace(/(\d+)$/, "")
             .replace("-", ""),
         );
 
-        yield* Effect.logInfo(ext, fileName);
+        const parsedXt = yield* Match.value(ext).pipe(
+          Match.when("cbr", (ext) => Effect.succeed(ext)),
+          Match.when("cbz", (ext) => Effect.succeed(ext)),
+          Match.orElse(() => Option.none()),
+        );
       }),
     ),
   );
