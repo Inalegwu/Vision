@@ -66,4 +66,8 @@ declare global {
   export type ExistsChannel = {
     exists: boolean;
   };
+
+  export type AddIssueChannel = {
+    path: Array<string>;
+  };
 }

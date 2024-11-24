@@ -1,6 +1,11 @@
 import { publicProcedure, router } from "@src/trpc";
+import { BroadcastChannel } from "broadcast-channel";
 import { dialog } from "electron";
 import z from "zod";
+
+const addIssueChannel = new BroadcastChannel<AddIssueChannel>(
+  "add-issue-channel",
+);
 
 const issueRouter = router({
   addIssue: publicProcedure.mutation(async ({ ctx }) => {
@@ -13,6 +18,10 @@ const issueRouter = router({
         completed: false,
       };
     }
+
+    addIssueChannel.postMessage({
+      path: filePaths,
+    });
 
     return {
       completed: true,
