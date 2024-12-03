@@ -59,7 +59,6 @@ const make = Effect.gen(function* () {
   });
 });
 
-// biome-ignore lint/complexity/noStaticOnlyClass: <explanation>
 export class PubSubClient extends Context.Tag("pubsub-client")<
   PubSubClient,
   IPubSubClient

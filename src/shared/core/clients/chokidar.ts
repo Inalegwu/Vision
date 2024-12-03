@@ -21,7 +21,6 @@ const make = Effect.gen(function* () {
   return { watch } satisfies IChokidarClient;
 });
 
-// biome-ignore lint/complexity/noStaticOnlyClass: <explanation>
 export class ChokidarClient extends Context.Tag("chokidar-client")<
   ChokidarClient,
   IChokidarClient

@@ -13,9 +13,11 @@
       },
       "a11y": {
         "useButtonType": "off"
+      },
+      "complexity": {
+        "noStaticOnlyClass": "off"
       }
-    },
-    "ignore": ["./kuma.config.ts"]
+    }
   },
   "formatter": {
     "enabled": true,

@@ -40,7 +40,6 @@ const make = Effect.gen(function* () {
   return { make } satisfies IRarClient;
 });
 
-// biome-ignore lint/complexity/noStaticOnlyClass: <explanation>
 export class RarClient extends Context.Tag("rar-client")<
   RarClient,
   IRarClient

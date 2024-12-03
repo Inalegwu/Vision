@@ -19,7 +19,6 @@ const make = Effect.gen(function* () {
   return { make } satisfies IZipClient;
 });
 
-// biome-ignore lint/complexity/noStaticOnlyClass: <explanation>
 export class ZipClient extends Context.Tag("zip-client")<
   ZipClient,
   IZipClient

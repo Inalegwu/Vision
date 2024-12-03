@@ -12,7 +12,6 @@ const make = Effect.gen(function* () {
   return { make } satisfies IBroadcastClient;
 });
 
-// biome-ignore lint/complexity/noStaticOnlyClass: <explanation>
 export class BroadcastClient extends Context.Tag("broadcast-client")<
   BroadcastClient,
   IBroadcastClient
