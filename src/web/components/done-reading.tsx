@@ -1,6 +1,7 @@
 import { ContextMenu, Flex, Text } from "@radix-ui/themes";
 import type { DoneReading as DoneReadingType } from "@src/shared/types";
 import { Minus } from "lucide-react";
+import moment from "moment";
 
 type Props = {
   issue: DoneReadingType;
@@ -32,10 +33,9 @@ export default function DoneReading({ issue }: Props) {
             >
               {issue.title}
             </Text>
-            {/* TODO install moment and give a proper value */}
-            {/* <Text className="text-[11.5px]" weight="regular" color="gray">
-              {issue.dateFinished?.toString()}
-            </Text> */}
+            <Text className="text-[11.5px]" weight="regular" color="gray">
+              {moment(issue.dateFinished).fromNow()}
+            </Text>
           </Flex>
         </Flex>
       </ContextMenu.Trigger>

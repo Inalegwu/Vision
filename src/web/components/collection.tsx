@@ -10,7 +10,6 @@ type Props = {
   };
 };
 
-// TODO work on shared element transitions
 export default function Collection({ collection }: Props) {
   const navigation = useRouter();
 
