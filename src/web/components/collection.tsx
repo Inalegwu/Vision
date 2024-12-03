@@ -40,7 +40,7 @@ export default function Collection({ collection }: Props) {
                 className={`w-full h-full absolute z-${idx} rounded-lg border-1 border-solid border-zinc-200 dark:border-zinc-800`}
                 style={{
                   transform: `rotateZ(${
-                    idx === 0 ? -1.5 : idx % 2 === 0 ? -idx * 1 : idx * 1
+                    idx === 0 ? -1 : idx % 2 === 0 ? -idx * 1 : idx * 1
                   }deg)`,
                 }}
               />

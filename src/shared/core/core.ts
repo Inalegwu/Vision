@@ -6,7 +6,7 @@ import { WatcherService } from "./watcher/service";
 
 const port = parentPort;
 
-if (!port) throw new Error("Parse Process Port is Missing");
+if (!port) throw new Error("[VCORE]==> CORE Port is Missing");
 
 const CoreLive = Layer.mergeAll(WatcherService, ParserService);
 
