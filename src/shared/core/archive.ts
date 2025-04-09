@@ -1,7 +1,6 @@
 import { Fs } from "@shared/fs";
-import { issues, pages } from "@shared/schema";
+import { issues, metadata, pages } from "@shared/schema";
 import db from "@shared/storage";
-import type { ParserChannel } from "@shared/types";
 import {
   convertToImageUrl,
   parseFileNameFromPath,
@@ -9,22 +8,17 @@ import {
 } from "@shared/utils";
 import Zip from "adm-zip";
 import { BroadcastChannel } from "broadcast-channel";
-import { Array, Data, Effect, Schema } from "effect";
+import { Array, Effect, Schema } from "effect";
 import { XMLParser } from "fast-xml-parser";
 import { createExtractorFromData } from "node-unrar-js";
 import { v4 } from "uuid";
 import { MetadataSchema } from "./validations";
-
-class ArchiveError extends Data.TaggedError("archive-error")<{
-  cause: unknown;
-}> {}
 
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 
 export namespace Archive {
   export function handleRar(path: string) {
     return Effect.gen(function* () {
-      const xmlParser = new XMLParser();
       yield* Effect.log("loading wasm");
       const wasmBinary = yield* Fs.readFile(
         require.resolve("node-unrar-js/dist/js/unrar.wasm"),
@@ -51,36 +45,10 @@ export namespace Archive {
             }),
           ),
         ),
-        Effect.tap((extracted) =>
-          Effect.gen(function* () {
-            const xml = Array.fromIterable(extracted.files).find((file) =>
-              file.fileHeader.name.includes("xml"),
-            );
-
-            if (!xml) return;
-
-            const file = Buffer.from(xml.extraction?.buffer!).toString();
-
-            yield* Effect.log(file);
-
-            const contents = yield* Effect.sync(() => xmlParser.parse(file));
-
-            yield* Effect.log(contents);
-
-            const comicInfo = yield* Schema.decodeUnknown(MetadataSchema)(
-              contents.ComicInfo,
-              {
-                onExcessProperty: "ignore",
-              },
-            );
-
-            yield* Effect.logInfo(comicInfo);
-          }),
-        ),
         Effect.andThen((extracted) =>
           Array.fromIterable(extracted.files)
             .sort((a, b) => sortPages(a.fileHeader.name, b.fileHeader.name))
-            .filter((files) => !files.fileHeader.name.includes("xml")),
+            .filter((file) => !file.fileHeader.flags.directory),
         ),
       );
 
@@ -89,6 +57,7 @@ export namespace Archive {
           parserChannel.postMessage({
             error: "File appears to be empty",
             isCompleted: false,
+            state: "ERROR",
           }),
         );
       }
@@ -99,11 +68,15 @@ export namespace Archive {
         parseFileNameFromPath(path),
       ).pipe(Effect.tap(Effect.log));
 
-      // const thumbnailUrl = yield* Effect.sync(() =>
-      //   convertToImageUrl(
-      //     files[0]?.extraction?.buffer || files[1]?.extraction?.buffer!,
-      //   ),
-      // );
+      const _files = files.filter(
+        (file) => !file.fileHeader.name.includes("xml"),
+      );
+
+      const thumbnailUrl = yield* Effect.sync(() =>
+        convertToImageUrl(
+          _files[0]?.extraction?.buffer || _files[1]?.extraction?.buffer!,
+        ),
+      );
 
       const exists = yield* Effect.tryPromise(
         async () =>
@@ -129,48 +102,59 @@ export namespace Archive {
         ).at(0),
       );
 
-      yield* Effect.log(newIssue);
-
       if (!newIssue) {
         parserChannel.postMessage({
           isCompleted: false,
           error: "Issue Already Exists",
+          state: "SUCCESS",
         });
         return yield* Effect.logError("Issue Already Exists");
       }
 
-      yield* Effect.forEach(files, (file, index) =>
-        Effect.gen(function* () {
-          const pageContent = yield* Effect.sync(() =>
-            convertToImageUrl(file?.extraction?.buffer!),
-          );
+      yield* Effect.fork(
+        parseXML(
+          files.find((file) => file.fileHeader.name.includes("xml"))?.extraction
+            ?.buffer,
+          newIssue.id,
+        ),
+      );
 
-          yield* Effect.log(file.fileHeader.name);
+      yield* Effect.forEach(
+        files.filter((file) => !file.fileHeader.name.includes("xml")),
+        (file, index) =>
+          Effect.gen(function* () {
+            const pageContent = yield* Effect.sync(() =>
+              convertToImageUrl(file?.extraction?.buffer!),
+            );
 
-          yield* Effect.tryPromise(
-            async () =>
-              await db.insert(pages).values({
-                id: v4(),
-                pageContent,
-                issueId: newIssue.id,
+            yield* Effect.log(file.fileHeader.name);
+
+            yield* Effect.tryPromise(
+              async () =>
+                await db.insert(pages).values({
+                  id: v4(),
+                  pageContent,
+                  issueId: newIssue.id,
+                }),
+            );
+
+            yield* Effect.sync(() =>
+              parserChannel.postMessage({
+                completed: index,
+                total: files.length,
+                error: null,
+                isCompleted: false,
+                state: "SUCCESS",
               }),
-          );
-
-          yield* Effect.sync(() =>
-            parserChannel.postMessage({
-              completed: index,
-              total: files.length,
-              error: null,
-              isCompleted: false,
-            }),
-          );
-        }),
+            );
+          }),
       );
 
       yield* Effect.sync(() =>
         parserChannel.postMessage({
           isCompleted: true,
           error: null,
+          state: "SUCCESS",
         }),
       );
     }).pipe(
@@ -185,8 +169,6 @@ export namespace Archive {
 
   export function handleZip(path: string) {
     return Effect.gen(function* () {
-      const xmlParser = new XMLParser();
-
       const files = yield* Fs.readFile(path).pipe(
         Effect.andThen((buff) =>
           new Zip(Buffer.from(buff.buffer))
@@ -199,35 +181,17 @@ export namespace Archive {
             }))
             .filter((file) => !file.isDir),
         ),
-        Effect.tap((extracted) =>
-          Effect.gen(function* () {
-            const xml = Array.fromIterable(extracted).find((file) =>
-              file.name.includes("xml"),
-            );
-
-            if (!xml) return;
-
-            const file = Buffer.from(xml.data.buffer).toString();
-
-            yield* Effect.log(file);
-
-            const contents = yield* Effect.sync(() => xmlParser.parse(file));
-
-            yield* Effect.logInfo(contents);
-
-            const comicInfo = yield* Schema.decodeUnknown(MetadataSchema)(
-              contents.ComicInfo,
-            );
-
-            yield* Effect.logInfo(comicInfo);
-          }),
-        ),
       );
 
       const issueTitle = yield* Effect.sync(() => parseFileNameFromPath(path));
+
+      const _files = files.filter((file) => !file.name.includes("xml"));
+
       const thumbnailUrl = yield* Effect.sync(() =>
         convertToImageUrl(
-          files[0].data.buffer || files[1].data.buffer || files[1].data.buffer,
+          _files[0].data.buffer ||
+            _files[1].data.buffer ||
+            _files[1].data.buffer,
         ),
       );
 
@@ -242,6 +206,7 @@ export namespace Archive {
         parserChannel.postMessage({
           isCompleted: false,
           error: "Issue Already Exists",
+          state: "ERROR",
         });
         return yield* Effect.logError("Issue is already Saved");
       }
@@ -262,6 +227,13 @@ export namespace Archive {
       if (!newIssue) {
         return yield* Effect.logError("Unable to save Issue");
       }
+
+      yield* Effect.fork(
+        parseXML(
+          files.find((file) => file.name.includes("xml"))?.data.buffer,
+          newIssue.id,
+        ),
+      );
 
       yield* Effect.forEach(files, (file, index) =>
         Effect.gen(function* () {
@@ -287,6 +259,7 @@ export namespace Archive {
             total: files.length,
             error: null,
             isCompleted: false,
+            state: "SUCCESS",
           });
         }),
       );
@@ -294,6 +267,7 @@ export namespace Archive {
       parserChannel.postMessage({
         isCompleted: true,
         error: null,
+        state: "SUCCESS",
       });
     }).pipe(
       Effect.orDie,
@@ -305,3 +279,37 @@ export namespace Archive {
     );
   }
 }
+
+const parseXML = (buffer: ArrayBufferLike | undefined, issueId: string) =>
+  Effect.gen(function* () {
+    const xmlParser = new XMLParser();
+
+    if (!buffer) return;
+
+    const file = Buffer.from(buffer).toString();
+
+    yield* Effect.log(file);
+
+    const contents = yield* Effect.sync(() => xmlParser.parse(file));
+
+    yield* Effect.log(contents);
+
+    const comicInfo = yield* Schema.decodeUnknown(MetadataSchema)(
+      contents.ComicInfo,
+      {
+        onExcessProperty: "ignore",
+        exact: false,
+      },
+    );
+
+    yield* Effect.logInfo(comicInfo);
+
+    yield* Effect.tryPromise(
+      async () =>
+        await db.insert(metadata).values({
+          id: v4(),
+          issueId,
+          ...comicInfo,
+        }),
+    );
+  }).pipe(Effect.orDie);

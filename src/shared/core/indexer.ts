@@ -1,52 +1,29 @@
-import { Effect } from "effect";
+import { Array } from "effect";
 import type * as fs from "node:fs";
 
-// TODO persist index across app runs
-class Indexer {
-  $store: Set<string> = new Set<string>();
+export const watcherIndex = (() => {
+  const store = new Set<string>();
 
-  init() {
-    return new Indexer();
-  }
+  return {
+    write: (value: string) => store.add(value),
+    clear: () => store.clear(),
+    check: (value: string) => store.has(value),
+    remove: (value: string) => store.delete(value),
+    save: (
+      path: string,
+      writer: (
+        file: fs.PathOrFileDescriptor,
+        data: string | NodeJS.ArrayBufferView,
+        options?: fs.WriteFileOptions,
+      ) => void,
+    ) => {
+      const indexAsJSON = Array.fromIterable(store).map((path) => ({ path }));
 
-  write(value: string) {
-    this.$store.add(value);
-  }
+      if (indexAsJSON.length === 0) return;
 
-  checkIndex(value: string) {
-    return this.$store.has(value);
-  }
-
-  clearIndex() {
-    this.$store.clear();
-  }
-
-  removeFromIndex(value: string) {
-    console.log({ message: `removing ${value}` });
-    this.$store.delete(value);
-  }
-
-  saveIndex(
-    path: string,
-    writer: (
-      file: fs.PathOrFileDescriptor,
-      data: string | NodeJS.ArrayBufferView,
-      options?: fs.WriteFileOptions,
-    ) => void,
-  ) {
-    const indexAsJSON = Array.from(this.$store).map((v) => ({ v }));
-
-    if (indexAsJSON.length === 0) return;
-
-    // console.log({ indexAsJSON });
-
-    writer(path, JSON.stringify(indexAsJSON), {});
-  }
-}
-
-export const wIndex = (() =>
-  Effect.gen(function* () {}).pipe(Effect.runSync))();
-
-const watcherIndex = new Indexer().init();
+      writer(path, JSON.stringify(indexAsJSON), {});
+    },
+  };
+})();
 
 export default watcherIndex;

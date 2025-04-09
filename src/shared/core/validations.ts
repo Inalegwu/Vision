@@ -33,18 +33,5 @@ export const MetadataSchema = Schema.Struct({
   writer: Schema.String.pipe(Schema.optional),
   Month: Schema.Int.pipe(Schema.optional),
   Year: Schema.Int.pipe(Schema.optional),
+  Summary: Schema.String.pipe(Schema.optional),
 });
-
-// {
-//   \"?xml\": \"\",
-//   \"ComicInfo\": {
-//     \"Series\": \"Green Lantern: Fractured Spectrum\",
-//     \"Issue\": 1,
-//     \"LanguageISO\": \"en\",
-//     \"PageCount\": 29,
-//     \"Notes\": \"Scraped metadata from Amazon [ASINB0DPV3BQXN]\",
-//     \"writer\": \"Jeremy Adams\",
-//     \"Month\": 1,
-//     \"Year\": 2025
-// }
-// }

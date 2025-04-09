@@ -8,7 +8,6 @@ import { v4 } from "uuid";
 import z from "zod";
 import { view } from "../core/validations";
 import { collections } from "../schema";
-import type { DeletionChannel, ParserChannel } from "../types";
 
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 const deletionChannel = new BroadcastChannel<DeletionChannel>(

@@ -1,13 +1,13 @@
 import type {
+  MetadataSchema,
   deletionWorkerSchema,
   parserSchema,
   prefetchWorkerSchema,
   workerResponseSchema,
-  MetadataSchema,
 } from "@shared/core/validations";
+import type * as Schema from "effect/Schema";
 import type z from "zod";
 import type { collections, issues, pages } from "./schema";
-import * as Schema from "effect/Schema"
 
 declare global {
   export type GlobalState = {
@@ -59,6 +59,7 @@ declare global {
     total?: number;
     error: string | null;
     isCompleted?: boolean;
+    state: "ERROR" | "SUCCESS";
   };
 
   export type DeletionChannel = {
@@ -74,5 +75,5 @@ declare global {
   export type WorkerResponse = z.infer<typeof workerResponseSchema>;
   export type DeletionSchema = z.infer<typeof deletionWorkerSchema>;
   export type PrefetchSchema = z.infer<typeof prefetchWorkerSchema>;
-  export type Metadata=Schema.Schema.Type<typeof MetadataSchema>
+  export type Metadata = Schema.Schema.Type<typeof MetadataSchema>;
 }

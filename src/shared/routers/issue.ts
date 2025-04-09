@@ -84,9 +84,13 @@ const issueRouter = router({
       const issue = await ctx.db.query.issues.findFirst({
         where: (issues, { eq }) => eq(issues.id, input.issueId),
       });
+      const metadata = await ctx.db.query.metadata.findFirst({
+        where: (meta, { eq }) => eq(meta.issueId, input.issueId),
+      });
 
       return {
         issue,
+        metadata,
       };
     }),
 });

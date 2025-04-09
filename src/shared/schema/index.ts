@@ -37,6 +37,21 @@ export const issues = sqliteTable(
   }),
 );
 
+export const metadata = sqliteTable("metadata", {
+  id: text("id").notNull().primaryKey(),
+  issueId: text("issueId").references(() => issues.id, { onDelete: "cascade" }),
+  Series: text("series"),
+  Issue: integer("issue"),
+  Web: text("web"),
+  LanguageISO: text("language"),
+  PageCount: integer("page_count"),
+  Notes: text("notes"),
+  writer: text("writer"),
+  Month: integer("month"),
+  Year: integer("year"),
+  Summary: text("summary"),
+});
+
 export const pages = sqliteTable(
   "pages",
   {
@@ -60,6 +75,17 @@ export const pages = sqliteTable(
 
 export const collectionToIssue = relations(collections, ({ many }) => ({
   issues: many(issues),
+}));
+
+export const metaToIssue = relations(metadata, ({ one }) => ({
+  issue: one(issues, {
+    fields: [metadata.issueId],
+    references: [issues.id],
+  }),
+}));
+
+export const issueToMeta = relations(issues, ({ one }) => ({
+  metadata: one(metadata),
 }));
 
 export const issueToCollection = relations(issues, ({ one }) => ({

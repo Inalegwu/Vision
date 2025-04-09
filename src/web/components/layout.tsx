@@ -45,7 +45,10 @@ export default function Layout({ children }: LayoutProps) {
   t.library.additions.useSubscription(undefined, {
     onData: (data) => {
       console.log(data);
-      if (data.error !== null) {
+      if (data.state === "SUCCESS") {
+        console.log("success");
+      }
+      if (data.error !== null && data.state === "ERROR") {
         console.log(data.error);
       }
       if (data.isCompleted) {

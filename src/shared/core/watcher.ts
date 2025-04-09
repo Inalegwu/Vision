@@ -8,9 +8,7 @@ export default function watchFS(path: string | null) {
   try {
     if (path === null) return;
 
-    const watcher = chokidar.watch(path, {
-      ignoreInitial: true,
-    });
+    const watcher = chokidar.watch(path);
 
     watcher.on("add", addFile);
   } catch (e) {
@@ -19,7 +17,7 @@ export default function watchFS(path: string | null) {
 }
 
 const addFile = (p: string) => {
-  if (watcherIndex.checkIndex(p)) {
+  if (watcherIndex.check(p)) {
     console.log({ message: "Worker already running for file" });
     return;
   }
@@ -38,7 +36,7 @@ const addFile = (p: string) => {
 };
 
 setInterval(() => {
-  watcherIndex.saveIndex(
+  watcherIndex.save(
     `${app.getPath("appData")}/Vision/index.json`,
     writeFileSync,
   );

@@ -3,7 +3,7 @@ import { Button, ContextMenu, Dialog, Flex, Text } from "@radix-ui/themes";
 import t from "@shared/config";
 import type { Issue as issue } from "@src/shared/types";
 import { useRouter } from "@tanstack/react-router";
-import { Edit2, Minus, Plus, Trash2 } from "lucide-react";
+import { Minus, Plus, RefreshCcw, Trash2 } from "lucide-react";
 import moment from "moment";
 import { useRef } from "react";
 import FlatList from "./flatlist";
@@ -73,15 +73,6 @@ export default function Issue({ issue }: Props) {
         </ContextMenu.Trigger>
         <ContextMenu.Content size="1" variant="soft">
           <ContextMenu.Item
-            onClick={() => dialogRef.current?.click()}
-            className="cursor-pointer"
-          >
-            <Flex align="center" gap="4" justify="between" width="100%">
-              <Text size="1">Add To Collection</Text>
-              <Plus size={11} />
-            </Flex>
-          </ContextMenu.Item>
-          <ContextMenu.Item
             className="cursor-pointer"
             onClick={() =>
               navigation.navigate({
@@ -92,36 +83,56 @@ export default function Issue({ issue }: Props) {
               })
             }
           >
-            <Flex align="center" justify="between" width="100%">
-              <Text size="1">Edit Issue</Text>
-              <Edit2 size={11} />
-            </Flex>
+            <Text size="1">Edit Issue</Text>
           </ContextMenu.Item>
-          {issue.collectionId !== null && (
-            <ContextMenu.Item
-              onClick={() => removeFromCollection({ issueId: issue.id })}
-            >
-              <Flex align="center" gap="2" justify="between" width="100%">
-                <Text size="1"> Remove From Collection</Text>
-
-                <Minus size={11} />
-              </Flex>
-            </ContextMenu.Item>
-          )}
-          <ContextMenu.Item
-            onClick={() =>
-              deleteIssue({
-                issueId: issue.id,
-              })
-            }
-            color="ruby"
-            className="cursor-pointer"
-          >
-            <Flex align="center" justify="between" width="100%">
-              <Text size="1">Delete Issue</Text>
-              <Trash2 size={11} />
-            </Flex>
-          </ContextMenu.Item>
+          <ContextMenu.Sub>
+            <ContextMenu.SubTrigger>
+              <ContextMenu.Item>
+                <Text size="1">More</Text>
+              </ContextMenu.Item>
+            </ContextMenu.SubTrigger>
+            <ContextMenu.SubContent>
+              <ContextMenu.Item className="cursor-pointer">
+                <Flex align="center" gap="2" justify="between" width="100%">
+                  <Text size="1"> Regenerate Thumbnail</Text>
+                  <RefreshCcw size={11} />
+                </Flex>
+              </ContextMenu.Item>
+              <ContextMenu.Item
+                onClick={() => dialogRef.current?.click()}
+                className="cursor-pointer"
+              >
+                <Flex align="center" gap="4" justify="between" width="100%">
+                  <Text size="1">Add To Collection</Text>
+                  <Plus size={11} />
+                </Flex>
+              </ContextMenu.Item>
+              {issue.collectionId !== null && (
+                <ContextMenu.Item
+                  onClick={() => removeFromCollection({ issueId: issue.id })}
+                >
+                  <Flex align="center" gap="2" justify="between" width="100%">
+                    <Text size="1"> Remove From Collection</Text>
+                    <Minus size={11} />
+                  </Flex>
+                </ContextMenu.Item>
+              )}
+              <ContextMenu.Item
+                onClick={() =>
+                  deleteIssue({
+                    issueId: issue.id,
+                  })
+                }
+                color="ruby"
+                className="cursor-pointer"
+              >
+                <Flex align="center" justify="between" width="100%">
+                  <Text size="1">Delete Issue</Text>
+                  <Trash2 size={11} />
+                </Flex>
+              </ContextMenu.Item>
+            </ContextMenu.SubContent>
+          </ContextMenu.Sub>
         </ContextMenu.Content>
       </ContextMenu.Root>
       <Dialog.Root>
