@@ -2,7 +2,7 @@
 dist
 release
 node_modules
-.drizzle
+drizzle
 out
 *.vite.config.*.mjs
 *.gen.ts

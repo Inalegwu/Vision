@@ -1,3 +1,4 @@
+import { Effect } from "effect";
 import type * as fs from "node:fs";
 
 // TODO persist index across app runs
@@ -42,6 +43,9 @@ class Indexer {
     writer(path, JSON.stringify(indexAsJSON), {});
   }
 }
+
+export const wIndex = (() =>
+  Effect.gen(function* () {}).pipe(Effect.runSync))();
 
 const watcherIndex = new Indexer().init();
 

@@ -13,7 +13,7 @@ export default function ThemeButton() {
           globalState$.colorMode.set("dark");
         }
       }}
-      className="cursor-pointer text-zinc-400 hover:bg-zinc-400/20 hover:dark:bg-zinc-100/5 px-3 py-2"
+      className="cursor-pointer text-zinc-400 px-3 py-2"
     >
       <motion.div>
         {globalState$.colorMode.get() === "dark" ? (

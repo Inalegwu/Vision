@@ -1,48 +1,45 @@
-import { Archive } from "@shared/core/archive";
-import { type ParserSchema, parserSchema } from "@shared/core/validations";
+import { parserSchema } from "@shared/core/validations";
 import { parseWorkerMessageWithSchema } from "@shared/utils";
-import { Data, Micro } from "effect";
+import { Effect, Match } from "effect";
 import { parentPort } from "node:worker_threads";
+import { Archive } from "../archive";
 
 const port = parentPort;
 
 if (!port) throw new Error("Parse Process Port is Missing");
 
-class ParserError extends Data.TaggedError("parser-error")<{
-  cause: unknown;
-}> {}
-
 function handleMessage({ action, parsePath }: ParserSchema) {
-  return Micro.tryPromise({
-    try: async () => {
-      switch (action) {
-        case "LINK": {
-          if (parsePath.includes("cbr")) {
-            return (await Archive.handleRar(parsePath))
-              ._unsafeUnwrap()
-              ._unsafeUnwrap();
-          }
+  return Effect.gen(function* () {
+    const ext = parsePath.includes("cbr")
+      ? "cbr"
+      : parsePath.includes("cbz")
+        ? "cbz"
+        : "none";
 
-          if (parsePath.includes("cbz")) {
-            return (await Archive.handleZip(parsePath))
-              ._unsafeUnwrap()
-              ._unsafeUnwrap();
-          }
+    yield* Effect.logInfo({ ext, parsePath, action });
 
-          return;
-        }
-        case "UNLINK": {
-          return;
-        }
-      }
-    },
-    catch: (cause) => new ParserError({ cause: cause }),
-  }).pipe(Micro.tapError((error) => Micro.sync(() => console.log(error))));
+    Match.value({ action, ext }).pipe(
+      Match.when({ action: "LINK", ext: "cbr" }, () =>
+        Archive.handleRar(parsePath),
+      ),
+      Match.when({ action: "LINK", ext: "cbz" }, () =>
+        Archive.handleZip(parsePath),
+      ),
+      Match.when({ action: "LINK", ext: "none" }, () => Effect.void),
+      Match.when({ action: "UNLINK" }, () => Effect.void),
+    );
+  }).pipe(
+    Effect.orDie,
+    Effect.annotateLogs({
+      worker: "parser",
+    }),
+    Effect.runPromise,
+  );
 }
 
 port.on("message", (message) =>
   parseWorkerMessageWithSchema(parserSchema, message).match(
-    (data) => Micro.runPromise(handleMessage(data)),
+    (data) => handleMessage(data),
     (message) => {
       console.error({ message });
     },

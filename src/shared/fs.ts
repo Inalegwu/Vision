@@ -1,5 +1,4 @@
-import { Data, Micro } from "effect";
-import { Result } from "neverthrow";
+import { Data, Effect } from "effect";
 import * as fs from "node:fs";
 
 class FSError extends Data.TaggedError("fs-error")<{
@@ -7,16 +6,6 @@ class FSError extends Data.TaggedError("fs-error")<{
 }> {}
 
 export namespace Fs {
-  export function readFile(path: string) {
-    return Result.fromThrowable(
-      () => new Uint8Array(fs.readFileSync(path)),
-      (error) => `Error reading file ${error}`,
-    )();
-  }
-  export function microReadFile(path: string) {
-    return Micro.try({
-      try: () => new Uint8Array(fs.readFileSync(path)),
-      catch: (error) => new FSError({ cause: error }),
-    });
-  }
+  export const readFile = (path: string) =>
+    Effect.try(() => new Uint8Array(fs.readFileSync(path))).pipe(Effect.orDie);
 }

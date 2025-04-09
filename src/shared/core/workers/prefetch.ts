@@ -1,13 +1,10 @@
-import {
-  type PrefetchSchema,
-  prefetchWorkerSchema,
-} from "@shared/core/validations";
+import { prefetchWorkerSchema } from "@shared/core/validations";
+import db from "@src/shared/storage";
 import { parentPort } from "node:worker_threads";
 // import type { PrefetchChannel } from "@shared/types";
-import db from "@src/shared/storage";
 import { parseWorkerMessageWithSchema } from "@src/shared/utils";
 import { BroadcastChannel } from "broadcast-channel";
-import { Data, Micro } from "effect";
+import { Effect, Match } from "effect";
 
 const port = parentPort;
 
@@ -18,44 +15,84 @@ const prefetchChannel = new BroadcastChannel<PrefetchChannel>(
 
 if (!port) throw new Error("Illegal State");
 
-class PrefetchError extends Data.TaggedError("prefetch-error")<{
-  cause: unknown;
-}> {}
+function prefetchData({ view, issueId }: PrefetchSchema) {
+  return Effect.gen(function* () {
+    Match.value(view).pipe(
+      Match.when("library", (view) =>
+        Effect.gen(function* () {
+          const issues = yield* Effect.tryPromise(
+            async () => await db.query.issues.findMany({}),
+          );
+          const collections = yield* Effect.tryPromise(
+            async () =>
+              await db.query.collections.findMany({
+                with: {
+                  issues: {
+                    columns: {
+                      id: true,
+                      thumbnailUrl: true,
+                    },
+                    orderBy: (fields, { desc }) => desc(fields.dateCreated),
+                  },
+                },
+              }),
+          );
 
-function prefetchData({ field }: Pick<PrefetchSchema, "field">) {
-  return Micro.tryPromise({
-    try: async () => {
-      switch (field) {
-        case "issues": {
-          const issues = await db.query.issues.findMany();
-          return {
-            field: "issues",
-            data: issues,
-          };
-        }
-        case "library": {
-          return {
-            field: "library",
-            data: [],
-          };
-        }
-      }
-    },
-    catch: (cause) => new PrefetchError({ cause }),
-  });
+          prefetchChannel.postMessage({
+            view,
+            data: {
+              issues: issues.filter(
+                (issue) =>
+                  !collections.find((collection) =>
+                    collection.issues.find((issueK) => issueK.id === issue.id),
+                  ),
+              ),
+              collections,
+            },
+          });
+        }),
+      ),
+      Match.when("reader", (view) =>
+        Effect.gen(function* () {
+          if (!issueId) {
+            return yield* Effect.die(new Error("No Issue ID Given"));
+          }
+
+          const exists = yield* Effect.tryPromise(
+            async () =>
+              await db.query.issues.findFirst({
+                where: (issue, { eq }) => eq(issue.id, issueId),
+              }),
+          );
+
+          if (!exists) {
+            return yield* Effect.die(
+              new Error(`Couldn't Find Issue with ID: ${issueId}`),
+            );
+          }
+
+          const pages = yield* Effect.tryPromise(
+            async () =>
+              await db.query.pages.findMany({
+                where: (page, { eq }) => eq(page.issueId, issueId),
+              }),
+          );
+
+          prefetchChannel.postMessage({
+            view,
+            data: {
+              pages,
+            },
+          });
+        }),
+      ),
+    );
+  }).pipe(Effect.runPromise);
 }
 
 port.on("message", (message) =>
   parseWorkerMessageWithSchema(prefetchWorkerSchema, message).match(
-    (data) =>
-      Micro.runPromise(prefetchData(data)).then((result) => {
-        if (!result) return;
-
-        prefetchChannel.postMessage({
-          field: result.field as "issues" | "library",
-          data: result.data,
-        });
-      }),
+    (data) => prefetchData(data),
     ({ message }) => {
       console.error({ message });
     },

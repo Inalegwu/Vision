@@ -26,13 +26,11 @@ export function convertToImageUrl(buffer: ArrayBufferLike) {
 }
 
 export function parseFileNameFromPath(filePath: string) {
-  return ok(
-    filePath
-      .replace(/^.*[\\\/]/, "")
-      .replace(/\.[^/.]+$/, "")
-      .replace(/(\d+)$/, "")
-      .replace("-", ""),
-  );
+  return filePath
+    .replace(/^.*[\\\/]/, "")
+    .replace(/\.[^/.]+$/, "")
+    .replace(/(\d+)$/, "")
+    .replace("-", "");
 }
 
 export const parseWorkerMessageWithSchema = <T extends z.ZodRawShape>(

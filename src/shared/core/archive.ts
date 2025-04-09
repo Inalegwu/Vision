@@ -9,10 +9,11 @@ import {
 } from "@shared/utils";
 import Zip from "adm-zip";
 import { BroadcastChannel } from "broadcast-channel";
-import { Data, Micro } from "effect";
-import { Result, ResultAsync } from "neverthrow";
+import { Array, Data, Effect, Schema } from "effect";
+import { XMLParser } from "fast-xml-parser";
 import { createExtractorFromData } from "node-unrar-js";
 import { v4 } from "uuid";
+import { MetadataSchema } from "./validations";
 
 class ArchiveError extends Data.TaggedError("archive-error")<{
   cause: unknown;
@@ -21,293 +22,286 @@ class ArchiveError extends Data.TaggedError("archive-error")<{
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 
 export namespace Archive {
-  export async function handleRar(path: string) {
-    return await ResultAsync.fromThrowable(
-      async () => {
-        const file = Fs.readFile(path);
-        const wasmBinary = Fs.readFile(
-          require.resolve("node-unrar-js/dist/js/unrar.wasm"),
-        );
+  export function handleRar(path: string) {
+    return Effect.gen(function* () {
+      const xmlParser = new XMLParser();
+      yield* Effect.log("loading wasm");
+      const wasmBinary = yield* Fs.readFile(
+        require.resolve("node-unrar-js/dist/js/unrar.wasm"),
+      ).pipe(Effect.andThen((binary) => binary.buffer));
 
-        if (!file.isOk() || !wasmBinary.isOk()) {
-          throw new Error("FILE ERROR");
-        }
-
-        return (
-          await createRarExtractor(file.value.buffer, wasmBinary.value.buffer)
-        ).andThen((extractor) => {
-          const files = Array.from(extractor.files)
-            .sort((a, b) => sortPages(a.fileHeader.name, b.fileHeader.name))
-            .filter((file) => !file.fileHeader.name.includes("xml"));
-
-          const thumbnailUrl = convertToImageUrl(
-            files[0].extraction?.buffer || files[1].extraction?.buffer!,
-          );
-          const issueTitle = parseFileNameFromPath(path)._unsafeUnwrap();
-
-          return Result.fromThrowable(
-            async () => {
-              const exists = await db.query.issues.findFirst({
-                where: (issue, { eq }) => eq(issue.issueTitle, issueTitle),
-              });
-
-              if (exists) {
-                throw new Error("This Issue is Already Saved");
-              }
-
-              const newIssue = await db
-                .insert(issues)
-                .values({
-                  id: v4(),
-                  issueTitle,
-                  thumbnailUrl,
-                })
-                .returning()
-                .execute();
-
-              for (const [index, value] of files.entries()) {
-                parserChannel.postMessage({
-                  completed: index + 1,
-                  total: files.length,
-                  error: null,
-                });
-                await db.insert(pages).values({
-                  id: v4(),
-                  pageContent: convertToImageUrl(value.extraction?.buffer!),
-                  issueId: newIssue[0].id,
-                });
-              }
-
-              parserChannel.postMessage({
-                isCompleted: true,
-                error: null,
-              });
-            },
-            (error) => {
-              parserChannel.postMessage({
-                isCompleted: false,
-                error: error,
-              });
-              return `Error saving rar content to DB ${error}`;
-            },
-          )();
-        });
-      },
-      (error) => `Error processing RAR file ${error}`,
-    )();
-  }
-
-  export async function handleZip(path: string) {
-    return await ResultAsync.fromThrowable(
-      async () => {
-        const file = Fs.readFile(path);
-
-        if (!file.isOk()) {
-          throw new Error("ZIP ARCHIVE ERROR");
-        }
-
-        return createZipExtractor(file.value.buffer).andThen((extractor) => {
-          const fileName = parseFileNameFromPath(path)._unsafeUnwrap();
-
-          return Result.fromThrowable(
-            async () => {
-              const exists = await db.query.issues.findFirst({
-                where: (issue, { eq }) => eq(issue.issueTitle, fileName),
-              });
-
-              if (exists) {
-                throw new Error("This Issue is Already Saved");
-              }
-
-              const thumbnailUrl = convertToImageUrl(extractor[1].data.buffer);
-
-              const newIssue = await db
-                .insert(issues)
-                .values({
-                  id: v4(),
-                  issueTitle: fileName,
-                  thumbnailUrl,
-                })
-                .returning()
-                .execute();
-
-              for (const [index, file] of extractor
-                .slice(1, extractor.length - 1)
-                .entries()) {
-                if (file.isDir) {
-                  continue;
-                }
-                parserChannel.postMessage({
-                  completed: index + 1,
-                  total: extractor.slice(1, extractor.length - 1).length,
-                  error: null,
-                });
-                await db.insert(pages).values({
-                  id: v4(),
-                  pageContent: convertToImageUrl(file.data.buffer),
-                  issueId: newIssue[0].id,
-                });
-              }
-
-              parserChannel.postMessage({
-                isCompleted: true,
-                error: null,
-              });
-            },
-            (error) => {
-              parserChannel.postMessage({
-                isCompleted: false,
-                error: error,
-              });
-              return `Error saving zip content to DB ${error}`;
-            },
-          )();
-        });
-      },
-      (error) => `Error handling .cbz file ${error}`,
-    )();
-  }
-
-  function createRarExtractor(data: ArrayBuffer, wasmBinary: ArrayBuffer) {
-    return ResultAsync.fromPromise(
-      createExtractorFromData({
-        data,
-        wasmBinary,
-      }).then((extractor) =>
-        extractor.extract({
-          files: [...extractor.getFileList().fileHeaders].map(
-            (header) => header.name,
+      yield* Effect.log("Attempting to extract");
+      const files = yield* Fs.readFile(path).pipe(
+        Effect.andThen((file) => file.buffer),
+        Effect.andThen((data) =>
+          Effect.tryPromise(
+            async () =>
+              await createExtractorFromData({
+                data,
+                wasmBinary,
+              }),
           ),
-        }),
-      ),
-      (error) => `Error creating rar extractor ${error}`,
-    );
-  }
-
-  function createZipExtractor(data: ArrayBuffer) {
-    return Result.fromThrowable(
-      () =>
-        new Zip(Buffer.from(data))
-          .getEntries()
-          .sort((a, b) => sortPages(a.name, b.name))
-          .map((entry) => ({
-            name: entry.name,
-            data: entry.getData(),
-            isDir: entry.isDirectory,
-          })),
-      (error) => `Error creating zip extractor ${error}`,
-    )();
-  }
-
-  function microHandleZip(path: string) {
-    return Micro.gen(function* () {
-      const file = yield* Fs.microReadFile(path);
-
-      const wasmBinary = yield* Fs.microReadFile(
-        require.resolve("node_modules/node-unrar-js/dist/js/unrar.wasm"),
-      );
-
-      const fileName = yield* Micro.sync(() =>
-        path
-          .replace(/^.*[\\\/]/, "")
-          .replace(/\.[^/.]+$/, "")
-          .replace(/(\d+)$/, "")
-          .replace("-", ""),
-      );
-
-      // safely ensure that an issue with this name does
-      // not exist anywhere
-      const exists = yield* Micro.promise(
-        async () =>
-          await db.query.issues.findFirst({
-            where: (issues, { eq }) => eq(issues.issueTitle, fileName),
-          }),
-      );
-
-      if (!exists) {
-        // Kill the entire process if the issue
-        // already exists to ensure no reduntdant work is done
-        yield* Micro.die(
-          new ArchiveError({ cause: "This issue already exists" }),
-        );
-      }
-
-      // get the files, as an array, extracted and sorted safely
-      // within a micro
-      const files = yield* Micro.promise(() =>
-        createExtractorFromData({
-          data: file.buffer,
-          wasmBinary: wasmBinary.buffer,
-        })
-          .then((extractor) =>
+        ),
+        Effect.andThen((extractor) =>
+          Effect.try(() =>
             extractor.extract({
               files: [...extractor.getFileList().fileHeaders].map(
                 (header) => header.name,
               ),
             }),
-          )
-          .then((files) => Array.from(files.files))
-          .then((files) =>
-            files
-              .sort((a, b) => sortPages(a.fileHeader.name, b.fileHeader.name))
-              .filter((file) => !file.fileHeader.name.includes("xml")),
           ),
-      );
+        ),
+        Effect.tap((extracted) =>
+          Effect.gen(function* () {
+            const xml = Array.fromIterable(extracted.files).find((file) =>
+              file.fileHeader.name.includes("xml"),
+            );
 
-      // construct the thumbnail url
-      const thumbnailUrl = yield* Micro.sync(() =>
-        convertToImageUrl(
-          files[0].extraction?.buffer || files[1].extraction?.buffer!,
+            if (!xml) return;
+
+            const file = Buffer.from(xml.extraction?.buffer!).toString();
+
+            yield* Effect.log(file);
+
+            const contents = yield* Effect.sync(() => xmlParser.parse(file));
+
+            yield* Effect.log(contents);
+
+            const comicInfo = yield* Schema.decodeUnknown(MetadataSchema)(
+              contents.ComicInfo,
+              {
+                onExcessProperty: "ignore",
+              },
+            );
+
+            yield* Effect.logInfo(comicInfo);
+          }),
+        ),
+        Effect.andThen((extracted) =>
+          Array.fromIterable(extracted.files)
+            .sort((a, b) => sortPages(a.fileHeader.name, b.fileHeader.name))
+            .filter((files) => !files.fileHeader.name.includes("xml")),
         ),
       );
 
-      // create the new issue within a micro promise
-      // so that errors can be traced and handled without
-      // crashing the entire app
-      const newIssue = yield* Micro.promise(
+      if (files.length === 0) {
+        return yield* Effect.sync(() =>
+          parserChannel.postMessage({
+            error: "File appears to be empty",
+            isCompleted: false,
+          }),
+        );
+      }
+
+      yield* Effect.log("Attempting to save");
+
+      const issueTitle = yield* Effect.sync(() =>
+        parseFileNameFromPath(path),
+      ).pipe(Effect.tap(Effect.log));
+
+      // const thumbnailUrl = yield* Effect.sync(() =>
+      //   convertToImageUrl(
+      //     files[0]?.extraction?.buffer || files[1]?.extraction?.buffer!,
+      //   ),
+      // );
+
+      const exists = yield* Effect.tryPromise(
         async () =>
+          await db.query.issues.findFirst({
+            where: (issue, { eq }) => eq(issue.issueTitle, issueTitle),
+          }),
+      );
+
+      if (exists) {
+        return yield* Effect.logError(new Error("Issue is already Saved"));
+      }
+
+      const newIssue = yield* Effect.tryPromise(async () =>
+        (
           await db
             .insert(issues)
             .values({
               id: v4(),
-              issueTitle: fileName,
+              issueTitle,
               thumbnailUrl,
             })
             .returning()
-            .execute(),
+        ).at(0),
       );
 
+      yield* Effect.log(newIssue);
+
       if (!newIssue) {
-        // kill the entire parsing process to prevent more unnecesary work
-        // from being done
-        yield* Micro.die(new ArchiveError({ cause: "Error creating issue" }));
+        parserChannel.postMessage({
+          isCompleted: false,
+          error: "Issue Already Exists",
+        });
+        return yield* Effect.logError("Issue Already Exists");
       }
 
-      for (const file of files) {
-        // create a micro fiber handle
-        // to use the Effect ecosystem
-        // green threads to give us the
-        // benefit of false concurrency
-        const fiber = yield* Micro.fork(
-          Micro.promise(
+      yield* Effect.forEach(files, (file, index) =>
+        Effect.gen(function* () {
+          const pageContent = yield* Effect.sync(() =>
+            convertToImageUrl(file?.extraction?.buffer!),
+          );
+
+          yield* Effect.log(file.fileHeader.name);
+
+          yield* Effect.tryPromise(
             async () =>
               await db.insert(pages).values({
                 id: v4(),
-                issueId: newIssue[0].id,
-                pageContent: convertToImageUrl(file.extraction?.buffer!),
+                pageContent,
+                issueId: newIssue.id,
               }),
-          ),
-        );
+          );
 
-        // await the fiber handle to complete
-        // before exiting the entire Micro scope
-        yield* fiber.await;
-      }
+          yield* Effect.sync(() =>
+            parserChannel.postMessage({
+              completed: index,
+              total: files.length,
+              error: null,
+              isCompleted: false,
+            }),
+          );
+        }),
+      );
+
+      yield* Effect.sync(() =>
+        parserChannel.postMessage({
+          isCompleted: true,
+          error: null,
+        }),
+      );
     }).pipe(
-      // extract the errors detected within the Micro and log them out
-      // this also creates a way for future error logging to external
-      // services to be handled
-      Micro.tapError((error) => Micro.sync(() => console.log(error))),
+      Effect.orDie,
+      Effect.annotateLogs({
+        file: path,
+        handler: "cbr",
+      }),
+      Effect.runPromise,
+    );
+  }
+
+  export function handleZip(path: string) {
+    return Effect.gen(function* () {
+      const xmlParser = new XMLParser();
+
+      const files = yield* Fs.readFile(path).pipe(
+        Effect.andThen((buff) =>
+          new Zip(Buffer.from(buff.buffer))
+            .getEntries()
+            .sort((a, b) => sortPages(a.name, b.name))
+            .map((entry) => ({
+              name: entry.name,
+              data: entry.getData(),
+              isDir: entry.isDirectory,
+            }))
+            .filter((file) => !file.isDir),
+        ),
+        Effect.tap((extracted) =>
+          Effect.gen(function* () {
+            const xml = Array.fromIterable(extracted).find((file) =>
+              file.name.includes("xml"),
+            );
+
+            if (!xml) return;
+
+            const file = Buffer.from(xml.data.buffer).toString();
+
+            yield* Effect.log(file);
+
+            const contents = yield* Effect.sync(() => xmlParser.parse(file));
+
+            yield* Effect.logInfo(contents);
+
+            const comicInfo = yield* Schema.decodeUnknown(MetadataSchema)(
+              contents.ComicInfo,
+            );
+
+            yield* Effect.logInfo(comicInfo);
+          }),
+        ),
+      );
+
+      const issueTitle = yield* Effect.sync(() => parseFileNameFromPath(path));
+      const thumbnailUrl = yield* Effect.sync(() =>
+        convertToImageUrl(
+          files[0].data.buffer || files[1].data.buffer || files[1].data.buffer,
+        ),
+      );
+
+      const exists = yield* Effect.tryPromise(
+        async () =>
+          await db.query.issues.findFirst({
+            where: (issue, { eq }) => eq(issue.issueTitle, issueTitle),
+          }),
+      );
+
+      if (exists) {
+        parserChannel.postMessage({
+          isCompleted: false,
+          error: "Issue Already Exists",
+        });
+        return yield* Effect.logError("Issue is already Saved");
+      }
+
+      const newIssue = yield* Effect.tryPromise(async () =>
+        (
+          await db
+            .insert(issues)
+            .values({
+              id: v4(),
+              issueTitle,
+              thumbnailUrl,
+            })
+            .returning()
+        ).at(0),
+      );
+
+      if (!newIssue) {
+        return yield* Effect.logError("Unable to save Issue");
+      }
+
+      yield* Effect.forEach(files, (file, index) =>
+        Effect.gen(function* () {
+          if (file.isDir) {
+            return yield* Effect.log("found and skipped directory");
+          }
+
+          const pageContent = yield* Effect.sync(() =>
+            convertToImageUrl(file.data.buffer),
+          );
+
+          yield* Effect.tryPromise(
+            async () =>
+              await db.insert(pages).values({
+                id: v4(),
+                pageContent,
+                issueId: newIssue.id,
+              }),
+          );
+
+          parserChannel.postMessage({
+            completed: index,
+            total: files.length,
+            error: null,
+            isCompleted: false,
+          });
+        }),
+      );
+
+      parserChannel.postMessage({
+        isCompleted: true,
+        error: null,
+      });
+    }).pipe(
+      Effect.orDie,
+      Effect.annotateLogs({
+        file: path,
+        handler: "cbz",
+      }),
+      Effect.runPromise,
     );
   }
 }

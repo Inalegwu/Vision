@@ -6,6 +6,7 @@ import { BroadcastChannel } from "broadcast-channel";
 import { mkdirSync } from "node:fs";
 import { v4 } from "uuid";
 import z from "zod";
+import { view } from "../core/validations";
 import { collections } from "../schema";
 import type { DeletionChannel, ParserChannel } from "../types";
 
@@ -49,7 +50,8 @@ const libraryRouter = router({
   prefetchLibrary: publicProcedure
     .input(
       z.object({
-        queryKey: z.string(),
+        view,
+        issueId: z.optional(z.string()),
       }),
     )
     .mutation(async ({ input }) =>
@@ -60,8 +62,9 @@ const libraryRouter = router({
           console.log({ m });
         })
         .postMessage({
-          queryKey: input.queryKey,
-        }),
+          view: input.view,
+          issueId: input.issueId,
+        } satisfies PrefetchSchema),
     ),
   createCollection: publicProcedure
     .input(

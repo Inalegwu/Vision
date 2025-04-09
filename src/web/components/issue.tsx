@@ -60,12 +60,12 @@ export default function Issue({ issue }: Props) {
             onClick={go}
           >
             <img
-              className="w-full h-full bg-zinc-200/5 rounded-md border-1 border-solid border-zinc-300 dark:border-zinc-800"
+              className="w-full h-full bg-zinc-200/5 rounded-md border-1 border-solid border-zinc-600"
               alt="issue_thumbnail"
               src={issue.thumbnailUrl}
             />
             <Flex direction="column">
-              <Text size="1" className="text-gray-600 dark:text-zinc-400">
+              <Text size="2" className="text-gray-600 dark:text-zinc-300">
                 {issue.issueTitle}
               </Text>
             </Flex>

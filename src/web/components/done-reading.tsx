@@ -10,7 +10,7 @@ export default function DoneReading({ issue }: Props) {
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger>
-        <Flex className="w-2/6 cursor-pointer max-h-4/6 rounded-md border-1 border-solid border-zinc-200 dark:border-zinc-800 rounded-md overflow-hidden">
+        <Flex className="w-2/6 cursor-pointer rounded-md border-1 border-solid border-zinc-200 dark:border-zinc-800 rounded-md overflow-hidden">
           <img
             src={issue.thumbnailUrl}
             alt={issue.title}

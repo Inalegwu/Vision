@@ -2,7 +2,6 @@ import chokidar from "chokidar";
 import { app } from "electron";
 import { writeFileSync } from "node:fs";
 import watcherIndex from "./indexer";
-import type { ParserSchema } from "./validations";
 import parseWorker from "./workers/parser?nodeWorker";
 
 export default function watchFS(path: string | null) {

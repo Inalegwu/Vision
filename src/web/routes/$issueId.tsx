@@ -3,8 +3,8 @@ import { Flex } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion, useMotionValue } from "framer-motion";
-import { Expand, Minimize2 } from "lucide-react";
-import { memo, useEffect, useMemo } from "react";
+import { Bookmark, ChevronLeft, ChevronRight, Expand } from "lucide-react";
+import { memo, useCallback, useEffect, useMemo } from "react";
 import { Spinner } from "../components";
 import { useInterval, useKeyPress, useTimeout } from "../hooks";
 import { globalState$, readingState$ } from "../state";
@@ -77,11 +77,19 @@ function Component() {
     isEnabled.set(true);
   }, 3_000);
 
+  const goRight = useCallback(() => {
+    itemIndex.set(itemIndexValue + 1);
+  }, [itemIndex, itemIndexValue]);
+
+  const goLeft = useCallback(() => {
+    itemIndex.set(itemIndexValue - 1);
+  }, [itemIndex, itemIndexValue]);
+
   useKeyPress((e) => {
     if (e.keyCode === 93 && itemIndexValue < contentLength - 1) {
-      itemIndex.set(itemIndexValue + 1);
+      goRight();
     } else if (e.keyCode === 91 && itemIndexValue > 0) {
-      itemIndex.set(itemIndexValue - 1);
+      goLeft();
     }
   });
 
@@ -107,70 +115,93 @@ function Component() {
   };
 
   return (
-    <Flex className="min-h-screen overflow-hidden">
-      {isLoading && (
-        <div className="absolute z-10 top-[50%] left-[50%]">
-          <Spinner size={30} />
-        </div>
-      )}
-      {/* page viewer */}
-      <motion.div
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        style={{ x: dragX }}
-        animate={{
-          translateX: `-${itemIndexValue * 100}%`,
-        }}
-        transition={{
-          bounceDamping: 10,
-        }}
-        onDragEnd={onDragEnd}
-        className="flex cursor-grab active:cursor-grabbing items-center"
-      >
-        {data?.pages.map((v) => (
-          <div
-            className="w-full h-screen flex items-center justify-center shrink-0"
-            key={v.id}
+    <Flex className="h-screen w-full overflow-hidden">
+      <Flex className="w-full h-full relative">
+        {isLoading && (
+          <Flex
+            className="absolute z-20 w-full h-screen"
+            align="center"
+            justify="center"
           >
-            <img
-              src={v.pageContent}
-              alt="page"
-              className="aspect-[9/16] h-full w-[45%] object-contain"
-            />
-          </div>
-        ))}
-      </motion.div>
-      {/* progress indicator */}
-      <AnimatePresence>
-        {isVisible.get() && (
+            <div>
+              <Spinner size={40} />
+            </div>
+          </Flex>
+        )}
+        <div className="absolute z-0 h-[10%]">
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            style={{ x: dragX }}
+            animate={{
+              translateX: `-${itemIndexValue * 100}%`,
+            }}
+            transition={{
+              bounceDamping: 10,
+            }}
+            onDragEnd={onDragEnd}
+            className="flex cursor-grab active:cursor-grabbing items-center"
           >
-            <Flex
-              className="absolute z-20 bottom-10 left-0 w-full"
-              align="center"
-              justify="center"
-            >
-              <div className="w-[98%] bg-zinc-400/20 backdrop-blur-3xl rounded-full">
-                <motion.div
-                  animate={{ width: `${width}%` }}
-                  className="rounded-full p-1 bg-zinc-800/40 dark:bg-white/20"
+            {data?.pages.map((v) => (
+              <div
+                className="w-full h-screen flex items-center justify-center shrink-0"
+                key={v.id}
+              >
+                <img
+                  src={v.pageContent}
+                  alt="page"
+                  className="h-full w-[50%] object-contain"
                 />
               </div>
-            </Flex>
+            ))}
           </motion.div>
-        )}
-      </AnimatePresence>
-      <button
-        onClick={() => globalState$.isFullscreen.set(!isFullscreen)}
-        className={`absolute z-10 top-${
-          isFullscreen ? "4" : "10"
-        } cursor-pointer left-2 px-3 py-2.5 rounded-md border-1 border-zinc-200 border-solid bg-zinc-100/30 dark:border-zinc-700 dark:bg-zinc-700/60 dark:text-zinc-500`}
-      >
-        {isFullscreen ? <Minimize2 size={12} /> : <Expand size={12} />}
-      </button>
+        </div>
+        {/* controls */}
+        <AnimatePresence>
+          {isVisible && (
+            <motion.div>
+              <Flex
+                align="center"
+                justify="between"
+                gap="3"
+                className="fixed z-10 bg-gray-100/20 dark:bg-gray-100/5 bottom-0 left-0 w-full"
+              >
+                <Flex align="center" justify="start">
+                  <button
+                    onClick={() => goLeft()}
+                    className="text-neutral-700 px-5 py-5 hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 dark:text-neutral-300"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <button
+                    onClick={() => goRight()}
+                    className="text-neutral-700 px-5 py-5 hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 dark:text-neutral-300"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </Flex>
+                <motion.div className="rounded-full bg-gray-100/40 dark:bg-gray-100/8 flex-1">
+                  <motion.div
+                    animate={{ width: `${width}%` }}
+                    className="p-1 bg-neutral-900 rounded-full dark:bg-neutral-100"
+                  />
+                </motion.div>
+                <Flex align="center" justify="end">
+                  <button
+                    onClick={() => globalState$.isFullscreen.set(!isFullscreen)}
+                    className="text-neutral-700 dark:text-neutral-300 hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 px-5 py-5"
+                  >
+                    <Expand size={18} />
+                  </button>
+                  <button className="text-neutral-700 dark:text-neutral-300 hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 px-5 py-5">
+                    <Bookmark size={18} />
+                  </button>
+                </Flex>
+              </Flex>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </Flex>
     </Flex>
   );
 }

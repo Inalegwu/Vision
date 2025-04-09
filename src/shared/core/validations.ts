@@ -1,3 +1,4 @@
+import { Schema } from "effect";
 import { z } from "zod";
 
 export const parserSchema = z.object({
@@ -15,16 +16,35 @@ export const workerResponseSchema = z.object({
   error: z.unknown().nullable(),
 });
 
-export const metadataWorkerSchema = z.object({
-  issueName: z.string(),
-});
+export const view = z.enum(["library", "reader"]);
 
 export const prefetchWorkerSchema = z.object({
-  field: z.enum(["issues", "library"]),
+  view,
+  issueId: z.optional(z.string()),
 });
 
-export type ParserSchema = z.infer<typeof parserSchema>;
-export type WorkerResponse = z.infer<typeof workerResponseSchema>;
-export type DeletionSchema = z.infer<typeof deletionWorkerSchema>;
-export type MetadataSchema = z.infer<typeof metadataWorkerSchema>;
-export type PrefetchSchema = z.infer<typeof prefetchWorkerSchema>;
+export const MetadataSchema = Schema.Struct({
+  Series: Schema.String.pipe(Schema.optional),
+  Issue: Schema.Int.pipe(Schema.optional),
+  Web: Schema.String.pipe(Schema.optional),
+  LanguageISO: Schema.String.pipe(Schema.optional),
+  PageCount: Schema.Int.pipe(Schema.optional),
+  Notes: Schema.String.pipe(Schema.optional),
+  writer: Schema.String.pipe(Schema.optional),
+  Month: Schema.Int.pipe(Schema.optional),
+  Year: Schema.Int.pipe(Schema.optional),
+});
+
+// {
+//   \"?xml\": \"\",
+//   \"ComicInfo\": {
+//     \"Series\": \"Green Lantern: Fractured Spectrum\",
+//     \"Issue\": 1,
+//     \"LanguageISO\": \"en\",
+//     \"PageCount\": 29,
+//     \"Notes\": \"Scraped metadata from Amazon [ASINB0DPV3BQXN]\",
+//     \"writer\": \"Jeremy Adams\",
+//     \"Month\": 1,
+//     \"Year\": 2025
+// }
+// }

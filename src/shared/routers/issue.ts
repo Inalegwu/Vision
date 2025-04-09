@@ -1,16 +1,16 @@
 import deletionWorker from "@core/workers/deletion?nodeWorker";
-import metadataWorker from "@core/workers/metadata?nodeWorker";
 import parseWorker from "@core/workers/parser?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import { dialog } from "electron";
 import z from "zod";
-import type { parsePathSchema } from "../core/validations";
 
 const issueRouter = router({
   addIssue: publicProcedure.mutation(async ({ ctx }) => {
     const { canceled, filePaths } = await dialog.showOpenDialog({
       filters: [{ name: "Comic Book Archive", extensions: ["cbz", "cbr"] }],
+      properties: ["multiSelections"],
     });
+
     if (canceled) {
       return {
         cancelled: true,
@@ -18,33 +18,24 @@ const issueRouter = router({
       };
     }
 
-    parseWorker({
-      name: "parse-worker",
-    })
-      .on("message", (m) => {
-        console.log(m);
+    for (const parsePath of filePaths) {
+      parseWorker({
+        name: `parse-worker-${parsePath}`,
       })
-      .postMessage({
-        parsePath: filePaths[0],
-        action: "LINK",
-      } satisfies z.infer<typeof parsePathSchema>);
+        .on("message", (m) => {
+          console.log(m);
+        })
+        .postMessage({
+          parsePath,
+          action: "LINK",
+        } satisfies ParserSchema);
+    }
 
     return {
       completed: true,
       cancelled: false,
     };
   }),
-  getIssueMetadata: publicProcedure
-    .input(
-      z.object({
-        issueName: z.string().refine((v) => v.trim()),
-      }),
-    )
-    .query(async ({ input }) =>
-      metadataWorker({ name: "meta-data-worker" }).postMessage({
-        issueTitle: input.issueName,
-      }),
-    ),
   deleteIssue: publicProcedure
     .input(
       z.object({

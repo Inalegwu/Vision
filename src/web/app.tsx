@@ -20,6 +20,7 @@ enableReactTracking({
 
 const hashHistory = createHashHistory();
 
+// TODO: custom error component
 const router = createRouter({
   routeTree,
   notFoundMode: "fuzzy",

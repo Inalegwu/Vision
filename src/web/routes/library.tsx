@@ -2,7 +2,6 @@ import { Collection, Issue, IssueSkeleton, Spinner } from "@components";
 import { useObservable } from "@legendapp/state/react";
 import {
   Button,
-  Code,
   Flex,
   Heading,
   Popover,
@@ -44,23 +43,6 @@ function Component() {
       globalState$.firstLaunch.set(false);
     }
   }, [createSourceDir]);
-
-  if (data?.collections.length === 0 && data?.issues.length === 0) {
-    return (
-      <Flex
-        direction="column"
-        className="w-full h-screen"
-        align="center"
-        justify="center"
-      >
-        <Heading>Add Issues to see them here</Heading>
-        <Text>
-          use the <Code>+</Code> button or add to the <Code>Vision</Code> folder
-          in your documents
-        </Text>
-      </Flex>
-    );
-  }
 
   return (
     <Flex direction="column" className="w-full h-screen px-2 py-2">

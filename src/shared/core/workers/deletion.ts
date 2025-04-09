@@ -1,14 +1,11 @@
-import {
-  type DeletionSchema,
-  deletionWorkerSchema,
-} from "@shared/core/validations";
+import { deletionWorkerSchema } from "@shared/core/validations";
 import { issues } from "@shared/schema";
 import db from "@shared/storage";
 import type { DeletionChannel } from "@src/shared/types";
 import { parseWorkerMessageWithSchema } from "@src/shared/utils";
 import { BroadcastChannel } from "broadcast-channel";
 import { eq } from "drizzle-orm";
-import { Data, Micro } from "effect";
+import { Data, Effect } from "effect";
 import { parentPort } from "node:worker_threads";
 
 const port = parentPort;
@@ -24,7 +21,7 @@ class DeletionError extends Data.TaggedError("deletion-error")<{
 }> {}
 
 function deleteIssue({ issueId }: DeletionSchema) {
-  return Micro.tryPromise({
+  return Effect.tryPromise({
     try: async () => {
       await db.delete(issues).where(eq(issues.id, issueId)).returning();
       deletionChannel.postMessage({
@@ -33,12 +30,18 @@ function deleteIssue({ issueId }: DeletionSchema) {
       return;
     },
     catch: (cause: unknown) => new DeletionError({ cause }),
-  }).pipe(Micro.tapError((error) => Micro.sync(() => console.log(error))));
+  }).pipe(
+    Effect.orDie,
+    Effect.annotateLogs({
+      worker: "deletion",
+    }),
+    Effect.runPromise,
+  );
 }
 
 port.on("message", (message) =>
   parseWorkerMessageWithSchema(deletionWorkerSchema, message).match(
-    (data) => Micro.runPromise(deleteIssue(data)),
+    (data) => deleteIssue(data),
     (message) => {
       console.error({ message });
     },
