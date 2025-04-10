@@ -64,9 +64,7 @@ export namespace Archive {
 
       yield* Effect.log("Attempting to save");
 
-      const issueTitle = yield* Effect.sync(() =>
-        parseFileNameFromPath(path),
-      ).pipe(Effect.tap(Effect.log));
+      const issueTitle = yield* Effect.sync(() => parseFileNameFromPath(path));
 
       const _files = files.filter(
         (file) => !file.fileHeader.name.includes("xml"),
@@ -185,16 +183,6 @@ export namespace Archive {
 
       const issueTitle = yield* Effect.sync(() => parseFileNameFromPath(path));
 
-      const _files = files.filter((file) => !file.name.includes("xml"));
-
-      const thumbnailUrl = yield* Effect.sync(() =>
-        convertToImageUrl(
-          _files[0].data.buffer ||
-            _files[1].data.buffer ||
-            _files[1].data.buffer,
-        ),
-      );
-
       const exists = yield* Effect.tryPromise(
         async () =>
           await db.query.issues.findFirst({
@@ -210,6 +198,16 @@ export namespace Archive {
         });
         return yield* Effect.logError("Issue is already Saved");
       }
+
+      const _files = files.filter((file) => !file.name.includes("xml"));
+
+      const thumbnailUrl = yield* Effect.sync(() =>
+        convertToImageUrl(
+          _files[0].data.buffer ||
+            _files[1].data.buffer ||
+            _files[1].data.buffer,
+        ),
+      );
 
       const newIssue = yield* Effect.tryPromise(async () =>
         (
@@ -288,11 +286,7 @@ const parseXML = (buffer: ArrayBufferLike | undefined, issueId: string) =>
 
     const file = Buffer.from(buffer).toString();
 
-    yield* Effect.log(file);
-
     const contents = yield* Effect.sync(() => xmlParser.parse(file));
-
-    yield* Effect.log(contents);
 
     const comicInfo = yield* Schema.decodeUnknown(MetadataSchema)(
       contents.ComicInfo,
@@ -301,8 +295,6 @@ const parseXML = (buffer: ArrayBufferLike | undefined, issueId: string) =>
         exact: false,
       },
     );
-
-    yield* Effect.logInfo(comicInfo);
 
     yield* Effect.tryPromise(
       async () =>

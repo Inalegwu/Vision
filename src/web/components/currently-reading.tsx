@@ -47,7 +47,7 @@ const CurrentlyReading = ({ issue }: Props) => {
             </Text>
             <Flex className="bg-zinc-400/50 dark:bg-zinc-400/20 w-full rounded-full">
               <div
-                className="rounded-full bg-white p-[2.3px]"
+                className="rounded-full bg-yellow-500 p-[2.3px]"
                 style={{ width: `${width}%` }}
               />
             </Flex>

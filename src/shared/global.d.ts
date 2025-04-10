@@ -17,8 +17,8 @@ declare global {
   };
 
   export type Issue = Omit<
-    Omit<typeof issues.$inferSelect, "dateCreated">,
-    "dateUpdated"
+    typeof issues.$inferSelect,
+    "dateCreated" | "dateUpdated"
   > & {
     dateCreated: string | null;
     dateUpdated: string | null;
@@ -69,6 +69,12 @@ declare global {
   export type PrefetchChannel = {
     view: Pick<PrefetchSchema, "view">["view"];
     data: Record<string, unknown>;
+  };
+
+  export type Index = {
+    index: Array<{
+      path: string;
+    }>;
   };
 
   export type ParserSchema = z.infer<typeof parserSchema>;

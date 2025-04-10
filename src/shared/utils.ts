@@ -47,3 +47,25 @@ export const parseWorkerMessageWithSchema = <T extends z.ZodRawShape>(
 
   return ok(result.data);
 };
+
+export function debounce<A = unknown[], R = void>(
+  fn: (args: A) => R,
+  ms: number,
+): [(args: A) => Promise<R>, () => void] {
+  let t: NodeJS.Timeout;
+
+  const debounceFn = (args: A): Promise<R> =>
+    new Promise((resolve) => {
+      if (t) {
+        clearTimeout(t);
+      }
+
+      t = setTimeout(() => {
+        resolve(fn(args));
+      }, ms);
+    });
+
+  const tearDown = () => clearTimeout(t);
+
+  return [debounceFn, tearDown];
+}

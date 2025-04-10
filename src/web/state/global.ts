@@ -4,12 +4,6 @@ import {
   persistObservable,
 } from "@legendapp/state/persist";
 import { ObservablePersistLocalStorage } from "@legendapp/state/persist-plugins/local-storage";
-import type {
-  CurrentlyReading,
-  DoneReading,
-  GlobalState,
-  ReadingState,
-} from "@shared/types";
 
 configureObservablePersistence({
   pluginLocal: ObservablePersistLocalStorage,

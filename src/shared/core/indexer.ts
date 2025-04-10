@@ -21,7 +21,7 @@ export const watcherIndex = (() => {
 
       if (indexAsJSON.length === 0) return;
 
-      writer(path, JSON.stringify(indexAsJSON), {});
+      writer(path, JSON.stringify({ index: indexAsJSON }), {});
     },
   };
 })();

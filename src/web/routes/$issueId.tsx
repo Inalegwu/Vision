@@ -4,15 +4,15 @@ import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion, useMotionValue } from "framer-motion";
 import { Bookmark, ChevronLeft, ChevronRight, Expand } from "lucide-react";
-import { memo, useCallback, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Spinner } from "../components";
-import { useInterval, useKeyPress, useTimeout } from "../hooks";
+import { useDebounce, useInterval, useKeyPress, useTimeout } from "../hooks";
 import { globalState$, readingState$ } from "../state";
 
 const DRAG_BUFFER = 50;
 
 export const Route = createFileRoute("/$issueId")({
-  component: memo(Component),
+  component: Component,
 });
 
 function Component() {
@@ -23,7 +23,6 @@ function Component() {
 
   const doneReading = readingState$.doneReading.get();
   const currentlyReading = readingState$.currentlyReading.get();
-  const isSaved = readingState$.currentlyReading.has(issueId);
   const isFullscreen = globalState$.isFullscreen.get();
 
   const { data, isLoading } = t.issue.getPages.useQuery(
@@ -36,32 +35,31 @@ function Component() {
   );
 
   const contentLength = data?.pages.length || 0;
-  const itemIndex = useObservable(
-    isSaved ? currentlyReading.get(issueId)?.currentPage : 0,
+  const [itemIndex, setItemIndex] = useState(
+    currentlyReading.get(issueId)?.currentPage || 0,
   );
-  const itemIndexValue = itemIndex.get();
+
   const dragX = useMotionValue(0);
   const width = useMemo(
-    () => Math.floor((itemIndexValue / contentLength) * 100),
-    [contentLength, itemIndexValue],
+    () => Math.floor((itemIndex / contentLength) * 100),
+    [contentLength, itemIndex],
   );
 
   // save reading state to store every few seconds
   // while reading
   useInterval(() => {
-    if (itemIndexValue < contentLength - 1) {
-      console.log("saving to currently reading");
+    if (itemIndex < contentLength - 1) {
       currentlyReading.set(issueId, {
         id: issueId,
         title: data?.issueTitle || "",
         thumbnailUrl: data?.thumbnailUrl || "",
-        currentPage: itemIndexValue,
+        currentPage: itemIndex,
         totalPages: contentLength - 1,
       });
       return;
     }
 
-    if (itemIndexValue === contentLength - 1) {
+    if (itemIndex === contentLength - 1) {
       currentlyReading.delete(issueId);
       doneReading.set(issueId, {
         id: issueId,
@@ -77,19 +75,19 @@ function Component() {
     isEnabled.set(true);
   }, 3_000);
 
-  const goRight = useCallback(() => {
-    itemIndex.set(itemIndexValue + 1);
-  }, [itemIndex, itemIndexValue]);
+  const goRight = useDebounce(() => {
+    setItemIndex((index) => index - 1);
+  }, 3000);
 
-  const goLeft = useCallback(() => {
-    itemIndex.set(itemIndexValue - 1);
-  }, [itemIndex, itemIndexValue]);
+  const goLeft = useDebounce(() => {
+    setItemIndex((index) => index - 1);
+  }, 3000);
 
   useKeyPress((e) => {
-    if (e.keyCode === 93 && itemIndexValue < contentLength - 1) {
-      goRight();
-    } else if (e.keyCode === 91 && itemIndexValue > 0) {
-      goLeft();
+    if (e.keyCode === 93 && itemIndex < contentLength - 1) {
+      setItemIndex((index) => index + 1);
+    } else if (e.keyCode === 91 && itemIndex > 0) {
+      setItemIndex((index) => index - 1);
     }
   });
 
@@ -107,10 +105,10 @@ function Component() {
   const onDragEnd = () => {
     const x = dragX.get();
 
-    if (x <= DRAG_BUFFER && itemIndexValue < contentLength - 1) {
-      itemIndex.set(itemIndexValue + 1);
-    } else if (x >= DRAG_BUFFER && itemIndexValue > 0) {
-      itemIndex.set(itemIndexValue - 1);
+    if (x <= DRAG_BUFFER && itemIndex < contentLength - 1) {
+      setItemIndex((index) => index + 1);
+    } else if (x >= DRAG_BUFFER && itemIndex > 0) {
+      setItemIndex((index) => index - 1);
     }
   };
 
@@ -129,35 +127,39 @@ function Component() {
           </Flex>
         )}
         <div className="absolute z-0 h-[10%]">
-          <motion.div
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            style={{ x: dragX }}
-            animate={{
-              translateX: `-${itemIndexValue * 100}%`,
-            }}
-            transition={{
-              bounceDamping: 10,
-            }}
-            onDragEnd={onDragEnd}
-            className="flex cursor-grab active:cursor-grabbing items-center"
-          >
-            {data?.pages.map((v) => (
-              <div
-                className="w-full h-screen flex items-center justify-center shrink-0"
-                key={v.id}
-              >
-                <img
-                  src={v.pageContent}
-                  alt="page"
-                  className="h-full w-[50%] object-contain"
-                />
-              </div>
-            ))}
-          </motion.div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              style={{ x: dragX }}
+              initial={{ translateX: 0 }}
+              animate={{
+                translateX: `-${itemIndex * 100}%`,
+              }}
+              exit={{ translateX: 0 }}
+              onDragEnd={onDragEnd}
+              transition={{
+                bounceDamping: 4,
+              }}
+              className="flex cursor-grab active:cursor-grabbing items-center"
+            >
+              {data?.pages.map((v) => (
+                <div
+                  className="w-full h-screen flex items-center justify-center shrink-0"
+                  key={v.id}
+                >
+                  <img
+                    src={v.pageContent}
+                    alt="page"
+                    className="h-full w-[50%] object-contain"
+                  />
+                </div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
         </div>
         {/* controls */}
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {isVisible && (
             <motion.div>
               <Flex
@@ -168,13 +170,13 @@ function Component() {
               >
                 <Flex align="center" justify="start">
                   <button
-                    onClick={() => goLeft()}
+                    onClick={() => goLeft([])}
                     className="text-neutral-700 px-5 py-5 hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 dark:text-neutral-300"
                   >
                     <ChevronLeft size={18} />
                   </button>
                   <button
-                    onClick={() => goRight()}
+                    onClick={() => goRight([])}
                     className="text-neutral-700 px-5 py-5 hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 dark:text-neutral-300"
                   >
                     <ChevronRight size={18} />

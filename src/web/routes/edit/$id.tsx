@@ -26,13 +26,25 @@ function Component() {
       >
         {isLoading && <Spinner size={40} />}
         <Flex width="100%" align="start" direction="column" gap="3">
-          <Heading size="7">{data?.metadata?.Series}</Heading>
+          <Heading size="7" className="text-yellow-500">
+            {data?.metadata?.Series}
+          </Heading>
           <Flex gap="1" direction="column" align="start" width="100%">
-            <Text size="4">Number: {data?.metadata?.Issue}</Text>
-            <Text size="4">{data?.metadata?.Summary}</Text>
-            <Text size="4">Page Count: {data?.metadata?.PageCount}</Text>
-            <Text size="4">Written By: {data?.metadata?.writer}</Text>
-            <Text size="2" color="gray">
+            {data?.metadata?.Issue && (
+              <Text size="3">Number: {data?.metadata.Issue}</Text>
+            )}
+            <Text size="3">{data?.metadata?.Summary}</Text>
+            {data?.metadata?.PageCount && (
+              <Text size="3">
+                <span className="text-yellow-500">Page Count:</span>
+                {"  "}
+                {data?.metadata?.PageCount}
+              </Text>
+            )}
+            {data?.metadata?.writer && (
+              <Text size="3">Written By: {data?.metadata.writer}</Text>
+            )}
+            <Text size="2" className="text-yellow-500/40">
               {data?.metadata?.Notes}
             </Text>
           </Flex>

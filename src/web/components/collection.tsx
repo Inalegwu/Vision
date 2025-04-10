@@ -1,18 +1,23 @@
 import { ContextMenu, Flex, Text } from "@radix-ui/themes";
-import type { Collection as CollectionType, Issue } from "@shared/types";
+import t from "@shared/config";
 import { useRouter } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Trash2 } from "lucide-react";
 
 type Props = {
-  collection: CollectionType & {
+  collection: Collection & {
     issues: Array<Issue>;
   };
 };
 
 // TODO work on shared element transitions
 export default function Collection({ collection }: Props) {
+  const utils = t.useUtils();
   const navigation = useRouter();
+
+  const { mutate: deleteIssue } = t.collection.deleteCollection.useMutation({
+    onSuccess: () => utils.library.invalidate(),
+  });
 
   const go = () =>
     navigation.navigate({
@@ -27,12 +32,12 @@ export default function Collection({ collection }: Props) {
       <ContextMenu.Trigger>
         <Flex
           onClick={go}
-          className="w-[200px] h-[320px] mb-14 cursor-pointer"
+          className="w-[200px] h-[320px] cursor-pointer"
           direction="column"
-          gap="2"
+          gap="1"
         >
           <Flex className="w-full h-full relative rounded-md ">
-            {collection.issues.map((issue, idx) => (
+            {collection.issues.slice(0, 3).map((issue, idx) => (
               <motion.img
                 src={issue.thumbnailUrl}
                 alt={issue.issueTitle}
@@ -47,17 +52,25 @@ export default function Collection({ collection }: Props) {
             ))}
           </Flex>
           <Flex direction="column" gap="1" align="start">
-            <Text size="1" className="text-gray-600 dark:text-zinc-400">
+            <Text size="1" className="text-black dark:text-white">
               {collection.collectionName}
             </Text>
           </Flex>
         </Flex>
       </ContextMenu.Trigger>
       <ContextMenu.Content size="1" variant="soft">
-        <ContextMenu.Item color="tomato" className="cursor-pointer">
+        <ContextMenu.Item
+          onClick={() =>
+            deleteIssue({
+              collectionId: collection.id,
+            })
+          }
+          color="tomato"
+          className="cursor-pointer"
+        >
           <Flex align="center" justify="start" gap="1">
             <Trash2 size={10} />
-            <Text size="2">Delete Collection</Text>
+            <Text size="1">Delete Collection</Text>
           </Flex>
         </ContextMenu.Item>
       </ContextMenu.Content>

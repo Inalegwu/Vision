@@ -1,5 +1,5 @@
 import { computed } from "@legendapp/state";
-import { useObservable, useObserveEffect } from "@legendapp/state/react";
+import { Show, useObservable, useObserveEffect } from "@legendapp/state/react";
 import { Flex, Text, Tooltip } from "@radix-ui/themes";
 import t from "@shared/config";
 import { useRouter, useRouterState } from "@tanstack/react-router";
@@ -12,6 +12,7 @@ import {
   Maximize2,
   Minus,
   Plus,
+  Settings,
   X,
 } from "lucide-react";
 import type React from "react";
@@ -34,6 +35,9 @@ export default function Layout({ children }: LayoutProps) {
   const isFullscreen = globalState$.isFullscreen.get();
   const isUpdating = useObservable(false);
   const isUpdatingValue = isUpdating.get();
+
+  const { mutate: createSourceDir } =
+    t.library.createLibraryFolder.useMutation();
 
   const { mutate: minimizeWindow } = t.window.minimize.useMutation();
   const { mutate: maximizeWindow } = t.window.maximize.useMutation();
@@ -79,7 +83,18 @@ export default function Layout({ children }: LayoutProps) {
 
   useEffect(() => {
     startFileWatcher();
-  }, [startFileWatcher]);
+
+    (() => {
+      console.log(globalState$.firstLaunch.get());
+      if (globalState$.firstLaunch.get()) {
+        createSourceDir();
+        // navigation.navigate({
+        //   to: "/first-launch",
+        // });
+        // TODO: stop from being first launch
+      }
+    })();
+  }, [startFileWatcher, createSourceDir]);
 
   return (
     <Flex
@@ -91,7 +106,7 @@ export default function Layout({ children }: LayoutProps) {
       <AnimatePresence mode="wait" initial={false}>
         {!isFullscreen && (
           <motion.div
-            initial={{ display: "flex", opacity: 1, height: 34 }}
+            initial={{ display: "none", opacity: 0, height: 0 }}
             animate={{ display: "flex", opacity: 1, height: 34 }}
             exit={{ display: "none", opacity: 0, height: 0 }}
             style={{ width: "100%" }}
@@ -103,7 +118,7 @@ export default function Layout({ children }: LayoutProps) {
             >
               <Flex align="center" justify="start" gap="3">
                 <Text
-                  className="ml-2.5 text-zinc-600 font-[Title]"
+                  className="ml-2.5 font-[Title] text-yellow-500"
                   weight="medium"
                 >
                   Vision
@@ -122,6 +137,7 @@ export default function Layout({ children }: LayoutProps) {
                   >
                     <ArrowRight size={10} />
                   </button>
+                  <SettingsButton />
                   <Tooltip content="Add Issue To Library">
                     <AddButton />
                   </Tooltip>
@@ -207,5 +223,51 @@ function AddButton() {
     >
       {isLoading ? <Spinner /> : <Plus size={10} />}
     </button>
+  );
+}
+
+function SettingsButton() {
+  const settingsVisible = useObservable(false);
+
+  return (
+    <>
+      <button
+        onClick={() => settingsVisible.set(!settingsVisible.get())}
+        className="cursor-pointer dark:text-zinc-400 px-3 py-2"
+      >
+        <Settings size={10} />
+      </button>
+      <AnimatePresence>
+        <Show if={settingsVisible}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0, display: "none" }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              display: "flex",
+            }}
+            exit={{ opacity: 0, scale: 0, display: "none" }}
+            transition={{
+              duration: 0.2,
+            }}
+            className="w-full h-full top-0 left-0 flex items-center justify-center absolute z-20"
+          >
+            <Flex
+              direction="column"
+              className="bg-white-100 dark:bg-neutral-800 border-1 w-3/6 h-3/6 rounded-md border-solid border-neutral-200 dark:border-neutral-600"
+            >
+              <Flex width="100%" align="center" justify="end">
+                <button
+                  className="px-3 py-3 text-red-400"
+                  onClick={() => settingsVisible.set(false)}
+                >
+                  <X size={11} />
+                </button>
+              </Flex>
+            </Flex>
+          </motion.div>
+        </Show>
+      </AnimatePresence>
+    </>
   );
 }

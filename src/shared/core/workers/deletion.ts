@@ -1,7 +1,6 @@
 import { deletionWorkerSchema } from "@shared/core/validations";
 import { issues } from "@shared/schema";
 import db from "@shared/storage";
-import type { DeletionChannel } from "@src/shared/types";
 import { parseWorkerMessageWithSchema } from "@src/shared/utils";
 import { BroadcastChannel } from "broadcast-channel";
 import { eq } from "drizzle-orm";

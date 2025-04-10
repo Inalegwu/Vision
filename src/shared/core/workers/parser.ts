@@ -39,7 +39,7 @@ function handleMessage({ action, parsePath }: ParserSchema) {
         error: "Issue Already Exists",
         state: "ERROR",
       });
-      return yield* Effect.logInfo(`${exists.issueTitle} Already Saved`);
+      return yield* Effect.logError(`${exists.issueTitle} Already Saved`);
     }
 
     Match.value({ action, ext }).pipe(
@@ -55,7 +55,7 @@ function handleMessage({ action, parsePath }: ParserSchema) {
   }).pipe(
     Effect.orDie,
     Effect.annotateLogs({
-      worker: "parser",
+      worker: `parser-${parsePath}`,
     }),
     Effect.runPromise,
   );

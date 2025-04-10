@@ -1,7 +1,7 @@
 import { publicProcedure, router } from "@src/trpc";
-import { z } from "zod";
-import { issues, collections as collectionsSchema } from "../schema";
 import { eq } from "drizzle-orm";
+import { z } from "zod";
+import { collections as collectionsSchema, issues } from "../schema";
 
 const collections = router({
   getCollectionById: publicProcedure
@@ -29,6 +29,19 @@ const collections = router({
       collections,
     };
   }),
+  deleteCollection: publicProcedure
+    .input(
+      z.object({
+        collectionId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .delete(collectionsSchema)
+        .where(eq(collectionsSchema.id, input.collectionId));
+
+      return true;
+    }),
   addIssueToCollection: publicProcedure
     .input(
       z.object({

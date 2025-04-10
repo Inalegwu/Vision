@@ -23,7 +23,10 @@ const libraryRouter = router({
     watchFS(`${ctx.app.getPath("documents")}/Vision`),
   ),
   getLibrary: publicProcedure.query(async ({ ctx }) => {
-    const issues = await ctx.db.query.issues.findMany({});
+    const issues = await ctx.db.query.issues.findMany({
+      orderBy: (fields, { asc }) => asc(fields.issueTitle),
+    });
+
     const collections = await ctx.db.query.collections.findMany({
       with: {
         issues: {
@@ -31,7 +34,7 @@ const libraryRouter = router({
             id: true,
             thumbnailUrl: true,
           },
-          orderBy: (fields, { desc }) => desc(fields.dateCreated),
+          orderBy: (fields, { asc }) => asc(fields.issueTitle),
         },
       },
     });

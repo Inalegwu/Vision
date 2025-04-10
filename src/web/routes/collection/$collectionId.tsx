@@ -1,6 +1,5 @@
 import { Flex, Text } from "@radix-ui/themes";
 import t from "@shared/config";
-import { sortPages } from "@shared/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { Issue, Spinner } from "../../components";
 
@@ -16,19 +15,17 @@ function Component() {
   });
 
   return (
-    <Flex gap="4" className="h-screen px-2 py-2" direction="column">
-      <Flex className="w-full" align="center" justify="between">
+    <Flex className="h-screen" direction="column">
+      <Flex className="w-full px-3 py-3" align="center" justify="between">
         <Text size="8" weight="bold">
           {data?.collection?.collectionName}
         </Text>
         {isLoading && <Spinner size={15} />}
       </Flex>
-      <Flex gap="3">
-        {data?.collection?.issues
-          .sort((a, b) => sortPages(a.issueTitle, b.issueTitle))
-          .map((issue) => (
-            <Issue key={issue.id} issue={issue} />
-          ))}
+      <Flex gap="3" wrap="wrap" className="pt-5 px-3 overflow-y-scroll pb-12">
+        {data?.collection?.issues.map((issue) => (
+          <Issue key={issue.id} issue={issue} />
+        ))}
       </Flex>
     </Flex>
   );

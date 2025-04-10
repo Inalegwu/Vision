@@ -9,24 +9,16 @@ import {
   TextField,
 } from "@radix-ui/themes";
 import t from "@shared/config";
-import type {
-  Collection as CollectionType,
-  Issue as IssueType,
-} from "@shared/types";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
-import { memo, useEffect } from "react";
+import { memo } from "react";
 import { useTimeout } from "../hooks";
-import { globalState$ } from "../state";
 
 export const Route = createFileRoute("/library")({
   component: memo(Component),
 });
 
 function Component() {
-  const { mutate: createSourceDir } =
-    t.library.createLibraryFolder.useMutation();
-
   const isEnabled = useObservable(false);
 
   const { data, isLoading } = t.library.getLibrary.useQuery(undefined, {
@@ -37,16 +29,9 @@ function Component() {
     isEnabled.set(true);
   }, 3_000);
 
-  useEffect(() => {
-    if (globalState$.firstLaunch.get()) {
-      createSourceDir();
-      globalState$.firstLaunch.set(false);
-    }
-  }, [createSourceDir]);
-
   return (
-    <Flex direction="column" className="w-full h-screen px-2 py-2">
-      <Flex align="center" justify="between" className="w-full">
+    <Flex direction="column" className="w-full h-screen">
+      <Flex align="center" justify="between" className="w-full px-3 py-3">
         <Heading size="8">Library</Heading>
         <Flex align="center" justify="end" gap="3">
           <CreateCollection />
@@ -64,7 +49,8 @@ function Component() {
       </Flex>
       <Flex
         grow="1"
-        className="py-5 overflow-y-scroll pb-24"
+        align="center"
+        className="pt-5 px-3 overflow-y-scroll pb-20"
         gap="4"
         wrap="wrap"
       >
@@ -73,7 +59,6 @@ function Component() {
             .fill(0)
             // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
             .map((_, index) => <IssueSkeleton key={index} />)}
-        {/* @ts-ignore: all good */}
         <RenderCollections collections={data?.collections || []} />
         <RenderIssues issues={data?.issues || []} />
       </Flex>
@@ -81,7 +66,7 @@ function Component() {
   );
 }
 
-const RenderIssues = memo(({ issues }: { issues: IssueType[] }) => {
+const RenderIssues = memo(({ issues }: { issues: Issue[] }) => {
   return (
     <>
       {issues?.map((issue) => (
@@ -96,8 +81,8 @@ const RenderCollections = memo(
     collections,
   }: {
     collections: Array<
-      CollectionType & {
-        issues: IssueType[];
+      Collection & {
+        issues: Issue[];
       }
     >;
   }) => {

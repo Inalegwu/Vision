@@ -30,7 +30,10 @@ function Index() {
   }
 
   return (
-    <Flex direction="column" className="h-screen w-full overflow-y-scroll">
+    <Flex
+      direction="column"
+      className="h-screen w-full overflow-y-scroll pb-40"
+    >
       <Flex
         direction="column"
         align="start"
