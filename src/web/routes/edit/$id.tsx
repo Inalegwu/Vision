@@ -17,7 +17,7 @@ function Component() {
   console.log({ data });
 
   return (
-    <Flex className="w-full h-screen" align="center">
+    <Flex className="w-full h-screen pt-8" align="center">
       <Flex
         direction="column"
         className="w-4/6 h-full px-3"

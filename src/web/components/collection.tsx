@@ -2,7 +2,7 @@ import { ContextMenu, Flex, Text } from "@radix-ui/themes";
 import t from "@shared/config";
 import { useRouter } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Trash2 } from "lucide-react";
+import { Info, Trash2 } from "lucide-react";
 
 type Props = {
   collection: Collection & {
@@ -32,7 +32,7 @@ export default function Collection({ collection }: Props) {
       <ContextMenu.Trigger>
         <Flex
           onClick={go}
-          className="w-[200px] h-[320px] cursor-pointer"
+          className="w-[200px] h-[320px] cursor-pointer mt-6"
           direction="column"
           gap="1"
         >
@@ -52,27 +52,46 @@ export default function Collection({ collection }: Props) {
             ))}
           </Flex>
           <Flex direction="column" gap="1" align="start">
-            <Text size="1" className="text-black dark:text-white">
+            <Text
+              size="1"
+              weight="medium"
+              className="text-black dark:text-white"
+            >
               {collection.collectionName}
             </Text>
           </Flex>
         </Flex>
       </ContextMenu.Trigger>
       <ContextMenu.Content size="1" variant="soft">
-        <ContextMenu.Item
-          onClick={() =>
-            deleteIssue({
-              collectionId: collection.id,
-            })
-          }
-          color="tomato"
-          className="cursor-pointer"
-        >
-          <Flex align="center" justify="start" gap="1">
-            <Trash2 size={10} />
-            <Text size="1">Delete Collection</Text>
+        <ContextMenu.Item>
+          <Flex align="center" width="100%" justify="between">
+            <Text size="1">Info</Text>
+            <Info size={10} />
           </Flex>
         </ContextMenu.Item>
+        <ContextMenu.Sub>
+          <ContextMenu.SubTrigger>
+            <Flex align="center" justify="start">
+              <Text size="1">More</Text>
+            </Flex>
+          </ContextMenu.SubTrigger>
+          <ContextMenu.SubContent>
+            <ContextMenu.Item
+              onClick={() =>
+                deleteIssue({
+                  collectionId: collection.id,
+                })
+              }
+              color="tomato"
+              className="cursor-pointer"
+            >
+              <Flex align="center" gap="3" justify="between" width="100%">
+                <Text size="1">Delete Collection</Text>
+                <Trash2 size={10} />
+              </Flex>
+            </ContextMenu.Item>
+          </ContextMenu.SubContent>
+        </ContextMenu.Sub>
       </ContextMenu.Content>
     </ContextMenu.Root>
   );

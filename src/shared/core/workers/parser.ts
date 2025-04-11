@@ -15,8 +15,8 @@ if (!port) throw new Error("Parse Process Port is Missing");
 
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 
-function handleMessage({ action, parsePath }: ParserSchema) {
-  return Effect.gen(function* () {
+const handleMessage = ({ action, parsePath }: ParserSchema) =>
+  Effect.gen(function* () {
     const ext = parsePath.includes("cbr")
       ? "cbr"
       : parsePath.includes("cbz")
@@ -59,7 +59,6 @@ function handleMessage({ action, parsePath }: ParserSchema) {
     }),
     Effect.runPromise,
   );
-}
 
 port.on("message", (message) =>
   parseWorkerMessageWithSchema(parserSchema, message).match(

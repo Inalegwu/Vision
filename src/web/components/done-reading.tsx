@@ -1,9 +1,10 @@
 import { ContextMenu, Flex, Text } from "@radix-ui/themes";
-import type { DoneReading as DoneReadingType } from "@src/shared/types";
 import { Minus } from "lucide-react";
+import moment from "moment";
+import { readingState$ } from "../state";
 
 type Props = {
-  issue: DoneReadingType;
+  issue: DoneReading;
 };
 
 export default function DoneReading({ issue }: Props) {
@@ -24,23 +25,20 @@ export default function DoneReading({ issue }: Props) {
             gap="1"
             direction="column"
           >
-            <Text
-              size="1"
-              weight="bold"
-              className="tracking-wider"
-              color="gray"
-            >
+            <Text size="1" weight="medium" className="text-yellow-500">
               {issue.title}
             </Text>
-            {/* TODO install moment and give a proper value */}
-            {/* <Text className="text-[11.5px]" weight="regular" color="gray">
-              {issue.dateFinished?.toString()}
-            </Text> */}
+            <Text size="1" color="gray">
+              {moment(issue.dateFinished).fromNow()}
+            </Text>
           </Flex>
         </Flex>
       </ContextMenu.Trigger>
       <ContextMenu.Content size="1" variant="soft">
-        <ContextMenu.Item className="cursor-pointer">
+        <ContextMenu.Item
+          onClick={() => readingState$.doneReading.delete(issue.id)}
+          className="cursor-pointer"
+        >
           <Flex align="center" justify="start" gap="1">
             <Minus size={10} />
             <Text>Remove from Done Reading</Text>

@@ -1,8 +1,8 @@
 import { enableReactTracking } from "@legendapp/state/config/enableReactTracking";
 import { Theme } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
-import t, { queryClient, trpcClient } from "@shared/config";
-import { QueryClientProvider } from "@tanstack/react-query";
+import t, { persister, queryClient, trpcClient } from "@shared/config";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import {
   RouterProvider,
   createHashHistory,
@@ -41,16 +41,19 @@ if (!rootElement?.innerHTML) {
   root.render(
     <StrictMode>
       <t.Provider client={trpcClient} queryClient={queryClient}>
-        <QueryClientProvider client={queryClient}>
+        <PersistQueryClientProvider
+          persistOptions={{ persister }}
+          client={queryClient}
+        >
           <Theme
             radius="medium"
-            accentColor="gray"
+            accentColor="yellow"
             grayColor="slate"
             panelBackground="translucent"
           >
             <RouterProvider defaultViewTransition router={router} />
           </Theme>
-        </QueryClientProvider>
+        </PersistQueryClientProvider>
       </t.Provider>
     </StrictMode>,
   );

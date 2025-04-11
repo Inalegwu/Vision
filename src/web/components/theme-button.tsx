@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { Moon, Sun } from "lucide-react";
 import { globalState$ } from "../state";
 
@@ -6,6 +5,7 @@ export default function ThemeButton() {
   return (
     <button
       type="button"
+      className="p-2 rounded-md cursor-pointer dark:text-neutral-400 hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
       onClick={() => {
         if (globalState$.colorMode.get() === "dark") {
           globalState$.colorMode.set("light");
@@ -13,15 +13,12 @@ export default function ThemeButton() {
           globalState$.colorMode.set("dark");
         }
       }}
-      className="cursor-pointer text-zinc-400 px-3 py-2"
     >
-      <motion.div>
-        {globalState$.colorMode.get() === "dark" ? (
-          <Sun size={10} />
-        ) : (
-          <Moon size={10} />
-        )}
-      </motion.div>
+      {globalState$.colorMode.get() === "dark" ? (
+        <Sun size={12} />
+      ) : (
+        <Moon size={12} />
+      )}
     </button>
   );
 }

@@ -38,7 +38,7 @@ function Index() {
         direction="column"
         align="start"
         justify="center"
-        className="w-full px-2 py-2 space-y-1"
+        className="w-full px-2 py-2 space-y-1 pt-12"
       >
         <Heading size="7">Currently Reading</Heading>
         <Flex grow="1" className="py-2 overflow-x-scroll pr-14" gap="3">
@@ -49,7 +49,7 @@ function Index() {
       </Flex>
       <Flex direction="column" className="w-full h-2/6 px-2 py-2 space-y-2">
         <Heading size="6">Done Reading</Heading>
-        <Flex grow="1" className="py-2" gap="3">
+        <Flex grow="1" className="py-2" wrap="wrap" gap="4">
           {doneReading.map((v) => (
             <DoneReading key={v.id} issue={v} />
           ))}

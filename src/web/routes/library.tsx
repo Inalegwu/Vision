@@ -30,7 +30,7 @@ function Component() {
   }, 3_000);
 
   return (
-    <Flex direction="column" className="w-full h-screen">
+    <Flex direction="column" className="w-full h-screen pt-8">
       <Flex align="center" justify="between" className="w-full px-3 py-3">
         <Heading size="8">Library</Heading>
         <Flex align="center" justify="end" gap="3">
@@ -50,7 +50,7 @@ function Component() {
       <Flex
         grow="1"
         align="center"
-        className="pt-5 px-3 overflow-y-scroll pb-20"
+        className="px-3 overflow-y-scroll pb-20"
         gap="4"
         wrap="wrap"
       >

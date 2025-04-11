@@ -19,7 +19,7 @@ function Component() {
   const { issueId } = Route.useParams();
 
   const isEnabled = useObservable(false);
-  const isVisible = useObservable(false);
+  const isVisible = useObservable(true);
 
   const doneReading = readingState$.doneReading.get();
   const currentlyReading = readingState$.currentlyReading.get();
@@ -83,17 +83,25 @@ function Component() {
     setItemIndex((index) => index - 1);
   }, 3000);
 
-  useKeyPress((e) => {
+  const debounceKeyPress = useDebounce((e: KeyboardEvent) => {
     if (e.keyCode === 93 && itemIndex < contentLength - 1) {
       setItemIndex((index) => index + 1);
     } else if (e.keyCode === 91 && itemIndex > 0) {
       setItemIndex((index) => index - 1);
     }
-  });
+  }, 50);
+
+  useKeyPress(debounceKeyPress);
 
   useTimeout(() => {
     isVisible.set(false);
-  }, 3_000);
+  }, 2_500);
+
+  console.log(isVisible.get());
+
+  const mouseHandle = useDebounce((ev: MouseEvent) => {
+    () => isVisible.set(true);
+  }, 100);
 
   useEffect(() => {
     window.addEventListener("mousemove", () => isVisible.set(true));
@@ -160,8 +168,16 @@ function Component() {
         </div>
         {/* controls */}
         <AnimatePresence mode="wait">
-          {isVisible && (
-            <motion.div>
+          {isVisible.get() && (
+            <motion.div
+              initial={{ transform: "translateY(50px)", opacity: 0 }}
+              animate={{
+                transform: "translateY(0px)",
+                opacity: 1,
+              }}
+              exit={{ transform: "translateY(50px)", opacity: 0 }}
+              className="w-full"
+            >
               <Flex
                 align="center"
                 justify="between"
@@ -171,13 +187,13 @@ function Component() {
                 <Flex align="center" justify="start">
                   <button
                     onClick={() => goLeft([])}
-                    className="text-neutral-700 px-5 py-5 hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 dark:text-neutral-300"
+                    className="text-neutral-700 px-5 py-5 cursor-pointer hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 dark:text-neutral-300"
                   >
                     <ChevronLeft size={18} />
                   </button>
                   <button
                     onClick={() => goRight([])}
-                    className="text-neutral-700 px-5 py-5 hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 dark:text-neutral-300"
+                    className="text-neutral-700 px-5 cursor-pointer py-5 hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 dark:text-neutral-300"
                   >
                     <ChevronRight size={18} />
                   </button>
@@ -190,12 +206,16 @@ function Component() {
                 </motion.div>
                 <Flex align="center" justify="end">
                   <button
-                    onClick={() => globalState$.isFullscreen.set(!isFullscreen)}
-                    className="text-neutral-700 dark:text-neutral-300 hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 px-5 py-5"
+                    onClick={() =>
+                      globalState$.isFullscreen.set(
+                        !globalState$.isFullscreen.get(),
+                      )
+                    }
+                    className="text-neutral-700 cursor-pointer dark:text-neutral-300 hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 px-5 py-5"
                   >
                     <Expand size={18} />
                   </button>
-                  <button className="text-neutral-700 dark:text-neutral-300 hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 px-5 py-5">
+                  <button className="text-neutral-700 cursor-pointer dark:text-neutral-300 hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 px-5 py-5">
                     <Bookmark size={18} />
                   </button>
                 </Flex>

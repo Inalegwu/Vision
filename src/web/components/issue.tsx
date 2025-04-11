@@ -56,7 +56,7 @@ export default function Issue({ issue }: Props) {
       <ContextMenu.Root>
         <ContextMenu.Trigger>
           <Flex
-            className="w-[200px] h-[300px] mb-5 cursor-pointer"
+            className="w-[200px] h-[300px] mb-5 mt-6 cursor-pointer"
             gap="1"
             direction="column"
             onClick={go}
@@ -89,29 +89,25 @@ export default function Issue({ issue }: Props) {
               })
             }
           >
-            <Flex align="center" justify="start" gap="2">
-              <Info size={12} />
+            <Flex align="center" justify="between" width="100%">
               <Text size="1">Info</Text>
+              <Info size={12} />
             </Flex>
           </ContextMenu.Item>
           <ContextMenu.Sub>
             <ContextMenu.SubTrigger>
               <ContextMenu.Item>
-                <Text size="1">More</Text>
+                <Flex align="center" justify="start">
+                  <Text size="1">More</Text>
+                </Flex>
               </ContextMenu.Item>
             </ContextMenu.SubTrigger>
             <ContextMenu.SubContent>
-              <ContextMenu.Item className="cursor-pointer">
-                <Flex align="center" gap="2" justify="between" width="100%">
-                  <Text size="1"> Regenerate Thumbnail</Text>
-                  <RefreshCcw size={11} />
-                </Flex>
-              </ContextMenu.Item>
               <ContextMenu.Item
                 onClick={() => dialogRef.current?.click()}
                 className="cursor-pointer"
               >
-                <Flex align="center" gap="4" justify="between" width="100%">
+                <Flex align="center" justify="between" gap="4" width="100%">
                   <Text size="1">Add To Collection</Text>
                   <Plus size={11} />
                 </Flex>
@@ -120,12 +116,18 @@ export default function Issue({ issue }: Props) {
                 <ContextMenu.Item
                   onClick={() => removeFromCollection({ issueId: issue.id })}
                 >
-                  <Flex align="center" gap="2" justify="between" width="100%">
+                  <Flex align="center" gap="3" justify="between" width="100%">
                     <Text size="1"> Remove From Collection</Text>
                     <Minus size={11} />
                   </Flex>
                 </ContextMenu.Item>
               )}
+              <ContextMenu.Item className="cursor-pointer">
+                <Flex align="center" justify="between" width="100%">
+                  <Text size="1"> Regenerate Thumbnail</Text>
+                  <RefreshCcw size={11} />
+                </Flex>
+              </ContextMenu.Item>
               <ContextMenu.Item
                 onClick={() =>
                   deleteIssue({

@@ -14,6 +14,7 @@ declare global {
     colorMode: "dark" | "light";
     firstLaunch: boolean;
     isFullscreen: boolean;
+    sourceDirectories: Array<string>;
   };
 
   export type Issue = Omit<

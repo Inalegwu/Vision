@@ -76,17 +76,6 @@ export namespace Archive {
         ),
       );
 
-      const exists = yield* Effect.tryPromise(
-        async () =>
-          await db.query.issues.findFirst({
-            where: (issue, { eq }) => eq(issue.issueTitle, issueTitle),
-          }),
-      );
-
-      if (exists) {
-        return yield* Effect.logError(new Error("Issue is already Saved"));
-      }
-
       const newIssue = yield* Effect.tryPromise(async () =>
         (
           await db
@@ -181,26 +170,9 @@ export namespace Archive {
         ),
       );
 
-      const issueTitle = yield* Effect.sync(() => parseFileNameFromPath(path));
-
-      const exists = yield* Effect.tryPromise(
-        async () =>
-          await db.query.issues.findFirst({
-            where: (issue, { eq }) => eq(issue.issueTitle, issueTitle),
-          }),
-      );
-
-      if (exists) {
-        parserChannel.postMessage({
-          isCompleted: false,
-          error: "Issue Already Exists",
-          state: "ERROR",
-        });
-        return yield* Effect.logError("Issue is already Saved");
-      }
-
       const _files = files.filter((file) => !file.name.includes("xml"));
 
+      const issueTitle = yield* Effect.sync(() => parseFileNameFromPath(path));
       const thumbnailUrl = yield* Effect.sync(() =>
         convertToImageUrl(
           _files[0].data.buffer ||
@@ -233,33 +205,35 @@ export namespace Archive {
         ),
       );
 
-      yield* Effect.forEach(files, (file, index) =>
-        Effect.gen(function* () {
-          if (file.isDir) {
-            return yield* Effect.log("found and skipped directory");
-          }
+      yield* Effect.forEach(
+        files.filter((file) => !file.name.includes("xml")),
+        (file, index) =>
+          Effect.gen(function* () {
+            if (file.isDir) {
+              return yield* Effect.log("found and skipped directory");
+            }
 
-          const pageContent = yield* Effect.sync(() =>
-            convertToImageUrl(file.data.buffer),
-          );
+            const pageContent = yield* Effect.sync(() =>
+              convertToImageUrl(file.data.buffer),
+            );
 
-          yield* Effect.tryPromise(
-            async () =>
-              await db.insert(pages).values({
-                id: v4(),
-                pageContent,
-                issueId: newIssue.id,
-              }),
-          );
+            yield* Effect.tryPromise(
+              async () =>
+                await db.insert(pages).values({
+                  id: v4(),
+                  pageContent,
+                  issueId: newIssue.id,
+                }),
+            );
 
-          parserChannel.postMessage({
-            completed: index,
-            total: files.length,
-            error: null,
-            isCompleted: false,
-            state: "SUCCESS",
-          });
-        }),
+            parserChannel.postMessage({
+              completed: index,
+              total: files.length,
+              error: null,
+              isCompleted: false,
+              state: "SUCCESS",
+            });
+          }),
       );
 
       parserChannel.postMessage({
