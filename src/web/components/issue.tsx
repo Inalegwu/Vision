@@ -70,7 +70,7 @@ export default function Issue({ issue }: Props) {
               <Text
                 size="1"
                 weight="medium"
-                className="text-black dark:text-white"
+                className="text-black dark:text-moonlightText"
               >
                 {issue.issueTitle}
               </Text>
@@ -123,7 +123,7 @@ export default function Issue({ issue }: Props) {
                 </ContextMenu.Item>
               )}
               <ContextMenu.Item className="cursor-pointer">
-                <Flex align="center" justify="between" width="100%">
+                <Flex gap="3" align="center" justify="between" width="100%">
                   <Text size="1"> Regenerate Thumbnail</Text>
                   <RefreshCcw size={11} />
                 </Flex>

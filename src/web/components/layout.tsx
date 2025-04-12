@@ -2,7 +2,8 @@ import { computed } from "@legendapp/state";
 import { Show, useObservable, useObserveEffect } from "@legendapp/state/react";
 import { Button, Flex, Text, Tooltip } from "@radix-ui/themes";
 import t from "@shared/config";
-import { useRouter, useRouterState } from "@tanstack/react-router";
+import { Link, useRouter, useRouterState } from "@tanstack/react-router";
+import { capitalize } from "effect/String";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -86,43 +87,38 @@ export default function Layout({ children }: LayoutProps) {
   useEffect(() => {
     startFileWatcher();
 
-    console.log(globalState$.firstLaunch.get());
     if (globalState$.firstLaunch.get()) {
       createSourceDir();
-      // navigation.navigate({
-      //   to: "/first-launch",
-      // });
-      // TODO: stop from being first launch
+      navigation.navigate({
+        to: "/first-launch",
+      });
     }
-  }, [startFileWatcher, createSourceDir]);
+  }, [startFileWatcher, createSourceDir, navigation]);
 
   return (
     <Flex
       width="100%"
       grow="1"
-      className="transition bg-white dark:bg-dark-8 relative"
+      className="transition bg-white dark:bg-moonlightBase relative"
     >
       <AnimatePresence mode="wait" initial={false}>
         {!isFullscreen && (
           <motion.div
             initial={{
-              opacity: 0,
               transform: "translateY(-50px)",
             }}
             animate={{
-              opacity: 1,
               transform: "translateY(0px)",
             }}
             exit={{
-              opacity: 0,
               transform: "translateY(-50px)",
             }}
-            className="w-full absolute top-0 shadow-sm shadow-black/5 left-0 z-10"
+            className="w-full absolute top-0 shadow-sm shadow-black/5 dark:shadow-none left-0 z-10"
           >
             <Flex
               align="center"
               justify="between"
-              className="border-b-1 bg-white dark:bg-dark-7 w-full border-b-solid border-b-zinc-100 dark:border-b-zinc-800"
+              className="border-b-1 bg-white dark:bg-moonlightOverlay w-full"
             >
               <Flex align="center" justify="start" gap="3">
                 <Text
@@ -134,25 +130,11 @@ export default function Layout({ children }: LayoutProps) {
                 <Flex gap="1">
                   <button
                     onClick={() => sidebar.set(!sidebar.get())}
-                    className="px-2 py-1 rounded-md dark:text-neutral-400 cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+                    className="px-2 py-1 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
                   >
                     <Sidebar size={12} />
                   </button>
-                  <Flex>
-                    <button
-                      disabled={!isNotHome}
-                      className="px-2 py-1 rounded-md dark:text-neutral-400 cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
-                      onClick={() => navigation.history.back()}
-                    >
-                      <ArrowLeft size={12} />
-                    </button>
-                    <button
-                      className="px-2 py-1 rounded-md dark:text-neutral-400 cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
-                      onClick={() => navigation.history.forward()}
-                    >
-                      <ArrowRight size={12} />
-                    </button>
-                  </Flex>
+
                   <Tooltip content="Add Issue To Library">
                     <AddButton />
                   </Tooltip>
@@ -160,48 +142,58 @@ export default function Layout({ children }: LayoutProps) {
               </Flex>
               <Flex grow="1" gap="1" align="center" justify="center">
                 <Flex grow="1" id="drag-region" p="2" />
-                <button
-                  className="p-2 rounded-md cursor-pointer dark:text-neutral-400 hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
-                  onClick={() =>
-                    navigation.navigate({
-                      to: "/",
-                      startTransition: true,
-                    })
-                  }
+                <Flex>
+                  <button
+                    disabled={!isNotHome}
+                    className="px-2 py-1 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+                    onClick={() => navigation.history.back()}
+                  >
+                    <ArrowLeft size={12} />
+                  </button>
+                  <button
+                    className="px-2 py-1 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+                    onClick={() => navigation.history.forward()}
+                  >
+                    <ArrowRight size={12} />
+                  </button>
+                </Flex>
+                <Flex
+                  align="center"
+                  justify="center"
+                  grow="1"
+                  className="p-1 rounded-lg w-2/6 bg-neutral-100/4 border-1 border-solid border-neutral-100 dark:border-neutral-100/5"
                 >
-                  <Home size={12} />
-                </button>
-                <button
-                  className="p-2 rounded-md cursor-pointer dark:text-neutral-400 hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
-                  onClick={() =>
-                    navigation.navigate({
-                      to: "/library",
-                      startTransition: true,
-                    })
-                  }
-                >
-                  <Library size={12} />
-                </button>
+                  <Text size="1" className="text-moonlightSlight">
+                    {" "}
+                    {capitalize(
+                      routerState.location.pathname === "/"
+                        ? "Home"
+                        : routerState.location.pathname === "/library"
+                          ? "Library"
+                          : "Exploring",
+                    )}
+                  </Text>
+                </Flex>
+                <ThemeButton />
                 <Flex grow="1" id="drag-region" p="2" />
               </Flex>
               <Flex align="center" justify="end">
-                <ThemeButton />
                 <button
-                  className="p-3 hover:bg-neutral-400/10 dark:text-neutral-400 dark:hover:bg-neutral-400/5"
+                  className="p-3 hover:bg-neutral-400/10 dark:text-moonlightText dark:hover:bg-neutral-400/5"
                   onClick={() => minimizeWindow()}
                   type="button"
                 >
                   <Minus size={12} />
                 </button>
                 <button
-                  className="p-3 hover:bg-neutral-400/10 dark:text-neutral-400 dark:hover:bg-neutral-400/5"
+                  className="p-3 hover:bg-neutral-400/10 dark:text-moonlightText dark:hover:bg-neutral-400/5"
                   onClick={() => maximizeWindow()}
                   type="button"
                 >
                   <Maximize2 size={12} />
                 </button>
                 <button
-                  className="p-3 hover:bg-red-500 dark:text-neutral-400 hover:text-white"
+                  className="p-3 hover:bg-red-500 dark:text-moonlightText hover:text-white"
                   onClick={() => closeWindow()}
                   type="button"
                 >
@@ -217,28 +209,51 @@ export default function Layout({ children }: LayoutProps) {
           <AnimatePresence>
             {sidebar.get() && (
               <motion.div
-                className="bg-light-1 dark:bg-dark-9 flex flex-col border-r-1 border-r-solid border-r-neutral-100 dark:border-r-neutral-800"
+                className="bg-light-1 dark:bg-moonlightFocusLow flex flex-col"
                 initial={{ width: 0, display: "none", opacity: 0 }}
-                animate={{ width: "19%", display: "flex", opacity: 1 }}
+                animate={{ width: "20%", display: "flex", opacity: 1 }}
                 exit={{ width: 0, display: "none", opacity: 0 }}
               >
-                <Flex grow="1" direction="column" className="pt-10 px-3">
-                  body
+                <Flex
+                  grow="1"
+                  gap="2"
+                  direction="column"
+                  className="pt-13 px-3"
+                >
+                  <Link
+                    className="text-black space-x-2 hover:bg-neutral-400/10 px-2 py-2 rounded-md text-moonlightSlight"
+                    to="/"
+                  >
+                    <Flex align="center" justify="start" gap="2">
+                      <Home size={15} />
+                      <Text weight="medium" size="2">
+                        Home
+                      </Text>
+                    </Flex>
+                  </Link>
+                  <Link
+                    className="text-black space-x-2 hover:bg-neutral-400/10 px-2 py-2 rounded-md text-moonlightSlight"
+                    to="/library"
+                  >
+                    <Flex align="center" justify="start" gap="2">
+                      <Library size={15} />
+                      <Text weight="medium" size="2">
+                        Library
+                      </Text>
+                    </Flex>
+                  </Link>
                 </Flex>
                 <Flex
                   align="center"
                   justify="between"
-                  className="h-14 border-t-1 bg-white dark:bg-dark-8 border-t-solid border-t-neutral-100 dark:border-t-neutral-800 px-3"
+                  className="h-14 bg-white dark:bg-moonlightOverlay px-3"
                 >
-                  {/* <button className="p-2 rounded-md cursor-pointer dark:text-neutral-400 hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5">
-                    <Settings size={12} />
-                  </button> */}
                   <SettingsButton />
                 </Flex>
               </motion.div>
             )}
           </AnimatePresence>
-          <motion.div animate={{ width: sidebar.get() ? "81%" : "100%" }}>
+          <motion.div animate={{ width: sidebar.get() ? "80%" : "100%" }}>
             {children}
           </motion.div>
         </Flex>
@@ -260,7 +275,7 @@ function AddButton() {
 
   return (
     <button
-      className="p-2 rounded-md cursor-pointer dark:text-neutral-400 hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+      className="p-2 rounded-md cursor-pointer dark:text-moonlightText hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
       disabled={isLoading}
       onClick={() => addIssueToLibrary()}
     >
@@ -276,7 +291,7 @@ function SettingsButton() {
     <>
       <button
         onClick={() => settingsVisible.set(!settingsVisible.get())}
-        className="p-2 rounded-md cursor-pointer dark:text-neutral-400 hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+        className="p-2 rounded-md cursor-pointer dark:text-moonlightText hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
       >
         <Settings size={10} />
       </button>
@@ -298,7 +313,7 @@ function SettingsButton() {
             <Flex
               direction="column"
               gap="1"
-              className="bg-white dark:bg-neutral-800 p-2 border-1 w-3/6 h-3/6 rounded-md border-solid border-neutral-200 dark:border-neutral-600"
+              className="bg-white dark:bg-moonlightOverlay p-2 border-1 w-3/6 h-3/6 rounded-md border-solid border-neutral-200 dark:border-neutral-800"
             >
               <Flex width="100%" align="center" justify="end">
                 <button
@@ -323,7 +338,7 @@ function SettingsButton() {
                       align="center"
                       justify="between"
                       key={`${value}-${idx}`}
-                      className="p-1 rounded-md flex text-black bg-neutral-400/10 dark:text-neutral-400"
+                      className="p-1 rounded-md flex text-black bg-neutral-400/8 dark:text-neutral-400"
                     >
                       <Text size="1" className="ml-2">
                         Folder: {value}

@@ -33,9 +33,11 @@ function Component() {
             {data?.metadata?.Issue && (
               <Text size="3">Number: {data?.metadata.Issue}</Text>
             )}
-            <Text size="3">{data?.metadata?.Summary}</Text>
+            <Text size="3" className="dark:text-moonlightText">
+              {data?.metadata?.Summary}
+            </Text>
             {data?.metadata?.PageCount && (
-              <Text size="3">
+              <Text size="3" className="dark:text-moonlightText">
                 <span className="text-yellow-500">Page Count:</span>
                 {"  "}
                 {data?.metadata?.PageCount}

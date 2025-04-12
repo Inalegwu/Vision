@@ -49,7 +49,6 @@ function Component() {
       </Flex>
       <Flex
         grow="1"
-        align="center"
         className="px-3 overflow-y-scroll pb-20"
         gap="4"
         wrap="wrap"

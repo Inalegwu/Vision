@@ -4,15 +4,21 @@ import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion, useMotionValue } from "framer-motion";
 import { Bookmark, ChevronLeft, ChevronRight, Expand } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { Spinner } from "../components";
-import { useDebounce, useInterval, useKeyPress, useTimeout } from "../hooks";
+import {
+  useDebounce,
+  useInterval,
+  useKeyPress,
+  useTimeout,
+  useWindow,
+} from "../hooks";
 import { globalState$, readingState$ } from "../state";
 
 const DRAG_BUFFER = 50;
 
 export const Route = createFileRoute("/$issueId")({
-  component: Component,
+  component: memo(Component),
 });
 
 function Component() {
@@ -91,24 +97,13 @@ function Component() {
     }
   }, 50);
 
+  const mouseHandle = useDebounce((ev: MouseEvent) => isVisible.set(true), 100);
+
   useKeyPress(debounceKeyPress);
 
-  useTimeout(() => {
-    isVisible.set(false);
-  }, 2_500);
+  useTimeout(() => isVisible.set(false), 2_500);
 
-  console.log(isVisible.get());
-
-  const mouseHandle = useDebounce((ev: MouseEvent) => {
-    () => isVisible.set(true);
-  }, 100);
-
-  useEffect(() => {
-    window.addEventListener("mousemove", () => isVisible.set(true));
-
-    return () =>
-      window.removeEventListener("mousemove", () => isVisible.set(true));
-  }, [isVisible]);
+  useWindow("mousemove", mouseHandle);
 
   const onDragEnd = () => {
     const x = dragX.get();
@@ -170,12 +165,11 @@ function Component() {
         <AnimatePresence mode="wait">
           {isVisible.get() && (
             <motion.div
-              initial={{ transform: "translateY(50px)", opacity: 0 }}
+              initial={{ transform: "translateY(50px)" }}
               animate={{
                 transform: "translateY(0px)",
-                opacity: 1,
               }}
-              exit={{ transform: "translateY(50px)", opacity: 0 }}
+              exit={{ transform: "translateY(50px)" }}
               className="w-full"
             >
               <Flex
