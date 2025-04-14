@@ -2,6 +2,7 @@ import { computed } from "@legendapp/state";
 import { Show, useObservable, useObserveEffect } from "@legendapp/state/react";
 import { Button, Flex, Text, Tooltip } from "@radix-ui/themes";
 import t from "@shared/config";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { capitalize } from "effect/String";
 import { AnimatePresence, motion } from "framer-motion";
@@ -31,6 +32,7 @@ type LayoutProps = {
 };
 
 export default function Layout({ children }: LayoutProps) {
+  const qC = useQueryClient();
   const utils = t.useUtils();
   const navigation = useRouter();
   const routerState = useRouterState();

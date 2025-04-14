@@ -29,7 +29,7 @@ function Component() {
 
   const doneReading = readingState$.doneReading.get();
   const currentlyReading = readingState$.currentlyReading.get();
-  const isFullscreen = globalState$.isFullscreen.get();
+  const isFullScreen = globalState$.isFullscreen.get();
 
   const { data, isLoading } = t.issue.getPages.useQuery(
     {
@@ -39,8 +39,6 @@ function Component() {
       enabled: isEnabled.get(),
     },
   );
-
-  console.log({ data });
 
   const contentLength = data?.pages.length || 0;
   const [itemIndex, setItemIndex] = useState(
@@ -182,13 +180,13 @@ function Component() {
               >
                 <Flex align="center" justify="start">
                   <button
-                    onClick={() => goLeft([])}
+                    onClick={() => setItemIndex((index) => index - 1)}
                     className="text-neutral-700 px-5 py-5 cursor-pointer hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 dark:text-neutral-300"
                   >
                     <ChevronLeft size={18} />
                   </button>
                   <button
-                    onClick={() => goRight([])}
+                    onClick={() => setItemIndex((index) => index + 1)}
                     className="text-neutral-700 px-5 cursor-pointer py-5 hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 dark:text-neutral-300"
                   >
                     <ChevronRight size={18} />
@@ -202,11 +200,7 @@ function Component() {
                 </motion.div>
                 <Flex align="center" justify="end">
                   <button
-                    onClick={() =>
-                      globalState$.isFullscreen.set(
-                        !globalState$.isFullscreen.get(),
-                      )
-                    }
+                    onClick={() => globalState$.isFullscreen.set(!isFullScreen)}
                     className="text-neutral-700 cursor-pointer dark:text-neutral-300 hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 px-5 py-5"
                   >
                     <Expand size={18} />

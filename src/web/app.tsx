@@ -12,6 +12,7 @@ import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import "virtual:uno.css";
 import "./app.css";
+import ErrorComponent from "./components/error";
 import { routeTree } from "./routeTree.gen";
 
 enableReactTracking({
@@ -25,6 +26,7 @@ const router = createRouter({
   routeTree,
   notFoundMode: "fuzzy",
   history: hashHistory,
+  defaultErrorComponent: (props) => <ErrorComponent {...props} />,
 });
 
 declare module "@tanstack/react-router" {

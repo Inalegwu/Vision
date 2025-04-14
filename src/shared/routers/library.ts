@@ -14,6 +14,10 @@ const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 const deletionChannel = new BroadcastChannel<DeletionChannel>(
   "deletion-channel",
 );
+const prefetchChannel = new BroadcastChannel<PrefetchChannel>(
+  "prefetch-channel",
+  {},
+);
 
 const libraryRouter = router({
   createLibraryFolder: publicProcedure.mutation(async ({ ctx }) => {
