@@ -106,35 +106,33 @@ export namespace Archive {
         ),
       );
 
-      yield* Effect.forEach(
-        files.filter((file) => !file.fileHeader.name.includes("xml")),
-        (file, index) =>
-          Effect.gen(function* () {
-            const pageContent = yield* Effect.sync(() =>
-              convertToImageUrl(file?.extraction?.buffer!),
-            );
+      yield* Effect.forEach(_files, (file, index) =>
+        Effect.gen(function* () {
+          const pageContent = yield* Effect.sync(() =>
+            convertToImageUrl(file?.extraction?.buffer!),
+          );
 
-            yield* Effect.log(file.fileHeader.name);
+          yield* Effect.log(file.fileHeader.name);
 
-            yield* Effect.tryPromise(
-              async () =>
-                await db.insert(pages).values({
-                  id: v4(),
-                  pageContent,
-                  issueId: newIssue.id,
-                }),
-            );
-
-            yield* Effect.sync(() =>
-              parserChannel.postMessage({
-                completed: index,
-                total: files.length,
-                error: null,
-                isCompleted: false,
-                state: "SUCCESS",
+          yield* Effect.tryPromise(
+            async () =>
+              await db.insert(pages).values({
+                id: v4(),
+                pageContent,
+                issueId: newIssue.id,
               }),
-            );
-          }),
+          );
+
+          yield* Effect.sync(() =>
+            parserChannel.postMessage({
+              completed: index,
+              total: _files.length,
+              error: null,
+              isCompleted: false,
+              state: "SUCCESS",
+            }),
+          );
+        }),
       );
 
       yield* Effect.sync(() =>
@@ -205,35 +203,33 @@ export namespace Archive {
         ),
       );
 
-      yield* Effect.forEach(
-        files.filter((file) => !file.name.includes("xml")),
-        (file, index) =>
-          Effect.gen(function* () {
-            if (file.isDir) {
-              return yield* Effect.log("found and skipped directory");
-            }
+      yield* Effect.forEach(_files, (file, index) =>
+        Effect.gen(function* () {
+          if (file.isDir) {
+            return yield* Effect.log("found and skipped directory");
+          }
 
-            const pageContent = yield* Effect.sync(() =>
-              convertToImageUrl(file.data.buffer),
-            );
+          const pageContent = yield* Effect.sync(() =>
+            convertToImageUrl(file.data.buffer),
+          );
 
-            yield* Effect.tryPromise(
-              async () =>
-                await db.insert(pages).values({
-                  id: v4(),
-                  pageContent,
-                  issueId: newIssue.id,
-                }),
-            );
+          yield* Effect.tryPromise(
+            async () =>
+              await db.insert(pages).values({
+                id: v4(),
+                pageContent,
+                issueId: newIssue.id,
+              }),
+          );
 
-            parserChannel.postMessage({
-              completed: index,
-              total: files.length,
-              error: null,
-              isCompleted: false,
-              state: "SUCCESS",
-            });
-          }),
+          parserChannel.postMessage({
+            completed: index,
+            total: _files.length,
+            error: null,
+            isCompleted: false,
+            state: "SUCCESS",
+          });
+        }),
       );
 
       parserChannel.postMessage({

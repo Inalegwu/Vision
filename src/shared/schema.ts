@@ -39,7 +39,9 @@ export const issues = sqliteTable(
 
 export const metadata = sqliteTable("metadata", {
   id: text("id").notNull().primaryKey(),
-  issueId: text("issueId").references(() => issues.id, { onDelete: "cascade" }),
+  issueId: text("issueId").references(() => issues.id, {
+    onDelete: "cascade",
+  }),
   Series: text("series"),
   Issue: integer("issue"),
   Web: text("web"),

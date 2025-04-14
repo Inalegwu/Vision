@@ -1,4 +1,4 @@
-import { Button, ContextMenu, Dialog, Flex, Text } from "@radix-ui/themes";
+import { ContextMenu, Dialog, Flex, Heading, Text } from "@radix-ui/themes";
 import t from "@shared/config";
 import { useRouter } from "@tanstack/react-router";
 import {
@@ -103,22 +103,23 @@ export default function Issue({ issue }: Props) {
               </ContextMenu.Item>
             </ContextMenu.SubTrigger>
             <ContextMenu.SubContent>
-              <ContextMenu.Item
-                onClick={() => dialogRef.current?.click()}
-                className="cursor-pointer"
-              >
-                <Flex align="center" justify="between" gap="4" width="100%">
-                  <Text size="1">Add To Collection</Text>
-                  <Plus size={11} />
-                </Flex>
-              </ContextMenu.Item>
-              {issue.collectionId !== null && (
+              {issue.collectionId !== null ? (
                 <ContextMenu.Item
                   onClick={() => removeFromCollection({ issueId: issue.id })}
                 >
                   <Flex align="center" gap="3" justify="between" width="100%">
                     <Text size="1"> Remove From Collection</Text>
                     <Minus size={11} />
+                  </Flex>
+                </ContextMenu.Item>
+              ) : (
+                <ContextMenu.Item
+                  onClick={() => dialogRef.current?.click()}
+                  className="cursor-pointer"
+                >
+                  <Flex align="center" justify="between" gap="4" width="100%">
+                    <Text size="1">Add To Collection</Text>
+                    <Plus size={11} />
                   </Flex>
                 </ContextMenu.Item>
               )}
@@ -150,14 +151,14 @@ export default function Issue({ issue }: Props) {
         <Dialog.Trigger>
           <button ref={dialogRef} />
         </Dialog.Trigger>
-        <Dialog.Content className="space-y-2 max-h-90 overflow-hidden" size="1">
-          <Text size="6">My Collections</Text>
+        <Dialog.Content className="space-y-2 max-h-90" size="1">
           {isLoading && <Spinner size={10} />}
           <FlatList
             data={data?.collections || []}
             className="h-70"
             scrollbars="vertical"
             scrollHideDelay={3000}
+            listHeaderComponent={()=><Heading size="6" weight="medium">My Collections</Heading>}
             renderItem={({ item, index }) => (
               <Flex
                 align="center"
@@ -165,32 +166,20 @@ export default function Issue({ issue }: Props) {
                 key={item.id}
                 className="rounded-md py-2 cursor-pointer"
               >
-                <Flex
-                  direction="column"
-                  align="start"
-                  justify="center"
-                  className="w-[75%]"
+                <Text size="2" weight="medium">
+                  {item.collectionName}
+                </Text>
+                <button
+                  className="p-2 rounded-md space-x-2 cursor-pointer text-yellow-500 hover:bg-yellow-500/10"
+                  onClick={() =>
+                    addToCollection({
+                      issueId: issue.id,
+                      collectionId: item.id,
+                    })
+                  }
                 >
-                  <Text size="3">{item.collectionName}</Text>
-                </Flex>
-                <Flex align="center" justify="end" gap="2">
-                  <Button
-                    size="1"
-                    color="yellow"
-                    className="cursor-pointer px-4 outline-none"
-                    variant="ghost"
-                    onClick={() =>
-                      addToCollection({
-                        issueId: issue.id,
-                        collectionId: item.id,
-                      })
-                    }
-                  >
-                    <Flex align="center" justify="center" gap="2">
-                      <PlusCircle size={13} />
-                    </Flex>
-                  </Button>
-                </Flex>
+                  <PlusCircle size={13} />
+                </button>
               </Flex>
             )}
           />

@@ -8,7 +8,7 @@ import { join } from "node:path";
 // this ensures that the application database
 // is available when this file is instantiated
 process.env = {
-  DB_URL: `${app.getPath("appData")}/Vision/vision.db`,
+  DB_URL: `${app.getPath("appData")}/Vision/db`,
 };
 
 app.setName("Vision");
@@ -18,10 +18,10 @@ const createWindow = () => {
   const mainWindow = new BrowserWindow({
     frame: false,
     show: false,
-    width: width - 50,
-    height: height - 50,
-    minWidth: width - 50,
-    minHeight: height - 50,
+    width: width - 25,
+    height: height - 25,
+    minWidth: width - 25,
+    minHeight: height - 25,
     webPreferences: {
       sandbox: false,
       preload: join(__dirname, "../preload/preload.js"),

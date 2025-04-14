@@ -40,6 +40,8 @@ function Component() {
     },
   );
 
+  console.log({ data });
+
   const contentLength = data?.pages.length || 0;
   const [itemIndex, setItemIndex] = useState(
     currentlyReading.get(issueId)?.currentPage || 0,

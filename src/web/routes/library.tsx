@@ -1,13 +1,6 @@
 import { Collection, Issue, IssueSkeleton, Spinner } from "@components";
 import { useObservable } from "@legendapp/state/react";
-import {
-  Button,
-  Flex,
-  Heading,
-  Popover,
-  Text,
-  TextField,
-} from "@radix-ui/themes";
+import { Button, Flex, Popover, Text, TextField } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
@@ -21,9 +14,7 @@ export const Route = createFileRoute("/library")({
 function Component() {
   const isEnabled = useObservable(false);
 
-  const { data, isLoading } = t.library.getLibrary.useQuery(undefined, {
-    enabled: isEnabled.get(),
-  });
+  const { data, isLoading } = t.library.getLibrary.useQuery(undefined);
 
   useTimeout(() => {
     isEnabled.set(true);
@@ -32,7 +23,7 @@ function Component() {
   return (
     <Flex direction="column" className="w-full h-screen pt-8">
       <Flex align="center" justify="between" className="w-full px-3 py-3">
-        <Heading size="8">Library</Heading>
+        <Flex grow="1" />
         <Flex align="center" justify="end" gap="3">
           <CreateCollection />
           {data && (
@@ -115,7 +106,7 @@ function CreateCollection() {
   return (
     <Popover.Root>
       <Popover.Trigger>
-        <button className="cursor-pointer dark:text-zinc-400 hover:bg-zinc-400/8 px-2 py-1 rounded-full">
+        <button className="p-2 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5">
           {isLoading ? <Spinner /> : <Plus size={10} />}
         </button>
       </Popover.Trigger>

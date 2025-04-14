@@ -3,6 +3,7 @@ import prefetchWorker from "@core/workers/prefetch?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import { observable } from "@trpc/server/observable";
 import { BroadcastChannel } from "broadcast-channel";
+import { dialog } from "electron";
 import { mkdirSync } from "node:fs";
 import { v4 } from "uuid";
 import z from "zod";
@@ -106,6 +107,24 @@ const libraryRouter = router({
         deletionChannel.removeEventListener("message", listener);
       };
     });
+  }),
+  addSourceDirectory: publicProcedure.mutation(async ({ ctx }) => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      buttonLabel: "Select Folder",
+      properties: ["openDirectory", "dontAddToRecent"],
+    });
+
+    if (canceled) {
+      return {
+        complete: false,
+        filePaths: null,
+      };
+    }
+
+    return {
+      complete: false,
+      filePaths,
+    };
   }),
 });
 

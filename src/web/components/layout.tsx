@@ -13,13 +13,14 @@ import {
   Maximize2,
   Minus,
   Plus,
+  RefreshCw,
   Settings,
   Sidebar,
   Trash2,
   X,
 } from "lucide-react";
 import type React from "react";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { globalState$, settingsState$ } from "../state";
 import SettingsMenu from "./settings";
 import Spinner from "./spinner";
@@ -49,18 +50,20 @@ export default function Layout({ children }: LayoutProps) {
   const { mutate: startFileWatcher } =
     t.library.startLibraryWatcher.useMutation();
 
+  const refreshLibrary = useCallback(() => {}, []);
+
   t.library.additions.useSubscription(undefined, {
     onData: (data) => {
-      console.log(data);
-      if (data.state === "SUCCESS") {
+      isUpdating.set(true);
+      if (data.isCompleted && data.state === "SUCCESS") {
         console.log("success");
-      }
-      if (data.error !== null && data.state === "ERROR") {
-        console.log(data.error);
-      }
-      if (data.isCompleted) {
         isUpdating.set(false);
         utils.library.getLibrary.invalidate();
+      }
+      if (data.isCompleted && data.state === "ERROR") {
+        console.log("error");
+        isUpdating.set(false);
+        console.log(data.error);
       }
     },
   });
@@ -68,7 +71,6 @@ export default function Layout({ children }: LayoutProps) {
   t.library.deletions.useSubscription(undefined, {
     onData: (data) => {
       if (data.isDone) {
-        console.log(data);
         utils.library.invalidate();
       }
     },
@@ -118,7 +120,7 @@ export default function Layout({ children }: LayoutProps) {
             <Flex
               align="center"
               justify="between"
-              className="border-b-1 bg-white dark:bg-moonlightOverlay w-full"
+              className="border-b-1 bg-white dark:bg-moonlightInterface w-full"
             >
               <Flex align="center" justify="start" gap="3">
                 <Text
@@ -134,7 +136,6 @@ export default function Layout({ children }: LayoutProps) {
                   >
                     <Sidebar size={12} />
                   </button>
-
                   <Tooltip content="Add Issue To Library">
                     <AddButton />
                   </Tooltip>
@@ -145,13 +146,13 @@ export default function Layout({ children }: LayoutProps) {
                 <Flex>
                   <button
                     disabled={!isNotHome}
-                    className="px-2 py-1 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+                    className="px-2 py-2 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
                     onClick={() => navigation.history.back()}
                   >
                     <ArrowLeft size={12} />
                   </button>
                   <button
-                    className="px-2 py-1 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+                    className="px-2 py-2 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
                     onClick={() => navigation.history.forward()}
                   >
                     <ArrowRight size={12} />
@@ -161,10 +162,10 @@ export default function Layout({ children }: LayoutProps) {
                   align="center"
                   justify="center"
                   grow="1"
-                  className="p-1 rounded-lg w-2/6 bg-neutral-100/4 border-1 border-solid border-neutral-100 dark:border-neutral-100/5"
+                  gap="2"
+                  className="p-1 rounded-lg w-2/6 bg-neutral-100/50 dark:bg-neutral-100/4 border-1 border-solid border-neutral-100 dark:border-neutral-100/5"
                 >
                   <Text size="1" className="text-moonlightSlight">
-                    {" "}
                     {capitalize(
                       routerState.location.pathname === "/"
                         ? "Home"
@@ -173,6 +174,9 @@ export default function Layout({ children }: LayoutProps) {
                           : "Exploring",
                     )}
                   </Text>
+                  {isUpdating.get() && (
+                    <div className="h-2 w-2 rounded-full bg-yellow-400" />
+                  )}
                 </Flex>
                 <ThemeButton />
                 <Flex grow="1" id="drag-region" p="2" />
@@ -221,22 +225,22 @@ export default function Layout({ children }: LayoutProps) {
                   className="pt-13 px-3"
                 >
                   <Link
-                    className="text-black space-x-2 hover:bg-neutral-400/10 px-2 py-2 rounded-md text-moonlightSlight"
+                    className="text-black space-x-2 hover:bg-neutral-400/6 px-2 py-2 rounded-md text-moonlightSlight"
                     to="/"
                   >
                     <Flex align="center" justify="start" gap="2">
-                      <Home size={15} />
+                      <Home size={14} />
                       <Text weight="medium" size="2">
                         Home
                       </Text>
                     </Flex>
                   </Link>
                   <Link
-                    className="text-black space-x-2 hover:bg-neutral-400/10 px-2 py-2 rounded-md text-moonlightSlight"
+                    className="text-black space-x-2 hover:bg-neutral-400/6 px-2 py-2 rounded-md text-moonlightSlight"
                     to="/library"
                   >
                     <Flex align="center" justify="start" gap="2">
-                      <Library size={15} />
+                      <Library size={14} />
                       <Text weight="medium" size="2">
                         Library
                       </Text>
@@ -245,10 +249,17 @@ export default function Layout({ children }: LayoutProps) {
                 </Flex>
                 <Flex
                   align="center"
-                  justify="between"
-                  className="h-14 bg-white dark:bg-moonlightOverlay px-3"
+                  justify="start"
+                  gap="2"
+                  className="h-14 bg-white dark:bg-moonlightOverlay border-t-solid border-t-1 border-t-neutral-100 dark:border-t-neutral-800 px-3"
                 >
                   <SettingsButton />
+                  <button
+                    onClick={() => refreshLibrary()}
+                    className="px-2 py-2 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+                  >
+                    <RefreshCw size={12} />
+                  </button>
                 </Flex>
               </motion.div>
             )}
@@ -275,7 +286,7 @@ function AddButton() {
 
   return (
     <button
-      className="p-2 rounded-md cursor-pointer dark:text-moonlightText hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+      className="p-2 rounded-md cursor-pointer dark:text-moonlightText hover:bg-neutral-400/8 dark:hover:bg-neutral-400/5"
       disabled={isLoading}
       onClick={() => addIssueToLibrary()}
     >
@@ -285,6 +296,19 @@ function AddButton() {
 }
 
 function SettingsButton() {
+  console.log(globalState$.sourceDirectories.get());
+
+  const { mutate: addSourceDir } = t.library.addSourceDirectory.useMutation({
+    onSuccess: (data) => {
+      console.log(data);
+      if (!data.complete || !data.filePaths) return;
+
+      for (const dir of data.filePaths) {
+        globalState$.sourceDirectories.push(dir);
+      }
+    },
+  });
+
   const settingsVisible = useObservable(false);
 
   return (
@@ -343,13 +367,27 @@ function SettingsButton() {
                       <Text size="1" className="ml-2">
                         Folder: {value}
                       </Text>
-                      <button className="p-2 overflow-hidden space-x-2 rounded-md cursor-pointer text-red-500 hover:bg-red-400/10">
+                      <button
+                        onClick={() =>
+                          globalState$.sourceDirectories.set([
+                            ...globalState$.sourceDirectories
+                              .get()
+                              .filter((dir) => dir !== value),
+                          ])
+                        }
+                        className="p-2 overflow-hidden space-x-2 rounded-md cursor-pointer text-red-500 hover:bg-red-400/10"
+                      >
                         <Trash2 size={12} />
                       </button>
                     </Flex>
                   ))}
                 </Flex>
-                <Button variant="surface" className="w-full">
+                <Button
+                  onClick={() => addSourceDir()}
+                  variant="surface"
+                  size="1"
+                  className="cursor-pointer"
+                >
                   <Text size="1">Add Source Directory</Text>
                 </Button>
               </Flex>

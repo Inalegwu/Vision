@@ -110,6 +110,7 @@ function Component() {
       >
         {welcomeMessages.map((m, idx) => (
           <div
+            onClick={() => setItemIndex(idx)}
             className={`w-4 h-4 rounded-full ${
               itemIndex === idx
                 ? "bg-yellow-400"

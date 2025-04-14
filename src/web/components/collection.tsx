@@ -34,7 +34,7 @@ export default function Collection({ collection }: Props) {
           onClick={go}
           className="w-[200px] h-[320px] cursor-pointer mt-6"
           direction="column"
-          gap="1"
+          gap="2"
         >
           <Flex className="w-full h-full relative rounded-md ">
             {collection.issues.slice(0, 3).map((issue, idx) => (
@@ -51,7 +51,7 @@ export default function Collection({ collection }: Props) {
               />
             ))}
           </Flex>
-          <Flex direction="column" gap="1" align="start">
+          <Flex direction="column" align="start">
             <Text
               size="1"
               weight="medium"
@@ -59,6 +59,8 @@ export default function Collection({ collection }: Props) {
             >
               {collection.collectionName}
             </Text>
+            <Text size="1" className="text-moonlightSlight">{
+              collection.issues.length} Issues</Text>
           </Flex>
         </Flex>
       </ContextMenu.Trigger>
