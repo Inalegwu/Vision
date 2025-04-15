@@ -17,6 +17,11 @@ const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 
 const handleMessage = ({ action, parsePath }: ParserSchema) =>
   Effect.gen(function* () {
+    parserChannel.postMessage({
+      isCompleted: false,
+      state: "SUCCESS",
+      error: null,
+    });
     const ext = parsePath.includes("cbr")
       ? "cbr"
       : parsePath.includes("cbz")
@@ -24,6 +29,11 @@ const handleMessage = ({ action, parsePath }: ParserSchema) =>
         : "none";
 
     yield* Effect.logInfo({ ext, parsePath, action });
+    parserChannel.postMessage({
+      isCompleted: false,
+      state: "SUCCESS",
+      error: null,
+    });
 
     const exists = yield* Effect.tryPromise(
       async () =>
@@ -41,6 +51,12 @@ const handleMessage = ({ action, parsePath }: ParserSchema) =>
       });
       return yield* Effect.logError(`${exists.issueTitle} Already Saved`);
     }
+
+    parserChannel.postMessage({
+      isCompleted: false,
+      state: "SUCCESS",
+      error: null,
+    });
 
     Match.value({ action, ext }).pipe(
       Match.when({ action: "LINK", ext: "cbr" }, () =>

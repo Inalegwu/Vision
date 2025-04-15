@@ -168,13 +168,13 @@ export default function Issue({ issue }: Props) {
                 align="center"
                 justify="between"
                 key={item.id}
-                className="rounded-md py-2 cursor-pointer"
+                className="rounded-md py-2 cursor-pointer px-1"
               >
                 <Text size="2" weight="medium">
                   {item.collectionName}
                 </Text>
                 <button
-                  className="p-2 rounded-md space-x-2 cursor-pointer text-moonlightOrange hover:bg-moonlightOrange/10"
+                  className="p-2 rounded-md space-x-2 cursor-pointer outline-moonlightOrange text-moonlightOrange hover:bg-moonlightOrange/10"
                   onClick={() =>
                     addToCollection({
                       issueId: issue.id,

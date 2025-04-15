@@ -55,7 +55,6 @@ button{
   border:none;
   appearance:none;
   background:none;
-  outline: none;
   display:flex;
   align-items:center;
   justify-content:center;

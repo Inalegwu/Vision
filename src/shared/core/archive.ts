@@ -24,6 +24,12 @@ export namespace Archive {
         require.resolve("node-unrar-js/dist/js/unrar.wasm"),
       ).pipe(Effect.andThen((binary) => binary.buffer));
 
+      parserChannel.postMessage({
+        isCompleted: false,
+        state: "SUCCESS",
+        error: null,
+      });
+
       yield* Effect.log("Attempting to extract");
       const files = yield* Fs.readFile(path).pipe(
         Effect.andThen((file) => file.buffer),
@@ -50,6 +56,15 @@ export namespace Archive {
             .sort((a, b) => sortPages(a.fileHeader.name, b.fileHeader.name))
             .filter((file) => !file.fileHeader.flags.directory),
         ),
+        Effect.tap(() =>
+          Effect.sync(() =>
+            parserChannel.postMessage({
+              isCompleted: false,
+              state: "SUCCESS",
+              error: null,
+            }),
+          ),
+        ),
       );
 
       if (files.length === 0) {
@@ -64,7 +79,19 @@ export namespace Archive {
 
       yield* Effect.log("Attempting to save");
 
+      parserChannel.postMessage({
+        isCompleted: false,
+        state: "SUCCESS",
+        error: null,
+      });
+
       const issueTitle = yield* Effect.sync(() => parseFileNameFromPath(path));
+
+      parserChannel.postMessage({
+        isCompleted: false,
+        state: "SUCCESS",
+        error: null,
+      });
 
       const _files = files.filter(
         (file) => !file.fileHeader.name.includes("xml"),
@@ -75,6 +102,12 @@ export namespace Archive {
           _files[0]?.extraction?.buffer || _files[1]?.extraction?.buffer!,
         ),
       );
+
+      parserChannel.postMessage({
+        isCompleted: false,
+        state: "SUCCESS",
+        error: null,
+      });
 
       const newIssue = yield* Effect.tryPromise(async () =>
         (
@@ -106,8 +139,20 @@ export namespace Archive {
         ),
       );
 
+      parserChannel.postMessage({
+        isCompleted: false,
+        state: "SUCCESS",
+        error: null,
+      });
+
       yield* Effect.forEach(_files, (file, index) =>
         Effect.gen(function* () {
+          parserChannel.postMessage({
+            isCompleted: false,
+            state: "SUCCESS",
+            error: null,
+          });
+
           const pageContent = yield* Effect.sync(() =>
             convertToImageUrl(file?.extraction?.buffer!),
           );
@@ -154,6 +199,11 @@ export namespace Archive {
 
   export function handleZip(path: string) {
     return Effect.gen(function* () {
+      parserChannel.postMessage({
+        isCompleted: false,
+        state: "SUCCESS",
+        error: null,
+      });
       const files = yield* Fs.readFile(path).pipe(
         Effect.andThen((buff) =>
           new Zip(Buffer.from(buff.buffer))
@@ -165,6 +215,15 @@ export namespace Archive {
               isDir: entry.isDirectory,
             }))
             .filter((file) => !file.isDir),
+        ),
+        Effect.tap(() =>
+          Effect.sync(() =>
+            parserChannel.postMessage({
+              isCompleted: false,
+              state: "SUCCESS",
+              error: null,
+            }),
+          ),
         ),
       );
 
@@ -178,6 +237,12 @@ export namespace Archive {
             _files[1].data.buffer,
         ),
       );
+
+      parserChannel.postMessage({
+        isCompleted: false,
+        state: "SUCCESS",
+        error: null,
+      });
 
       const newIssue = yield* Effect.tryPromise(async () =>
         (
@@ -203,8 +268,20 @@ export namespace Archive {
         ),
       );
 
+      parserChannel.postMessage({
+        isCompleted: false,
+        state: "SUCCESS",
+        error: null,
+      });
+
       yield* Effect.forEach(_files, (file, index) =>
         Effect.gen(function* () {
+          parserChannel.postMessage({
+            isCompleted: false,
+            state: "SUCCESS",
+            error: null,
+          });
+
           if (file.isDir) {
             return yield* Effect.log("found and skipped directory");
           }

@@ -58,12 +58,10 @@ export default function Layout({ children }: LayoutProps) {
     onData: (data) => {
       isUpdating.set(true);
       if (data.isCompleted && data.state === "SUCCESS") {
-        console.log("success");
         isUpdating.set(false);
         utils.library.getLibrary.invalidate();
       }
       if (data.isCompleted && data.state === "ERROR") {
-        console.log("error");
         isUpdating.set(false);
         console.log(data.error);
       }
