@@ -7,7 +7,7 @@ import { Spinner } from "../../components";
 const Issue = React.lazy(() => import("../../components/issue"));
 
 export const Route = createFileRoute("/collection/$collectionId")({
-  component: Component,
+  component: React.memo(Component),
 });
 
 function Component() {
