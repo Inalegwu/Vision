@@ -126,7 +126,7 @@ export default function Layout({ children }: LayoutProps) {
             >
               <Flex align="center" justify="start" gap="3">
                 <Text
-                  className="ml-3 font-[Title] text-yellow-500"
+                  className="ml-3 font-[Title] text-moonlightOrange"
                   weight="medium"
                 >
                   Vision
@@ -176,9 +176,6 @@ export default function Layout({ children }: LayoutProps) {
                           : "Exploring",
                     )}
                   </Text>
-                  {isUpdating.get() && (
-                    <div className="h-2 w-2 rounded-full bg-yellow-400" />
-                  )}
                 </Flex>
                 <ThemeButton />
                 <Flex grow="1" id="drag-region" p="2" />
@@ -253,7 +250,7 @@ export default function Layout({ children }: LayoutProps) {
                   align="center"
                   justify="start"
                   gap="2"
-                  className="h-14 bg-white dark:bg-moonlightOverlay border-t-solid border-t-1 border-t-neutral-100 dark:border-t-neutral-800 px-3"
+                  className="h-14 bg-white dark:bg-moonlightOverlay border-t-solid border-t-1 border-t-neutral-100 dark:border-t-moonlightSlight/10 px-3"
                 >
                   <SettingsButton />
                   <button
@@ -298,8 +295,6 @@ function AddButton() {
 }
 
 function SettingsButton() {
-  console.log(globalState$.sourceDirectories.get());
-
   const { mutate: addSourceDir } = t.library.addSourceDirectory.useMutation({
     onSuccess: (data) => {
       console.log(data);
@@ -352,7 +347,11 @@ function SettingsButton() {
               <Flex mt="2" gap="1" direction="column">
                 <Flex gap="3" direction="column">
                   <Flex direction="column">
-                    <Text size="2" weight="medium" className="text-yellow-500">
+                    <Text
+                      size="2"
+                      weight="medium"
+                      className="text-moonlightOrange"
+                    >
                       Comics Directory
                     </Text>
                     <Text weight="medium" size="1" color="gray">

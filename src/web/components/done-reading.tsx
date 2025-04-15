@@ -25,7 +25,7 @@ export default function DoneReading({ issue }: Props) {
             gap="1"
             direction="column"
           >
-            <Text size="1" weight="medium" className="text-yellow-500">
+            <Text size="1" weight="medium" className="text-moonlightOrange">
               {issue.title}
             </Text>
             <Text size="1" color="gray">

@@ -26,7 +26,7 @@ function Component() {
       >
         {isLoading && <Spinner size={40} />}
         <Flex width="100%" align="start" direction="column" gap="3">
-          <Heading size="7" className="text-yellow-500">
+          <Heading size="7" className="text-moonlightOrange">
             {data?.metadata?.Series}
           </Heading>
           <Flex gap="1" direction="column" align="start" width="100%">
@@ -38,7 +38,7 @@ function Component() {
             </Text>
             {data?.metadata?.PageCount && (
               <Text size="3" className="dark:text-moonlightText">
-                <span className="text-yellow-500">Page Count:</span>
+                <span className="text-moonlightOrange">Page Count:</span>
                 {"  "}
                 {data?.metadata?.PageCount}
               </Text>
@@ -46,7 +46,7 @@ function Component() {
             {data?.metadata?.writer && (
               <Text size="3">Written By: {data?.metadata.writer}</Text>
             )}
-            <Text size="2" className="text-yellow-500/40">
+            <Text size="2" className="text-moonlightOrange/40">
               {data?.metadata?.Notes}
             </Text>
           </Flex>

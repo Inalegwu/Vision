@@ -47,8 +47,9 @@ function Component() {
         {isLoading &&
           Array(15)
             .fill(0)
-            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+            // biome-ignore lint/suspicious/noArrayIndexKey: <it's an array of numbers>
             .map((_, index) => <IssueSkeleton key={index} />)}
+        {/* @ts-ignore: it's all good */}
         <RenderCollections collections={data?.collections || []} />
         <RenderIssues issues={data?.issues || []} />
       </Flex>

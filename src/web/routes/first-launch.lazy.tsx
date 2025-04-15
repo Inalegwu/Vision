@@ -63,7 +63,7 @@ function Component() {
       <motion.div
         initial={{ opacity: 0, scale: 0 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-92 h-92 rounded-full bg-yellow-400/50 blur-3xl"
+        className="w-92 h-92 rounded-full bg-moonlightOrange/50 blur-3xl"
       />
       <Flex className="w-full h-full absolute z-10 bg-transparent backdrop-blur-9xl">
         <AnimatePresence mode="wait">
@@ -91,7 +91,7 @@ function Component() {
                 gap="1"
                 className="w-full h-full shrink-0"
               >
-                <Heading size="8" className="text-yellow-500">
+                <Heading size="8" className="text-moonlightOrange">
                   {message.title}
                 </Heading>
                 <Text size="4" color="gray">
@@ -113,7 +113,7 @@ function Component() {
             onClick={() => setItemIndex(idx)}
             className={`w-4 h-4 rounded-full ${
               itemIndex === idx
-                ? "bg-yellow-400"
+                ? "bg-moonlightOrange"
                 : "bg-neutral-200 dark:bg-neutral-800"
             }`}
             key={m.id}
@@ -133,7 +133,7 @@ function Component() {
                   globalState$.isFullscreen.set(false);
                   globalState$.firstLaunch.set(false);
                 }}
-                className="flex items-center justify-center bg-yellow-400 cursor-pointer rounded-full w-4 h-4 text-white"
+                className="flex items-center justify-center bg-moonlightOrange cursor-pointer rounded-full w-4 h-4 text-white"
               >
                 <ChevronRight size={14} />
               </Link>

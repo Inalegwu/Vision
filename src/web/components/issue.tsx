@@ -77,7 +77,7 @@ export default function Issue({ issue }: Props) {
             </Flex>
           </Flex>
         </ContextMenu.Trigger>
-        <ContextMenu.Content size="1" variant="soft" color="yellow">
+        <ContextMenu.Content size="1" variant="soft" color="orange">
           <ContextMenu.Item
             className="cursor-pointer"
             onClick={() =>
@@ -158,7 +158,11 @@ export default function Issue({ issue }: Props) {
             className="h-70"
             scrollbars="vertical"
             scrollHideDelay={3000}
-            listHeaderComponent={()=><Heading size="6" weight="medium">My Collections</Heading>}
+            listHeaderComponent={() => (
+              <Heading size="6" weight="medium">
+                My Collections
+              </Heading>
+            )}
             renderItem={({ item, index }) => (
               <Flex
                 align="center"
@@ -170,7 +174,7 @@ export default function Issue({ issue }: Props) {
                   {item.collectionName}
                 </Text>
                 <button
-                  className="p-2 rounded-md space-x-2 cursor-pointer text-yellow-500 hover:bg-yellow-500/10"
+                  className="p-2 rounded-md space-x-2 cursor-pointer text-moonlightOrange hover:bg-moonlightOrange/10"
                   onClick={() =>
                     addToCollection({
                       issueId: issue.id,

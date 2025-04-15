@@ -12,12 +12,10 @@ export default function ErrorComponent(props: ErrorComponentProps) {
       className="w-full h-screen px-10 py-10"
     >
       <Heading size="6">{props.error.message}</Heading>
-      <Code size="2" color="yellow">
-        {props.error.stack}
-      </Code>
+      <Code size="2">{props.error.stack}</Code>
       <button
         onClick={() => props.reset()}
-        className="p-3 space-x-3 rounded-md cursor-pointer text-yellow-600 hover:bg-yellow-400/10"
+        className="p-3 space-x-3 rounded-md cursor-pointer text-moonlightOrange hover:bg-moonlightOrange/10"
       >
         <Text>Reload</Text>
         <RefreshCw size={15} />

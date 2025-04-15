@@ -37,7 +37,7 @@ const createWindow = () => {
     mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
   }
 
-  mainWindow.webContents.openDevTools({ mode: "detach" });
+  // mainWindow.webContents.openDevTools({ mode: "detach" });
 };
 
 app.whenReady().then(() => {

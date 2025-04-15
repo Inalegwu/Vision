@@ -13,7 +13,7 @@ export default function Skeleton({ style, className }: SkeletonProps) {
         initial={{ opacity: 0.4 }}
         animate={{ opacity: 1 }}
         className={className}
-        transition={{ repeat: Number.POSITIVE_INFINITY, duration: 0.6 }}
+        transition={{ repeat: Number.POSITIVE_INFINITY, duration: 0.8 }}
       />
     </>
   );
