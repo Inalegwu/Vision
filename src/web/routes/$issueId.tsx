@@ -4,7 +4,7 @@ import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion, useMotionValue } from "framer-motion";
 import { Bookmark, ChevronLeft, ChevronRight, Expand } from "lucide-react";
-import { memo, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { Spinner } from "../components";
 import {
   useDebounce,
@@ -106,6 +106,10 @@ function Component() {
 
   useWindow("mousemove", mouseHandle);
 
+  useEffect(() => {
+    globalState$.isFullscreen.set(false);
+  }, []);
+
   const onDragEnd = () => {
     const x = dragX.get();
 
@@ -126,7 +130,7 @@ function Component() {
             justify="center"
           >
             <div>
-              <Spinner size={40} />
+              <Spinner size={40} className="border-2 border-moonlightOrange" />
             </div>
           </Flex>
         )}
