@@ -1,11 +1,14 @@
-import { Collection, Issue, IssueSkeleton, Spinner } from "@components";
 import { useObservable } from "@legendapp/state/react";
 import { Button, Flex, Popover, Text, TextField } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
-import { memo } from "react";
+import React, { memo, Suspense } from "react";
 import { useTimeout } from "../hooks";
+
+const Collection = React.lazy(() => import("../components/collection"));
+const Issue = React.lazy(() => import("../components/issue"));
+const Spinner = React.lazy(() => import("../components/spinner"));
 
 export const Route = createFileRoute("/library")({
   component: memo(Component),
@@ -22,7 +25,7 @@ function Component() {
 
   return (
     <Flex direction="column" className="w-full h-screen pt-8">
-      <Flex align="center" justify="between" className="w-full px-3 py-3">
+      <Flex align="center" justify="between" className="w-full px-3 py-4">
         <Flex grow="1" />
         <Flex align="center" justify="end" gap="3">
           <CreateCollection />
@@ -44,12 +47,7 @@ function Component() {
         gap="4"
         wrap="wrap"
       >
-        {isLoading &&
-          Array(15)
-            .fill(0)
-            // biome-ignore lint/suspicious/noArrayIndexKey: <it's an array of numbers>
-            .map((_, index) => <IssueSkeleton key={index} />)}
-        {/* @ts-ignore: it's all good */}
+        {/* @ts-ignore: all good */}
         <RenderCollections collections={data?.collections || []} />
         <RenderIssues issues={data?.issues || []} />
       </Flex>
@@ -59,11 +57,21 @@ function Component() {
 
 const RenderIssues = memo(({ issues }: { issues: Issue[] }) => {
   return (
-    <>
+    <Suspense
+      fallback={
+        <Flex
+          className="w-full h-screen bg-moonlightBase"
+          align="center"
+          justify="center"
+        >
+          <Spinner size={25} />
+        </Flex>
+      }
+    >
       {issues?.map((issue) => (
         <Issue key={issue.id} issue={issue} />
       ))}
-    </>
+    </Suspense>
   );
 });
 
@@ -78,11 +86,21 @@ const RenderCollections = memo(
     >;
   }) => {
     return (
-      <>
+      <Suspense
+        fallback={
+          <Flex
+            className="w-full h-screen bg-moonlightBase"
+            align="center"
+            justify="center"
+          >
+            <Spinner size={25} />
+          </Flex>
+        }
+      >
         {collections?.map((collection) => (
           <Collection key={collection.id} collection={collection} />
         ))}
-      </>
+      </Suspense>
     );
   },
 );
@@ -107,7 +125,7 @@ function CreateCollection() {
   return (
     <Popover.Root>
       <Popover.Trigger>
-        <button className="p-2 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5">
+        <button className="p-2 rounded-md cursor-pointer text-moonlightOrange hover:bg-moonlightOrange/10">
           {isLoading ? <Spinner /> : <Plus size={10} />}
         </button>
       </Popover.Trigger>

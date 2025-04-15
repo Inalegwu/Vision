@@ -1,8 +1,12 @@
 import { Flex, Heading, Text } from "@radix-ui/themes";
 import { createFileRoute } from "@tanstack/react-router";
-import { DoneReading } from "../components";
-import CurrentlyReading from "../components/currently-reading";
+import React from "react";
 import { readingState$ } from "../state";
+
+const CurrentlyReading = React.lazy(
+  () => import("../components/currently-reading"),
+);
+const DoneReading = React.lazy(() => import("../components/done-reading"));
 
 export const Route = createFileRoute("/")({
   component: Index,

@@ -1,7 +1,10 @@
 import { Flex, Text } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
-import { Issue, Spinner } from "../../components";
+import React, { Suspense } from "react";
+import { Spinner } from "../../components";
+
+const Issue = React.lazy(() => import("../../components/issue"));
 
 export const Route = createFileRoute("/collection/$collectionId")({
   component: Component,
@@ -20,18 +23,30 @@ function Component() {
         <Text size="8" weight="bold">
           {data?.collection?.collectionName}
         </Text>
-        {isLoading && <Spinner size={15} />}
       </Flex>
-      <Flex
-        gap="3"
-        wrap="wrap"
-        align="center"
-        className="px-3 overflow-y-scroll pb-24"
+      <Suspense
+        fallback={
+          <Flex
+            grow="1"
+            className="w-full h-screen"
+            align="center"
+            justify="center"
+          >
+            <Spinner size={30} className="border-moonlightOrange border-2" />
+          </Flex>
+        }
       >
-        {data?.collection?.issues.map((issue) => (
-          <Issue key={issue.id} issue={issue} />
-        ))}
-      </Flex>
+        <Flex
+          gap="3"
+          wrap="wrap"
+          align="center"
+          className="px-3 overflow-y-scroll pb-24"
+        >
+          {data?.collection?.issues.map((issue) => (
+            <Issue key={issue.id} issue={issue} />
+          ))}
+        </Flex>
+      </Suspense>
     </Flex>
   );
 }

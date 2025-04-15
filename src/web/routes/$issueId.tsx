@@ -21,6 +21,7 @@ export const Route = createFileRoute("/$issueId")({
   component: memo(Component),
 });
 
+// TODO: virtualize scrollable list so improve performance for this page
 function Component() {
   const { issueId } = Route.useParams();
 
@@ -180,13 +181,13 @@ function Component() {
               >
                 <Flex align="center" justify="start">
                   <button
-                    onClick={() => setItemIndex((index) => index - 1)}
+                    onClick={() => goLeft([])}
                     className="text-neutral-700 px-5 py-5 cursor-pointer hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 dark:text-neutral-300"
                   >
                     <ChevronLeft size={18} />
                   </button>
                   <button
-                    onClick={() => setItemIndex((index) => index + 1)}
+                    onClick={() => goRight([])}
                     className="text-neutral-700 px-5 cursor-pointer py-5 hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 dark:text-neutral-300"
                   >
                     <ChevronRight size={18} />
