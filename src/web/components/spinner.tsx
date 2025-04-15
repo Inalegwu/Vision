@@ -2,9 +2,11 @@ import { motion } from "framer-motion";
 
 type Props = {
   size?: number;
+  className?: string;
+  style?: React.CSSProperties;
 };
 
-export default function Spinner({ size }: Props) {
+export default function Spinner({ size, className, style }: Props) {
   return (
     <motion.div
       animate={{ rotateZ: "180deg" }}
@@ -16,8 +18,8 @@ export default function Spinner({ size }: Props) {
       }}
     >
       <div
-        className="border-1 rounded-full border-1.5 border-dashed border-zinc-600 dark:border-zinc-400"
-        style={{ width: size || 10, height: size || 10 }}
+        className={`border-1 rounded-full border-1 border-dashed ${className}`}
+        style={{ width: size || 10, height: size || 10, ...style }}
       />
     </motion.div>
   );

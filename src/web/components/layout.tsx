@@ -269,6 +269,21 @@ export default function Layout({ children }: LayoutProps) {
         </Flex>
       </AnimatePresence>
       <AnimatePresence>
+        {isUpdating.get() && (
+          <motion.div
+            initial={{
+              transform: "translateY(50px)",
+            }}
+            animate={{ transform: "translateY(0px)" }}
+            exit={{ transform: "translateY(50px)" }}
+            className="p-2 flex items-center justify-center space-x-2 rounded-full bg-moonlightOrange/5 text-moonlightOrange absolute z-10 bottom-4 left-[46%] border-1 border-solid border-moonlightOrange/10"
+          >
+            <Spinner className="border-moonlightOrange" size={13} />
+            <Text size="1">Adding Issue To Library</Text>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
         {settingsState$.visible.get() && <SettingsMenu />}
       </AnimatePresence>
     </Flex>
