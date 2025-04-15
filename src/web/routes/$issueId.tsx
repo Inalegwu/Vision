@@ -82,13 +82,9 @@ function Component() {
     isEnabled.set(true);
   }, 3_000);
 
-  const goRight = useDebounce(() => {
-    setItemIndex((index) => index - 1);
-  }, 3000);
+  const goRight = useDebounce(() => setItemIndex((index) => index - 1), 3000);
 
-  const goLeft = useDebounce(() => {
-    setItemIndex((index) => index - 1);
-  }, 3000);
+  const goLeft = useDebounce(() => setItemIndex((index) => index - 1), 3000);
 
   const debounceKeyPress = useDebounce((e: KeyboardEvent) => {
     if (e.keyCode === 93 && itemIndex < contentLength - 1) {
