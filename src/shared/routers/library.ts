@@ -39,7 +39,7 @@ const libraryRouter = router({
             id: true,
             thumbnailUrl: true,
           },
-          orderBy: (fields, { asc }) => asc(fields.issueTitle),
+          orderBy: (fields, { desc }) => desc(fields.dateUpdated),
         },
       },
     });

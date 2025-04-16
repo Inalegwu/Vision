@@ -9,9 +9,10 @@ import {
   RefreshCcw,
   Trash2,
 } from "lucide-react";
-import { useRef } from "react";
+import React, { useRef } from "react";
 import FlatList from "./flatlist";
-import Spinner from "./spinner";
+
+const Spinner = React.lazy(() => import("./spinner"));
 
 type Props = {
   issue: Issue;
@@ -26,7 +27,7 @@ export default function Issue({ issue }: Props) {
     onSuccess: () => utils.library.getLibrary.invalidate(),
   });
 
-  const { mutate: addToCollection } =
+  const { mutate: addToCollection, isLoading: adding } =
     t.collection.addIssueToCollection.useMutation({
       onSuccess: () => {
         utils.library.getLibrary.invalidate();
@@ -70,7 +71,7 @@ export default function Issue({ issue }: Props) {
               <Text
                 size="1"
                 weight="medium"
-                className="text-black dark:text-moonlightText"
+                className="text-black dark:text-white"
               >
                 {issue.issueTitle}
               </Text>
@@ -182,7 +183,15 @@ export default function Issue({ issue }: Props) {
                     })
                   }
                 >
-                  <PlusCircle size={13} />
+                  {adding ? (
+                    <>
+                      <Spinner size={13} />
+                    </>
+                  ) : (
+                    <>
+                      <PlusCircle size={13} />
+                    </>
+                  )}
                 </button>
               </Flex>
             )}

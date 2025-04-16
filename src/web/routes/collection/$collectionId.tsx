@@ -13,7 +13,7 @@ export const Route = createFileRoute("/collection/$collectionId")({
 function Component() {
   const { collectionId } = Route.useParams();
 
-  const { data, isLoading } = t.collection.getCollectionById.useQuery({
+  const { data } = t.collection.getCollectionById.useQuery({
     collectionId,
   });
 
@@ -26,12 +26,7 @@ function Component() {
       </Flex>
       <Suspense
         fallback={
-          <Flex
-            grow="1"
-            className="w-full h-screen"
-            align="center"
-            justify="center"
-          >
+          <Flex grow="1" align="center" justify="center">
             <Spinner size={30} className="border-moonlightOrange border-2" />
           </Flex>
         }

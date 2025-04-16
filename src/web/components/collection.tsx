@@ -37,19 +37,22 @@ export default function Collection({ collection }: Props) {
           gap="2"
         >
           <Flex className="w-full h-full relative rounded-md ">
-            {collection.issues.slice(0, 3).map((issue, idx) => (
-              <motion.img
-                src={issue.thumbnailUrl}
-                alt={issue.issueTitle}
-                key={issue.id}
-                className={`w-full h-full absolute z-${idx} rounded-lg border-1 border-solid border-zinc-200 dark:border-zinc-800`}
-                style={{
-                  transform: `rotateZ(${
-                    idx === 0 ? -1.5 : idx % 2 === 0 ? -idx * 1 : idx * 1
-                  }deg)`,
-                }}
-              />
-            ))}
+            {collection.issues
+              .reverse()
+              .slice(0, 3)
+              .map((issue, idx) => (
+                <motion.img
+                  src={issue.thumbnailUrl}
+                  alt={issue.issueTitle}
+                  key={issue.id}
+                  className={`w-full h-full absolute z-${idx} rounded-lg border-1 border-solid border-zinc-200 dark:border-zinc-800`}
+                  style={{
+                    transform: `rotateZ(${
+                      idx === 0 ? -1.5 : idx % 2 === 0 ? -idx * 1 : idx * 1
+                    }deg)`,
+                  }}
+                />
+              ))}
           </Flex>
           <Flex direction="column" align="start">
             <Text
@@ -59,8 +62,9 @@ export default function Collection({ collection }: Props) {
             >
               {collection.collectionName}
             </Text>
-            <Text size="1" className="text-moonlightSlight">{
-              collection.issues.length} Issues</Text>
+            <Text size="1" className="text-moonlightSlight">
+              {collection.issues.length} Issues
+            </Text>
           </Flex>
         </Flex>
       </ContextMenu.Trigger>

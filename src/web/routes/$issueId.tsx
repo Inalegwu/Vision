@@ -78,9 +78,7 @@ function Component() {
     }
   }, 3_000);
 
-  useTimeout(() => {
-    isEnabled.set(true);
-  }, 3_000);
+  useTimeout(() => isEnabled.set(true), 3_000);
 
   const goRight = useDebounce(() => setItemIndex((index) => index - 1), 3000);
 
@@ -94,7 +92,7 @@ function Component() {
     }
   }, 50);
 
-  const mouseHandle = useDebounce((ev: MouseEvent) => isVisible.set(true), 100);
+  const mouseHandle = useDebounce((_: MouseEvent) => isVisible.set(true), 100);
 
   useKeyPress(debounceKeyPress);
 
