@@ -1,8 +1,10 @@
 import deletionWorker from "@core/workers/deletion?nodeWorker";
 import parseWorker from "@core/workers/parser?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
+import { eq } from "drizzle-orm";
 import { dialog } from "electron";
 import z from "zod";
+import { issues } from "../schema";
 
 const issueRouter = router({
   addIssue: publicProcedure.mutation(async ({ ctx }) => {
@@ -91,6 +93,26 @@ const issueRouter = router({
       return {
         issue,
         metadata,
+      };
+    }),
+  editIssueTitle: publicProcedure
+    .input(
+      z.object({
+        issueId: z.string(),
+        issueTitle: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const result = await ctx.db
+        .update(issues)
+        .set({
+          issueTitle: input.issueTitle,
+        })
+        .where(eq(issues.id, input.issueId))
+        .returning();
+
+      return {
+        result,
       };
     }),
 });

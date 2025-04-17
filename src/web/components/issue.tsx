@@ -183,15 +183,7 @@ export default function Issue({ issue }: Props) {
                     })
                   }
                 >
-                  {adding ? (
-                    <>
-                      <Spinner size={13} />
-                    </>
-                  ) : (
-                    <>
-                      <PlusCircle size={13} />
-                    </>
-                  )}
+                  <PlusCircle size={13} />
                 </button>
               </Flex>
             )}

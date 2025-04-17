@@ -1,7 +1,10 @@
 import { Spinner } from "@components";
-import { Flex, Heading, Text } from "@radix-ui/themes";
+import { Show, useObservable } from "@legendapp/state/react";
+import { Flex, Text, TextField } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
+import { Check, Pencil } from "lucide-react";
+import { useCallback } from "react";
 
 export const Route = createFileRoute("/edit/$id")({
   component: Component,
@@ -10,11 +13,35 @@ export const Route = createFileRoute("/edit/$id")({
 function Component() {
   const { id } = Route.useParams();
 
+  const utils = t.useUtils();
+  const isEditing = useObservable(false);
+
   const { data, isLoading } = t.issue.getIssue.useQuery({
     issueId: id,
   });
 
-  console.log({ data });
+  const name = useObservable<string>(data?.issue?.issueTitle);
+  const nameVal = name.get();
+
+  console.log(name.get());
+
+  const { mutate, isLoading: saving } = t.issue.editIssueTitle.useMutation({
+    onSuccess: (data) => {
+      console.log({ data });
+      utils.library.invalidate();
+      isEditing.set(false);
+      name.set(data.result.at(0)?.issueTitle);
+    },
+  });
+
+  const saveEdit = useCallback(() => {
+    if (name.get() === null) return;
+
+    mutate({
+      issueId: id,
+      issueTitle: nameVal,
+    });
+  }, [id, name, mutate, nameVal]);
 
   return (
     <Flex className="w-full h-screen pt-8" align="center">
@@ -26,10 +53,42 @@ function Component() {
       >
         {isLoading && <Spinner size={40} />}
         <Flex width="100%" align="start" direction="column" gap="3">
-          <Heading size="7" className="text-moonlightOrange">
-            {data?.metadata?.Series}
-          </Heading>
+          <Flex grow="1" width="100%" align="center" justify="start" gap="4">
+            {isEditing.get() ? (
+              <TextField.Root className="w-3/6">
+                <TextField.Input
+                  value={nameVal}
+                  onChange={(e) => name.set(e.currentTarget.value)}
+                  variant="soft"
+                  size="2"
+                />
+              </TextField.Root>
+            ) : (
+              <Text weight="medium" size="6" className="text-moonlightOrange">
+                {data?.issue?.issueTitle}
+              </Text>
+            )}
+            <Flex gap="1">
+              <button
+                onClick={() => isEditing.set(!isEditing.get())}
+                className="p-2 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+              >
+                <Pencil size={15} />
+              </button>
+              <Show if={isEditing}>
+                <button
+                  onClick={saveEdit}
+                  className="p-2 rounded-md cursor-pointer hover:bg-moonlightOrange/10 text-moonlightOrange"
+                >
+                  {saving ? <Spinner size={15} /> : <Check size={15} />}
+                </button>
+              </Show>
+            </Flex>
+          </Flex>
           <Flex gap="1" direction="column" align="start" width="100%">
+            {data?.metadata?.Series && (
+              <Text size="3">Series: {data?.metadata.Series}</Text>
+            )}
             {data?.metadata?.Issue && (
               <Text size="3">Number: {data?.metadata.Issue}</Text>
             )}

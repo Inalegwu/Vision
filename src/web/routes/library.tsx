@@ -1,3 +1,4 @@
+import { Spinner } from "@components";
 import { useObservable } from "@legendapp/state/react";
 import { Button, Flex, Popover, Text, TextField } from "@radix-ui/themes";
 import t from "@shared/config";
@@ -8,7 +9,6 @@ import { useTimeout } from "../hooks";
 
 const Collection = React.lazy(() => import("../components/collection"));
 const Issue = React.lazy(() => import("../components/issue"));
-const Spinner = React.lazy(() => import("../components/spinner"));
 
 export const Route = createFileRoute("/library")({
   component: memo(Component),
@@ -17,7 +17,9 @@ export const Route = createFileRoute("/library")({
 function Component() {
   const isEnabled = useObservable(false);
 
-  const { data, isLoading } = t.library.getLibrary.useQuery(undefined);
+  const { data } = t.library.getLibrary.useQuery(undefined, {
+    enabled: isEnabled.get(),
+  });
 
   useTimeout(() => {
     isEnabled.set(true);
@@ -55,6 +57,7 @@ function Component() {
   );
 }
 
+// TODO: virtualize this list;
 const RenderIssues = memo(({ issues }: { issues: Issue[] }) => {
   return (
     <Suspense
@@ -64,7 +67,7 @@ const RenderIssues = memo(({ issues }: { issues: Issue[] }) => {
           align="center"
           justify="center"
         >
-          <Spinner size={25} />
+          <Spinner className="border-2 border-moonlightOrange" size={35} />
         </Flex>
       }
     >
@@ -75,6 +78,7 @@ const RenderIssues = memo(({ issues }: { issues: Issue[] }) => {
   );
 });
 
+// TODO: virtualize
 const RenderCollections = memo(
   ({
     collections,
@@ -93,7 +97,7 @@ const RenderCollections = memo(
             align="center"
             justify="center"
           >
-            <Spinner size={25} />
+            <Spinner className="border-2 border-moonlightOrange" size={35} />
           </Flex>
         }
       >

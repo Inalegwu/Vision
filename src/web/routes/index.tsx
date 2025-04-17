@@ -7,7 +7,6 @@ const CurrentlyReading = React.lazy(
   () => import("../components/currently-reading"),
 );
 const DoneReading = React.lazy(() => import("../components/done-reading"));
-const FlatList = React.lazy(() => import("../components/flatlist"));
 
 export const Route = createFileRoute("/")({
   component: Index,
