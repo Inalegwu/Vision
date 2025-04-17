@@ -1,14 +1,14 @@
-import { ContextMenu, Dialog, Flex, Heading, Text } from "@radix-ui/themes";
+import { Icon } from "@components";
+import {
+  ContextMenu,
+  Dialog,
+  Flex,
+  Heading,
+  Text,
+  Tooltip,
+} from "@radix-ui/themes";
 import t from "@shared/config";
 import { useRouter } from "@tanstack/react-router";
-import {
-  Info,
-  Minus,
-  Plus,
-  PlusCircle,
-  RefreshCcw,
-  Trash2,
-} from "lucide-react";
 import React, { useRef } from "react";
 import FlatList from "./flatlist";
 
@@ -79,22 +79,56 @@ export default function Issue({ issue }: Props) {
           </Flex>
         </ContextMenu.Trigger>
         <ContextMenu.Content size="1" variant="soft" color="orange">
-          <ContextMenu.Item
-            className="cursor-pointer"
-            onClick={() =>
-              navigation.navigate({
-                to: "/edit/$id",
-                params: {
-                  id: issue.id,
-                },
-              })
-            }
-          >
-            <Flex align="center" justify="between" width="100%">
-              <Text size="1">Info</Text>
-              <Info size={12} />
-            </Flex>
-          </ContextMenu.Item>
+          <Flex align="center" justify="start" gap="1" width="100%">
+            {issue.collectionId !== null ? (
+              <Tooltip
+                content={`Remove ${issue.issueTitle} from this collection`}
+              >
+                <button
+                  onClick={() => removeFromCollection({ issueId: issue.id })}
+                  className="p-2 rounded-md cursor-pointer text-red-500 hover:bg-red-500/10"
+                >
+                  <Icon name="Minus" size={12} />
+                </button>
+              </Tooltip>
+            ) : (
+              <Tooltip content={`Add ${issue.issueTitle} to a collection`}>
+                <button
+                  onClick={() => dialogRef.current?.click()}
+                  className="p-2 rounded-md cursor-pointer text-moonlightOrange hover:bg-moonlightOrange/10"
+                >
+                  <Icon name="Plus" size={12} />
+                </button>
+              </Tooltip>
+            )}
+            <Tooltip content="About">
+              <button
+                onClick={() =>
+                  navigation.navigate({
+                    to: "/edit/$id",
+                    params: {
+                      id: issue.id,
+                    },
+                  })
+                }
+                className="p-2 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+              >
+                <Icon name="Info" size={12} />
+              </button>
+            </Tooltip>
+            <Tooltip content="Delete Issue">
+              <button
+                onClick={() =>
+                  deleteIssue({
+                    issueId: issue.id,
+                  })
+                }
+                className="p-2 rounded-md cursor-pointer text-red-500 hover:bg-red-500/10"
+              >
+                <Icon name="Trash" size={12} />
+              </button>
+            </Tooltip>
+          </Flex>
           <ContextMenu.Sub>
             <ContextMenu.SubTrigger>
               <ContextMenu.Item>
@@ -110,7 +144,7 @@ export default function Issue({ issue }: Props) {
                 >
                   <Flex align="center" gap="3" justify="between" width="100%">
                     <Text size="1"> Remove From Collection</Text>
-                    <Minus size={11} />
+                    <Icon name="Minus" size={11} />
                   </Flex>
                 </ContextMenu.Item>
               ) : (
@@ -120,28 +154,14 @@ export default function Issue({ issue }: Props) {
                 >
                   <Flex align="center" justify="between" gap="4" width="100%">
                     <Text size="1">Add To Collection</Text>
-                    <Plus size={11} />
+                    <Icon name="Plus" size={11} />
                   </Flex>
                 </ContextMenu.Item>
               )}
               <ContextMenu.Item className="cursor-pointer">
                 <Flex gap="3" align="center" justify="between" width="100%">
                   <Text size="1"> Regenerate Thumbnail</Text>
-                  <RefreshCcw size={11} />
-                </Flex>
-              </ContextMenu.Item>
-              <ContextMenu.Item
-                onClick={() =>
-                  deleteIssue({
-                    issueId: issue.id,
-                  })
-                }
-                color="ruby"
-                className="cursor-pointer"
-              >
-                <Flex align="center" justify="between" width="100%">
-                  <Text size="1">Delete Issue</Text>
-                  <Trash2 size={11} />
+                  <Icon name="RefreshCcw" size={11} />
                 </Flex>
               </ContextMenu.Item>
             </ContextMenu.SubContent>
@@ -183,7 +203,7 @@ export default function Issue({ issue }: Props) {
                     })
                   }
                 >
-                  <PlusCircle size={13} />
+                  <Icon name="BookPlus" size={13} />
                 </button>
               </Flex>
             )}

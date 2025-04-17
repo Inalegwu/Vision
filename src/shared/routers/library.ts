@@ -3,12 +3,13 @@ import prefetchWorker from "@core/workers/prefetch?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import { observable } from "@trpc/server/observable";
 import { BroadcastChannel } from "broadcast-channel";
+import * as Array from "effect/Array";
 import { dialog } from "electron";
 import { mkdirSync } from "node:fs";
 import { v4 } from "uuid";
 import z from "zod";
 import { view } from "../core/validations";
-import { collections } from "../schema";
+import { collections, type issues as issueSchema } from "../schema";
 
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 const deletionChannel = new BroadcastChannel<DeletionChannel>(
@@ -28,29 +29,27 @@ const libraryRouter = router({
     watchFS(`${ctx.app.getPath("documents")}/Vision`),
   ),
   getLibrary: publicProcedure.query(async ({ ctx }) => {
-    const issues = await ctx.db.query.issues.findMany({
-      orderBy: (fields, { asc }) => asc(fields.issueTitle),
-    });
-
     const collections = await ctx.db.query.collections.findMany({
       with: {
-        issues: {
-          columns: {
-            id: true,
-            thumbnailUrl: true,
-          },
-          orderBy: (fields, { desc }) => desc(fields.dateUpdated),
-        },
+        issues: true,
       },
     });
 
+    const issues = await ctx.db.query.issues
+      .findMany({
+        orderBy: (fields, { asc }) => asc(fields.issueTitle),
+      })
+      .then((result) =>
+        Array.differenceWith<typeof issueSchema.$inferSelect>(
+          (a, b) => a.issueTitle === b.issueTitle,
+        )(
+          result,
+          collections.flatMap((c) => c.issues),
+        ),
+      );
+
     return {
-      issues: issues.filter(
-        (issue) =>
-          !collections.find((collection) =>
-            collection.issues.find((issueK) => issueK.id === issue.id),
-          ),
-      ),
+      issues,
       collections,
     };
   }),

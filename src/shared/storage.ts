@@ -15,6 +15,4 @@ Effect.try(() => migrate(db, { migrationsFolder: "drizzle" })).pipe(
   Effect.runSync,
 );
 
-// migrate(db, { migrationsFolder: "drizzle" });
-
 export default db;

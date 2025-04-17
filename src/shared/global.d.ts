@@ -24,7 +24,13 @@ declare global {
     dateCreated: string | null;
     dateUpdated: string | null;
   };
-  export type Collection = typeof collections.$inferSelect;
+  export type Collection = Omit<
+    typeof collections.$inferSelect,
+    "dateCreated" | "dateUpdated"
+  > & {
+    dateCreated: string | null;
+    dateUpdated: string | null;
+  };
   export type Page = typeof pages.$inferSelect;
 
   export type ParserResponse = {

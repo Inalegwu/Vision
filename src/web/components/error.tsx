@@ -1,8 +1,13 @@
 import { Code, Flex, Heading, Text } from "@radix-ui/themes";
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { RefreshCw } from "lucide-react";
+import { useEffect } from "react";
 
 export default function ErrorComponent(props: ErrorComponentProps) {
+  useEffect(() => {
+    console.error({ error: props.error });
+  }, [props]);
+
   return (
     <Flex
       direction="column"

@@ -36,11 +36,13 @@ const collections = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await ctx.db
+      console.log({ input });
+      const deleted = await ctx.db
         .delete(collectionsSchema)
-        .where(eq(collectionsSchema.id, input.collectionId));
+        .where(eq(collectionsSchema.id, input.collectionId))
+        .returning();
 
-      return true;
+      return deleted;
     }),
   addIssueToCollection: publicProcedure
     .input(

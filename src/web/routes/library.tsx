@@ -1,9 +1,16 @@
-import { Spinner } from "@components";
-import { useObservable } from "@legendapp/state/react";
-import { Button, Flex, Popover, Text, TextField } from "@radix-ui/themes";
+import { FlatList, Icon, Spinner } from "@components";
+import type { ObservablePrimitiveBaseFns } from "@legendapp/state";
+import { Switch, useObservable } from "@legendapp/state/react";
+import {
+  Button,
+  DropdownMenu,
+  Flex,
+  Popover,
+  Text,
+  TextField,
+} from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus } from "lucide-react";
 import React, { memo, Suspense } from "react";
 import { useTimeout } from "../hooks";
 
@@ -16,6 +23,7 @@ export const Route = createFileRoute("/library")({
 
 function Component() {
   const isEnabled = useObservable(false);
+  const activeLayout = useObservable<"grid" | "list">("grid");
 
   const { data } = t.library.getLibrary.useQuery(undefined, {
     enabled: isEnabled.get(),
@@ -28,7 +36,9 @@ function Component() {
   return (
     <Flex direction="column" className="w-full h-screen pt-8">
       <Flex align="center" justify="between" className="w-full px-3 py-4">
-        <Flex grow="1" />
+        <Flex grow="1" align="center" justify="start">
+          {/* <SwitchLayout activeLayout={activeLayout} /> */}
+        </Flex>
         <Flex align="center" justify="end" gap="3">
           <CreateCollection />
           {data && (
@@ -50,8 +60,12 @@ function Component() {
         wrap="wrap"
       >
         {/* @ts-ignore: all good */}
-        <RenderCollections collections={data?.collections || []} />
-        <RenderIssues issues={data?.issues || []} />
+        <Switch value={activeLayout.get()}>
+          {{
+            grid: () => <GridLayout data={data} />,
+            list: () => <ListLayout data={data} />,
+          }}
+        </Switch>
       </Flex>
     </Flex>
   );
@@ -63,7 +77,7 @@ const RenderIssues = memo(({ issues }: { issues: Issue[] }) => {
     <Suspense
       fallback={
         <Flex
-          className="w-full h-screen bg-moonlightBase"
+          className="w-full h-screen dark:bg-moonlightBase"
           align="center"
           justify="center"
         >
@@ -93,7 +107,7 @@ const RenderCollections = memo(
       <Suspense
         fallback={
           <Flex
-            className="w-full h-screen bg-moonlightBase"
+            className="w-full h-screen dark:bg-moonlightBase"
             align="center"
             justify="center"
           >
@@ -109,7 +123,7 @@ const RenderCollections = memo(
   },
 );
 
-function CreateCollection() {
+const CreateCollection = React.memo(() => {
   const utils = t.useUtils();
   const { mutate: createCollection, isLoading } =
     t.library.createCollection.useMutation({
@@ -130,7 +144,7 @@ function CreateCollection() {
     <Popover.Root>
       <Popover.Trigger>
         <button className="p-2 rounded-md cursor-pointer text-moonlightOrange hover:bg-moonlightOrange/10">
-          {isLoading ? <Spinner /> : <Plus size={10} />}
+          {isLoading ? <Spinner /> : <Icon name="Plus" size={10} />}
         </button>
       </Popover.Trigger>
       <Popover.Content>
@@ -152,7 +166,7 @@ function CreateCollection() {
               size="1"
             >
               <Flex align="center" justify="center" gap="2">
-                <Plus size={10} />
+                <Icon name="Plus" size={10} />
                 <Text>Create Collection</Text>
               </Flex>
             </Button>
@@ -161,4 +175,98 @@ function CreateCollection() {
       </Popover.Content>
     </Popover.Root>
   );
-}
+});
+
+const GridLayout = React.memo(
+  ({
+    data,
+  }: {
+    data?: {
+      issues: Issue[];
+      collections: Array<
+        Collection & {
+          issues: Issue[];
+        }
+      >;
+    };
+  }) => {
+    return (
+      <>
+        <RenderCollections collections={data?.collections || []} />
+        <RenderIssues issues={data?.issues || []} />
+      </>
+    );
+  },
+);
+
+const ListLayout = React.memo(
+  ({
+    data,
+  }: {
+    data?: {
+      issues: Issue[];
+      collections: Array<
+        Collection & {
+          issues: Issue[];
+        }
+      >;
+    };
+  }) => {
+    return (
+      <>
+        <FlatList
+          data={data?.issues || []}
+          renderItem={({ item }) => <Issue issue={item} key={item.id} />}
+        />
+        <FlatList
+          data={data?.collections || []}
+          renderItem={({ item }) => (
+            <Collection collection={item} key={item.id} />
+          )}
+        />
+      </>
+    );
+  },
+);
+
+const SwitchLayout = React.memo(
+  ({
+    activeLayout,
+  }: {
+    activeLayout: ObservablePrimitiveBaseFns<"list" | "grid">;
+  }) => {
+    return (
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger>
+          <button className="p-2 rounded-md cursor-pointer text-moonlightOrange hover:bg-moonlightOrange/10">
+            {activeLayout.get() === "grid" ? (
+              <Icon name="LayoutGrid" size={10} />
+            ) : (
+              <Icon name="LayoutList" size={10} />
+            )}
+          </button>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Content size="1" variant="soft">
+          <DropdownMenu.Item
+            onClick={() => activeLayout.set("grid")}
+            className="cursor-pointer"
+          >
+            <Flex align="center" justify="between" gap="3">
+              <Text size="1">Grid</Text>
+              <LayoutGrid size={11} />
+            </Flex>
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
+            onClick={() => activeLayout.set("list")}
+            className="cursor-pointer"
+          >
+            <Flex align="center" justify="between" gap="4">
+              <Text size="1">List</Text>
+              <LayoutList size={11} />
+            </Flex>
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
+    );
+  },
+);

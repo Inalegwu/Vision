@@ -6,23 +6,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { capitalize } from "effect/String";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Home,
-  Library,
-  Maximize2,
-  Minus,
-  Plus,
-  RefreshCw,
-  Settings,
-  Sidebar,
-  Trash2,
-  X,
-} from "lucide-react";
+import { Home, Sidebar } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect } from "react";
 import { globalState$, settingsState$ } from "../state";
+import Icon from "./icon";
 import SettingsMenu from "./settings";
 import Spinner from "./spinner";
 import ThemeButton from "./theme-button";
@@ -149,13 +137,13 @@ export default function Layout({ children }: LayoutProps) {
                     className="px-2 py-2 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
                     onClick={() => navigation.history.back()}
                   >
-                    <ArrowLeft size={12} />
+                    <Icon name="ArrowLeft" size={12} />
                   </button>
                   <button
                     className="px-2 py-2 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
                     onClick={() => navigation.history.forward()}
                   >
-                    <ArrowRight size={12} />
+                    <Icon name="ArrowRight" size={12} />
                   </button>
                 </Flex>
                 <Flex
@@ -184,21 +172,21 @@ export default function Layout({ children }: LayoutProps) {
                   onClick={() => minimizeWindow()}
                   type="button"
                 >
-                  <Minus size={12} />
+                  <Icon name="Minus" size={12} />
                 </button>
                 <button
                   className="p-3 hover:bg-neutral-400/10 dark:text-moonlightText dark:hover:bg-neutral-400/5"
                   onClick={() => maximizeWindow()}
                   type="button"
                 >
-                  <Maximize2 size={12} />
+                  <Icon name="Maximize2" size={12} />
                 </button>
                 <button
                   className="p-3 hover:bg-red-500 dark:text-moonlightText hover:text-white"
                   onClick={() => closeWindow()}
                   type="button"
                 >
-                  <X size={12} />
+                  <Icon name="X" size={12} />
                 </button>
               </Flex>
             </Flex>
@@ -237,7 +225,7 @@ export default function Layout({ children }: LayoutProps) {
                     to="/library"
                   >
                     <Flex align="center" justify="start" gap="2">
-                      <Library size={14} />
+                      <Icon name="Library" size={14} />
                       <Text weight="medium" size="2">
                         Library
                       </Text>
@@ -255,7 +243,7 @@ export default function Layout({ children }: LayoutProps) {
                     onClick={() => refreshLibrary()}
                     className="px-2 py-2 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
                   >
-                    <RefreshCw size={12} />
+                    <Icon name="RefreshCw" size={12} />
                   </button>
                 </Flex>
               </motion.div>
@@ -289,12 +277,8 @@ export default function Layout({ children }: LayoutProps) {
 }
 
 function AddButton() {
-  const utils = t.useUtils();
-  const { mutate: addIssueToLibrary, isLoading } = t.issue.addIssue.useMutation(
-    {
-      onSuccess: () => utils.library.invalidate(),
-    },
-  );
+  const { mutate: addIssueToLibrary, isLoading } =
+    t.issue.addIssue.useMutation();
 
   return (
     <button
@@ -302,7 +286,7 @@ function AddButton() {
       disabled={isLoading}
       onClick={() => addIssueToLibrary()}
     >
-      {isLoading ? <Spinner /> : <Plus size={13} />}
+      {isLoading ? <Spinner /> : <Icon name="Plus" size={13} />}
     </button>
   );
 }
@@ -327,7 +311,7 @@ function SettingsButton() {
         onClick={() => settingsVisible.set(!settingsVisible.get())}
         className="p-2 rounded-md cursor-pointer dark:text-moonlightText hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
       >
-        <Settings size={10} />
+        <Icon name="Settings" size={10} />
       </button>
       <AnimatePresence>
         <Show if={settingsVisible}>
@@ -354,7 +338,7 @@ function SettingsButton() {
                   className="p-2 rounded-md cursor-pointer text-red-500 hover:bg-red-400/10"
                   onClick={() => settingsVisible.set(false)}
                 >
-                  <X size={11} />
+                  <Icon name="X" size={11} />
                 </button>
               </Flex>
               <Flex mt="2" gap="1" direction="column">
@@ -391,7 +375,7 @@ function SettingsButton() {
                         }
                         className="p-2 overflow-hidden space-x-2 rounded-md cursor-pointer text-red-500 hover:bg-red-400/10"
                       >
-                        <Trash2 size={12} />
+                        <Icon name="Trash" size={12} />
                       </button>
                     </Flex>
                   ))}

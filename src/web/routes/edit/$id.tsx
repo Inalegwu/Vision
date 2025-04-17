@@ -16,14 +16,17 @@ function Component() {
   const utils = t.useUtils();
   const isEditing = useObservable(false);
 
-  const { data, isLoading } = t.issue.getIssue.useQuery({
-    issueId: id,
-  });
-
-  const name = useObservable<string>(data?.issue?.issueTitle);
+  const name = useObservable<string>("");
   const nameVal = name.get();
 
-  console.log(name.get());
+  const { data, isLoading } = t.issue.getIssue.useQuery(
+    {
+      issueId: id,
+    },
+    {
+      onSuccess: (d) => name.set(d.issue?.issueTitle),
+    },
+  );
 
   const { mutate, isLoading: saving } = t.issue.editIssueTitle.useMutation({
     onSuccess: (data) => {
@@ -85,19 +88,21 @@ function Component() {
               </Show>
             </Flex>
           </Flex>
-          <Flex gap="1" direction="column" align="start" width="100%">
+          <Flex gap="2" direction="column" align="start" width="100%">
             {data?.metadata?.Series && (
-              <Text size="3">Series: {data?.metadata.Series}</Text>
+              <Text size="4">Series: {data?.metadata.Series}</Text>
             )}
             {data?.metadata?.Issue && (
               <Text size="3">Number: {data?.metadata.Issue}</Text>
             )}
-            <Text size="3" className="dark:text-moonlightText">
+            <Text size="3" weight="medium" className="dark:text-moonlightText">
               {data?.metadata?.Summary}
             </Text>
             {data?.metadata?.PageCount && (
               <Text size="3" className="dark:text-moonlightText">
-                <span className="text-moonlightOrange">Page Count:</span>
+                <span className="text-moonlightOrange" weight="medium">
+                  Page Count:
+                </span>
                 {"  "}
                 {data?.metadata?.PageCount}
               </Text>
@@ -105,7 +110,7 @@ function Component() {
             {data?.metadata?.writer && (
               <Text size="3">Written By: {data?.metadata.writer}</Text>
             )}
-            <Text size="2" className="text-moonlightOrange/40">
+            <Text size="2" color="gray" className="mt-2">
               {data?.metadata?.Notes}
             </Text>
           </Flex>
