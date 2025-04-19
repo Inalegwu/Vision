@@ -21,7 +21,7 @@ export const queryClient = new QueryClient({
 });
 
 export const persister = createSyncStoragePersister({
-  storage: window.localStorage,
+  storage: window.sessionStorage,
   throttleTime: 2_000,
   key: "VISION_APP__CACHE",
 });

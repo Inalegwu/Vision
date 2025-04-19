@@ -8,7 +8,7 @@ import {
 } from "@shared/utils";
 import Zip from "adm-zip";
 import { BroadcastChannel } from "broadcast-channel";
-import { Array, Effect, Schema, Chunk } from "effect";
+import { Array, Effect, Schema } from "effect";
 import { XMLParser } from "fast-xml-parser";
 import { createExtractorFromData } from "node-unrar-js";
 import { v4 } from "uuid";
@@ -17,8 +17,8 @@ import { MetadataSchema } from "./validations";
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 
 export namespace Archive {
-  export function handleRar(path: string) {
-    return Effect.gen(function*() {
+  export const handleRar = (path: string) =>
+    Effect.gen(function* () {
       yield* Effect.log("loading wasm");
       const wasmBinary = yield* Fs.readFile(
         require.resolve("node-unrar-js/dist/js/unrar.wasm"),
@@ -146,7 +146,7 @@ export namespace Archive {
       });
 
       yield* Effect.forEach(_files, (file, index) =>
-        Effect.gen(function*() {
+        Effect.gen(function* () {
           parserChannel.postMessage({
             isCompleted: false,
             state: "SUCCESS",
@@ -195,10 +195,9 @@ export namespace Archive {
       }),
       Effect.runPromise,
     );
-  }
 
-  export function handleZip(path: string) {
-    return Effect.gen(function*() {
+  export const handleZip = (path: string) =>
+    Effect.gen(function* () {
       parserChannel.postMessage({
         isCompleted: false,
         state: "SUCCESS",
@@ -233,8 +232,8 @@ export namespace Archive {
       const thumbnailUrl = yield* Effect.sync(() =>
         convertToImageUrl(
           _files[0].data.buffer ||
-          _files[1].data.buffer ||
-          _files[1].data.buffer,
+            _files[1].data.buffer ||
+            _files[1].data.buffer,
         ),
       );
 
@@ -275,7 +274,7 @@ export namespace Archive {
       });
 
       yield* Effect.forEach(_files, (file, index) =>
-        Effect.gen(function*() {
+        Effect.gen(function* () {
           parserChannel.postMessage({
             isCompleted: false,
             state: "SUCCESS",
@@ -322,11 +321,10 @@ export namespace Archive {
       }),
       Effect.runPromise,
     );
-  }
 }
 
 const parseXML = (buffer: ArrayBufferLike | undefined, issueId: string) =>
-  Effect.gen(function*() {
+  Effect.gen(function* () {
     const xmlParser = new XMLParser();
 
     if (!buffer) return;

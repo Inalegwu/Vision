@@ -15,6 +15,7 @@ declare global {
     firstLaunch: boolean;
     isFullscreen: boolean;
     sourceDirectories: Array<string>;
+    libraryView: "issues" | "collections";
   };
 
   export type Issue = Omit<
@@ -24,7 +25,7 @@ declare global {
     dateCreated: string | null;
     dateUpdated: string | null;
   };
- 
+
   export type Collection = Omit<
     typeof collections.$inferSelect,
     "dateCreated" | "dateUpdated"
@@ -32,7 +33,7 @@ declare global {
     dateCreated: string | null;
     dateUpdated: string | null;
   };
-  
+
   export type Page = typeof pages.$inferSelect;
 
   export type ParserResponse = {

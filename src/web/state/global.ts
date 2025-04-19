@@ -16,6 +16,7 @@ export const globalState$ = observable<GlobalState>({
   colorMode: "light",
   firstLaunch: true,
   isFullscreen: false,
+  libraryView: "issues",
   sourceDirectories: ["C:/"],
 });
 

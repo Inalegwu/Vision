@@ -198,7 +198,7 @@ export default function Layout({ children }: LayoutProps) {
           <AnimatePresence>
             {sidebar.get() && (
               <motion.div
-                className="bg-light-1 dark:bg-moonlightFocusLow flex flex-col"
+                className="bg-light-1 dark:bg-moonlightFocusLow flex flex-col space-y-1"
                 initial={{ width: 0, display: "none", opacity: 0 }}
                 animate={{ width: "20%", display: "flex", opacity: 1 }}
                 exit={{ width: 0, display: "none", opacity: 0 }}
@@ -207,7 +207,7 @@ export default function Layout({ children }: LayoutProps) {
                   grow="1"
                   gap="2"
                   direction="column"
-                  className="pt-13 px-3"
+                  className="px-3 pt-13"
                 >
                   <Link
                     className="text-black space-x-2 hover:bg-neutral-400/6 px-2 py-2 rounded-md text-moonlightSlight"

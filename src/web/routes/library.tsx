@@ -8,11 +8,15 @@ import {
   Popover,
   Text,
   TextField,
+  Tooltip,
 } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
-import React, { memo, Suspense } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { AnimatePresence } from "framer-motion";
+import React, { memo, Suspense, useRef } from "react";
 import { useTimeout } from "../hooks";
+import { globalState$ } from "../state";
 
 const Collection = React.lazy(() => import("../components/collection"));
 const Issue = React.lazy(() => import("../components/issue"));
@@ -23,7 +27,8 @@ export const Route = createFileRoute("/library")({
 
 function Component() {
   const isEnabled = useObservable(false);
-  const activeLayout = useObservable<"grid" | "list">("grid");
+
+  const view = globalState$.libraryView.get();
 
   const { data } = t.library.getLibrary.useQuery(undefined, {
     enabled: isEnabled.get(),
@@ -37,7 +42,35 @@ function Component() {
     <Flex direction="column" className="w-full h-screen pt-8">
       <Flex align="center" justify="between" className="w-full px-3 py-4">
         <Flex grow="1" align="center" justify="start">
-          {/* <SwitchLayout activeLayout={activeLayout} /> */}
+          <Flex
+            gap="1"
+            className="bg-neutral-100 rounded-md p-0.6 dark:bg-moonlightFocusMedium"
+          >
+            <Tooltip content="My Collections">
+              <button
+                onClick={() => globalState$.libraryView.set("collections")}
+                className={`p-1.6 rounded-md cursor-pointer ${
+                  view === "collections"
+                    ? "bg-white dark:bg-moonlightFocusLow text-moonlightOrange"
+                    : "text-neutral-600"
+                }`}
+              >
+                <Icon name="Library" size={13} />
+              </button>
+            </Tooltip>
+            <Tooltip content="My Issues">
+              <button
+                onClick={() => globalState$.libraryView.set("issues")}
+                className={`p-1.6 rounded-md cursor-pointer ${
+                  view === "issues"
+                    ? "bg-white dark:bg-moonlightFocusLow text-moonlightOrange"
+                    : "text-neutral-600"
+                }`}
+              >
+                <Icon name="Book" size={13} />
+              </button>
+            </Tooltip>
+          </Flex>
         </Flex>
         <Flex align="center" justify="end" gap="3">
           <CreateCollection />
@@ -53,46 +86,71 @@ function Component() {
           )}
         </Flex>
       </Flex>
-      <Flex
-        grow="1"
-        className="px-3 overflow-y-scroll pb-20"
-        gap="4"
-        wrap="wrap"
-      >
-        {/* @ts-ignore: all good */}
-        <Switch value={activeLayout.get()}>
-          {{
-            grid: () => <GridLayout data={data} />,
-            list: () => <ListLayout data={data} />,
-          }}
-        </Switch>
+      <Flex grow="1" className="px-3" gap="4" wrap="wrap">
+        <AnimatePresence>
+          <Switch value={view}>
+            {{
+              issues: () => <RenderIssues issues={data?.issues || []} />,
+              collections: () => (
+                <RenderCollections collections={data?.collections || []} />
+              ),
+              default: () => null,
+              undefined: () => null,
+            }}
+          </Switch>
+        </AnimatePresence>
       </Flex>
     </Flex>
   );
 }
 
-// TODO: virtualize this list;
 const RenderIssues = memo(({ issues }: { issues: Issue[] }) => {
+  const parentView = useRef<HTMLDivElement>(null);
+
+  const virtualizer = useVirtualizer({
+    count: issues.length,
+    estimateSize: () => 35,
+    getScrollElement: () => parentView.current,
+  });
+
   return (
-    <Suspense
-      fallback={
-        <Flex
-          className="w-full h-screen dark:bg-moonlightBase"
-          align="center"
-          justify="center"
-        >
-          <Spinner className="border-2 border-moonlightOrange" size={35} />
-        </Flex>
-      }
+    <Flex
+      ref={parentView}
+      style={{
+        height: "700px",
+        overflow: "auto",
+      }}
+      className="w-full"
     >
-      {issues?.map((issue) => (
-        <Issue key={issue.id} issue={issue} />
-      ))}
-    </Suspense>
+      <Flex
+        style={{
+          width: "100%",
+          position: "relative",
+          height: `${virtualizer.getTotalSize()}px`,
+        }}
+        gap="2"
+        wrap="wrap"
+      >
+        <Suspense
+          fallback={
+            <Flex
+              className="w-full h-[700px] bg-transparent"
+              align="center"
+              justify="center"
+            >
+              <Spinner className="border-2 border-moonlightOrange" size={35} />
+            </Flex>
+          }
+        >
+          {virtualizer.getVirtualItems().map((virtual) => (
+            <Issue key={virtual.key} issue={issues[virtual.index]} />
+          ))}
+        </Suspense>
+      </Flex>
+    </Flex>
   );
 });
 
-// TODO: virtualize
 const RenderCollections = memo(
   ({
     collections,
@@ -103,22 +161,54 @@ const RenderCollections = memo(
       }
     >;
   }) => {
+    const parentView = useRef<HTMLDivElement>(null);
+
+    const virtualizer = useVirtualizer({
+      count: collections.length,
+      estimateSize: () => 35,
+      getScrollElement: () => parentView.current,
+    });
+
     return (
-      <Suspense
-        fallback={
-          <Flex
-            className="w-full h-screen dark:bg-moonlightBase"
-            align="center"
-            justify="center"
-          >
-            <Spinner className="border-2 border-moonlightOrange" size={35} />
-          </Flex>
-        }
+      <Flex
+        ref={parentView}
+        style={{
+          height: "700px",
+          overflow: "auto",
+        }}
+        className="w-full"
       >
-        {collections?.map((collection) => (
-          <Collection key={collection.id} collection={collection} />
-        ))}
-      </Suspense>
+        <Flex
+          style={{
+            width: "100%",
+            position: "relative",
+            height: `${virtualizer.getTotalSize()}px`,
+          }}
+          gap="2"
+        >
+          <Suspense
+            fallback={
+              <Flex
+                className="w-full h-[700px] bg-transparent"
+                align="center"
+                justify="center"
+              >
+                <Spinner
+                  className="border-2 border-moonlightOrange"
+                  size={35}
+                />
+              </Flex>
+            }
+          >
+            {virtualizer.getVirtualItems().map((virtual) => (
+              <Collection
+                key={virtual.key}
+                collection={collections[virtual.index]}
+              />
+            ))}
+          </Suspense>
+        </Flex>
+      </Flex>
     );
   },
 );

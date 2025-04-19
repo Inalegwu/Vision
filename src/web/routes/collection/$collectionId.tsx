@@ -1,7 +1,8 @@
 import { Flex, Text } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
-import React, { Suspense } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import React, { Suspense, useRef } from "react";
 import { Spinner } from "../../components";
 
 const Issue = React.lazy(() => import("../../components/issue"));
@@ -11,11 +12,26 @@ export const Route = createFileRoute("/collection/$collectionId")({
 });
 
 function Component() {
+  const parentView = useRef<HTMLDivElement>(null);
   const { collectionId } = Route.useParams();
 
-  const { data } = t.collection.getCollectionById.useQuery({
+  const { data, isLoading } = t.collection.getCollectionById.useQuery({
     collectionId,
   });
+
+  const virtualizer = useVirtualizer({
+    count: data?.collection?.issues.length || 1000,
+    estimateSize: () => 35,
+    getScrollElement: () => parentView.current,
+  });
+
+  if (isLoading) {
+    return (
+      <Flex className="w-full h-screen" align="center" justify="center">
+        <Spinner size={35} className="border-2" />
+      </Flex>
+    );
+  }
 
   return (
     <Flex className="h-screen pt-8 w-full" direction="column">
@@ -24,24 +40,46 @@ function Component() {
           {data?.collection?.collectionName}
         </Text>
       </Flex>
-      <Suspense
-        fallback={
-          <Flex grow="1" align="center" justify="center">
-            <Spinner size={30} className="border-moonlightOrange border-2" />
-          </Flex>
-        }
+      <Flex
+        ref={parentView}
+        className="px-3"
+        style={{ height: "900px", overflow: "auto" }}
       >
         <Flex
-          gap="3"
+          style={{
+            width: "100%",
+            position: "relative",
+            height: `${virtualizer.getTotalSize()}px`,
+          }}
+          gap="2"
           wrap="wrap"
-          align="center"
-          className="px-3 overflow-y-scroll pb-24"
         >
-          {data?.collection?.issues.map((issue) => (
-            <Issue key={issue.id} issue={issue} />
-          ))}
+          <Suspense
+            fallback={
+              <Flex
+                className="w-full h-[700px] bg-transparent"
+                align="center"
+                justify="center"
+              >
+                <Spinner
+                  className="border-2 border-moonlightOrange"
+                  size={35}
+                />
+              </Flex>
+            }
+          >
+            {/* {data?.collection?.issues.map((issue) => (
+                <Issue key={issue.id} issue={issue} />
+              ))} */}
+            {virtualizer.getVirtualItems().map((virtual) => (
+              <Issue
+                key={virtual.key}
+                issue={data.collection.issues[virtual.index]}
+              />
+            ))}
+          </Suspense>
         </Flex>
-      </Suspense>
+      </Flex>
     </Flex>
   );
 }
