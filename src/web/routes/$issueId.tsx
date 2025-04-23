@@ -21,7 +21,6 @@ export const Route = createFileRoute("/$issueId")({
   component: memo(Component),
 });
 
-// TODO: virtualize scrollable list so improve performance for this page
 function Component() {
   const { issueId } = Route.useParams();
 

@@ -28,6 +28,7 @@ function Component() {
 
   const view = globalState$.libraryView.get();
 
+  // TODO:look into infinite queries
   const { data } = t.library.getLibrary.useQuery(undefined, {
     enabled: isEnabled.get(),
   });

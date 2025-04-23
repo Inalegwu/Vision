@@ -12,7 +12,6 @@ type Props = {
   };
 };
 
-// TODO work on shared element transitions
 const Collection = React.memo(({ collection }: Props) => {
   const utils = t.useUtils();
   const navigation = useRouter();
