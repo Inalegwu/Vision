@@ -28,7 +28,7 @@ function Component() {
   if (isLoading) {
     return (
       <Flex className="w-full h-screen" align="center" justify="center">
-        <Spinner size={35} className="border-2" />
+        <Spinner size={35} className="border-2 border-moonlightOrange" />
       </Flex>
     );
   }

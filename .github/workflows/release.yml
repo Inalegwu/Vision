@@ -43,14 +43,15 @@ jobs:
       - name: Install Dependencies
         run: yarn install
       - name: Build for ${{ matrix.os }}
-        run: |
-          if [ "${{ matrix.os }}" == "macos-latest" ]; then
-            yarn build:mac
-          elif [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
-            yarn build:linux
-          elif [ "${{ matrix.os }}" == "windows-latest" ]; then
-            yarn build:win64
-          fi
+        # run: |
+        #   if [ "${{ matrix.os }}" == "macos-latest" ]; then
+        #     yarn build:mac
+        #   elif [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+        #     yarn build:linux
+        #   elif [ "${{ matrix.os }}" == "windows-latest" ]; then
+        #     yarn build:win64
+        #   fi
+        run: yarn build
         shell: bash
       - name: Get Asset Details
         id: get_asset

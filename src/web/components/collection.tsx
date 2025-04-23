@@ -32,8 +32,6 @@ const Collection = React.memo(({ collection }: Props) => {
 
   const images = A.drop(collection.issues.length - 3)(collection.issues);
 
-  console.log(images);
-
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger>

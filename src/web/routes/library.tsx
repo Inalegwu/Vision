@@ -1,9 +1,7 @@
-import { FlatList, Icon, Spinner } from "@components";
-import type { ObservablePrimitiveBaseFns } from "@legendapp/state";
+import { Icon, Spinner } from "@components";
 import { Switch, useObservable } from "@legendapp/state/react";
 import {
   Button,
-  DropdownMenu,
   Flex,
   Popover,
   Text,
@@ -34,9 +32,7 @@ function Component() {
     enabled: isEnabled.get(),
   });
 
-  useTimeout(() => {
-    isEnabled.set(true);
-  }, 3_000);
+  useTimeout(() => isEnabled.set(true), 3_000);
 
   return (
     <Flex direction="column" className="w-full h-screen pt-8">
@@ -184,7 +180,7 @@ const RenderCollections = memo(
             position: "relative",
             height: `${virtualizer.getTotalSize()}px`,
           }}
-          gap="2"
+          gap="4"
         >
           <Suspense
             fallback={
@@ -266,97 +262,3 @@ const CreateCollection = React.memo(() => {
     </Popover.Root>
   );
 });
-
-const GridLayout = React.memo(
-  ({
-    data,
-  }: {
-    data?: {
-      issues: Issue[];
-      collections: Array<
-        Collection & {
-          issues: Issue[];
-        }
-      >;
-    };
-  }) => {
-    return (
-      <>
-        <RenderCollections collections={data?.collections || []} />
-        <RenderIssues issues={data?.issues || []} />
-      </>
-    );
-  },
-);
-
-const ListLayout = React.memo(
-  ({
-    data,
-  }: {
-    data?: {
-      issues: Issue[];
-      collections: Array<
-        Collection & {
-          issues: Issue[];
-        }
-      >;
-    };
-  }) => {
-    return (
-      <>
-        <FlatList
-          data={data?.issues || []}
-          renderItem={({ item }) => <Issue issue={item} key={item.id} />}
-        />
-        <FlatList
-          data={data?.collections || []}
-          renderItem={({ item }) => (
-            <Collection collection={item} key={item.id} />
-          )}
-        />
-      </>
-    );
-  },
-);
-
-const SwitchLayout = React.memo(
-  ({
-    activeLayout,
-  }: {
-    activeLayout: ObservablePrimitiveBaseFns<"list" | "grid">;
-  }) => {
-    return (
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger>
-          <button className="p-2 rounded-md cursor-pointer text-moonlightOrange hover:bg-moonlightOrange/10">
-            {activeLayout.get() === "grid" ? (
-              <Icon name="LayoutGrid" size={10} />
-            ) : (
-              <Icon name="LayoutList" size={10} />
-            )}
-          </button>
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Content size="1" variant="soft">
-          <DropdownMenu.Item
-            onClick={() => activeLayout.set("grid")}
-            className="cursor-pointer"
-          >
-            <Flex align="center" justify="between" gap="3">
-              <Text size="1">Grid</Text>
-              <LayoutGrid size={11} />
-            </Flex>
-          </DropdownMenu.Item>
-          <DropdownMenu.Item
-            onClick={() => activeLayout.set("list")}
-            className="cursor-pointer"
-          >
-            <Flex align="center" justify="between" gap="4">
-              <Text size="1">List</Text>
-              <LayoutList size={11} />
-            </Flex>
-          </DropdownMenu.Item>
-        </DropdownMenu.Content>
-      </DropdownMenu.Root>
-    );
-  },
-);

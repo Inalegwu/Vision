@@ -1,9 +1,10 @@
-import { Flex, Heading, Text } from "@radix-ui/themes";
+import { useObservable } from "@legendapp/state/react";
+import { Flex, Heading, Kbd, Text } from "@radix-ui/themes";
 import { Link, createLazyFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion, useMotionValue } from "framer-motion";
-import { ChevronRight } from "lucide-react";
 import { memo, useEffect, useState } from "react";
-import { useDebounce, useKeyPress } from "../hooks";
+import { Icon } from "../components";
+import { useDebounce, useKeyPress, useTimeout } from "../hooks";
 import { globalState$ } from "../state";
 
 export const Route = createLazyFileRoute("/first-launch")({
@@ -25,14 +26,19 @@ const welcomeMessages = [
   },
   {
     id: 2,
-    title: "Fast",
-    subtitle: "Speed !!! This is Speed 🏃🏾‍♂️‍➡️",
+    title: "Built for Speed",
+    subtitle: "Enjoy your comics now 🏃🏾‍♂️‍➡️",
   },
 ];
 
 function Component() {
   const dragX = useMotionValue(0);
   const [itemIndex, setItemIndex] = useState<number>(0);
+  const info = useObservable(true);
+
+  useTimeout(() => {
+    info.set(false);
+  }, 3_000);
 
   const onDragEnd = () => {
     const x = dragX.get();
@@ -60,10 +66,49 @@ function Component() {
 
   return (
     <Flex className="w-full h-screen bg-white dark:bg-moonlightBase relative">
+      <AnimatePresence>
+        {info.get() && (
+          <motion.div
+            initial={{
+              transform: "translateY(-50px)",
+            }}
+            animate={{
+              transform: "translateY(9px)",
+            }}
+            exit={{
+              transform: "translateY(-50px)",
+            }}
+            className="absolute top-[2%] left-[40.5%] bg-moonlightOrange/10 px-3 py-1 rounded-full text-moonlightText border-1 border-solid border-moonlightOrange/30"
+          >
+            <Text size="2">
+              Press{" "}
+              <Kbd color="orange" className="mx-2">
+                [
+              </Kbd>
+              and
+              <Kbd color="orange" className="mx-2">
+                ]
+              </Kbd>
+              or <span className="text-moonlightOrange font-bold">Drag</span> to
+              navigate
+            </Text>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-92 h-92 rounded-full bg-moonlightOrange/50 blur-3xl"
+        initial={{ opacity: 0, scale: 0, top: -100, left: -100 }}
+        animate={{ opacity: 1, scale: 1, top: 0, left: 0 }}
+        className="w-100 h-100 rounded-full absolute z-0 bg-moonlightOrange/70 blur-[160px]"
+      />
+      <motion.div
+        initial={{ opacity: 0, scale: 0, top: 0, left: 0 }}
+        animate={{
+          opacity: 1,
+          scale: 1,
+          top: 400,
+          left: 1100,
+        }}
+        className="w-100 h-100 rounded-full absolute z-0 bg-moonlightOrange/70 blur-[160px]"
       />
       <Flex className="w-full h-full absolute z-10 bg-transparent backdrop-blur-9xl">
         <AnimatePresence mode="wait">
@@ -94,7 +139,7 @@ function Component() {
                 <Heading size="8" className="text-moonlightOrange">
                   {message.title}
                 </Heading>
-                <Text size="4" color="gray">
+                <Text size="4" weight="medium" color="gray">
                   {message.subtitle}
                 </Text>
               </Flex>
@@ -106,18 +151,23 @@ function Component() {
         align="center"
         justify="center"
         gap="2"
-        className="absolute z-10 bottom-[3%] left-[50%]"
+        className="absolute z-10 bottom-[3%] left-[49%] p-2"
       >
         {welcomeMessages.map((m, idx) => (
           <div
             onClick={() => setItemIndex(idx)}
-            className={`w-4 h-4 rounded-full ${
-              itemIndex === idx
-                ? "bg-moonlightOrange"
-                : "bg-neutral-200 dark:bg-neutral-800"
-            }`}
+            // className={`w-4 h-4 rounded-full ${
+            //   itemIndex === idx
+            //     ? "bg-moonlightOrange"
+            //     : "bg-neutral-200 dark:bg-neutral-800"
+            // }`}
+            className={`px-1 py-1 flex items-center justify-center rounded-full ${
+              itemIndex === idx ? "bg-moonlightOrange" : "bg-moonlightOverlay/5"
+            } cursor-pointer`}
             key={m.id}
-          />
+          >
+            <Icon name="Asterisk" className="opacity-0" size={12} />
+          </div>
         ))}
         <AnimatePresence>
           {itemIndex === welcomeMessages.length - 1 && (
@@ -125,7 +175,6 @@ function Component() {
               initial={{ opacity: 0, display: "none", scale: 0 }}
               animate={{ opacity: 1, display: "flex", scale: 1 }}
               exit={{ opacity: 0, display: "none", scale: 0 }}
-              className="p-1"
             >
               <Link
                 to="/"
@@ -133,9 +182,9 @@ function Component() {
                   globalState$.isFullscreen.set(false);
                   globalState$.firstLaunch.set(false);
                 }}
-                className="flex items-center justify-center bg-moonlightOrange cursor-pointer rounded-full w-4 h-4 text-white"
+                className="px-1 flex items-center justify-center py-1 rounded-full text-moonlightWhite bg-moonlightOrange cursor-pointer"
               >
-                <ChevronRight size={14} />
+                <Icon name="ChevronRight" size={12.4} />
               </Link>
             </motion.div>
           )}

@@ -8,64 +8,130 @@ import {
 } from "@shared/utils";
 import Zip from "adm-zip";
 import { BroadcastChannel } from "broadcast-channel";
-import { Array, Effect, Schema } from "effect";
+import { Array, Data, Effect, Request, RequestResolver, Schema } from "effect";
 import { XMLParser } from "fast-xml-parser";
 import { createExtractorFromData } from "node-unrar-js";
 import { v4 } from "uuid";
 import { MetadataSchema } from "./validations";
 
+type Page = Readonly<{
+  name: string;
+  data: ArrayBufferLike | undefined;
+  isDir: boolean;
+}>;
+
+class ArchiveError extends Data.TaggedError("archive-error")<{
+  cause: unknown;
+}> {}
+
+class SavePageRequest extends Request.TaggedClass("SavePage")<
+  {
+    id: string;
+  },
+  ArchiveError,
+  Page
+> {}
+
+const SavePageResolver = (newIssue: typeof issues.$inferSelect) =>
+  RequestResolver.make<SavePageRequest, never>((entries) =>
+    Effect.forEach(
+      entries.flatMap((entry) => entry),
+      (file, index) =>
+        Effect.gen(function* () {
+          if (file.isDir) {
+            return yield* Effect.log("found and skipped directory");
+          }
+
+          const pageContent = yield* Effect.sync(() =>
+            convertToImageUrl(file.data!),
+          );
+
+          yield* Effect.tryPromise(
+            async () =>
+              await db.insert(pages).values({
+                id: v4(),
+                pageContent,
+                issueId: newIssue.id,
+              }),
+          );
+
+          parserChannel.postMessage({
+            completed: index,
+            total: length,
+            error: null,
+            isCompleted: false,
+            state: "SUCCESS",
+          });
+        }).pipe(Effect.orDie),
+    ),
+  );
+
+const savePage = (page: Page, newIssue: typeof issues.$inferSelect) =>
+  Effect.request(new SavePageRequest(page), SavePageResolver(newIssue));
+
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 
-export namespace Archive {
-  export const handleRar = (path: string) =>
-    Effect.gen(function* () {
-      yield* Effect.log("loading wasm");
-      const wasmBinary = yield* Fs.readFile(
-        require.resolve("node-unrar-js/dist/js/unrar.wasm"),
-      ).pipe(Effect.andThen((binary) => binary.buffer));
+const createRarExtractor = (path: string) =>
+  Effect.gen(function* () {
+    const wasmBinary = yield* Fs.readFile(
+      require.resolve("node-unrar-js/dist/js/unrar.wasm"),
+    ).pipe(Effect.andThen((binary) => binary.buffer));
 
+    return yield* Fs.readFile(path).pipe(
+      Effect.map((file) => file.buffer),
+      Effect.andThen((data) =>
+        Effect.tryPromise(
+          async () =>
+            await createExtractorFromData({
+              data,
+              wasmBinary,
+            }),
+        ),
+      ),
+      Effect.andThen((extractor) =>
+        Effect.try(() =>
+          extractor.extract({
+            files: [...extractor.getFileList().fileHeaders].map(
+              (header) => header.name,
+            ),
+          }),
+        ),
+      ),
+      Effect.andThen((extracted) =>
+        Array.fromIterable(extracted.files)
+          .sort((a, b) => sortPages(a.fileHeader.name, b.fileHeader.name))
+          .filter((file) => !file.fileHeader.flags.directory),
+      ),
+    );
+  });
+
+const createZipExtractor = (path: string) =>
+  Effect.gen(function* () {
+    return yield* Fs.readFile(path).pipe(
+      Effect.andThen((buff) =>
+        new Zip(Buffer.from(buff.buffer))
+          .getEntries()
+          .sort((a, b) => sortPages(a.name, b.name))
+          .map((entry) => ({
+            name: entry.name,
+            data: entry.getData().buffer,
+            isDir: entry.isDirectory,
+          }))
+          .filter((file) => !file.isDir),
+      ),
+    );
+  });
+
+export class Archive extends Effect.Service<Archive>()("Archive", {
+  effect: Effect.gen(function* () {
+    const rar = Effect.fn(function* (path: string) {
       parserChannel.postMessage({
         isCompleted: false,
         state: "SUCCESS",
         error: null,
       });
 
-      yield* Effect.log("Attempting to extract");
-      const files = yield* Fs.readFile(path).pipe(
-        Effect.andThen((file) => file.buffer),
-        Effect.andThen((data) =>
-          Effect.tryPromise(
-            async () =>
-              await createExtractorFromData({
-                data,
-                wasmBinary,
-              }),
-          ),
-        ),
-        Effect.andThen((extractor) =>
-          Effect.try(() =>
-            extractor.extract({
-              files: [...extractor.getFileList().fileHeaders].map(
-                (header) => header.name,
-              ),
-            }),
-          ),
-        ),
-        Effect.andThen((extracted) =>
-          Array.fromIterable(extracted.files)
-            .sort((a, b) => sortPages(a.fileHeader.name, b.fileHeader.name))
-            .filter((file) => !file.fileHeader.flags.directory),
-        ),
-        Effect.tap(() =>
-          Effect.sync(() =>
-            parserChannel.postMessage({
-              isCompleted: false,
-              state: "SUCCESS",
-              error: null,
-            }),
-          ),
-        ),
-      );
+      const files = yield* createRarExtractor(path);
 
       if (files.length === 0) {
         return yield* Effect.sync(() =>
@@ -76,8 +142,6 @@ export namespace Archive {
           }),
         );
       }
-
-      yield* Effect.log("Attempting to save");
 
       parserChannel.postMessage({
         isCompleted: false,
@@ -109,27 +173,7 @@ export namespace Archive {
         error: null,
       });
 
-      const newIssue = yield* Effect.tryPromise(async () =>
-        (
-          await db
-            .insert(issues)
-            .values({
-              id: v4(),
-              issueTitle,
-              thumbnailUrl,
-            })
-            .returning()
-        ).at(0),
-      );
-
-      if (!newIssue) {
-        parserChannel.postMessage({
-          isCompleted: false,
-          error: "Issue Already Exists",
-          state: "SUCCESS",
-        });
-        return yield* Effect.logError("Issue Already Exists");
-      }
+      const newIssue = yield* saveIssue(issueTitle, thumbnailUrl);
 
       yield* Effect.fork(
         parseXML(
@@ -145,96 +189,41 @@ export namespace Archive {
         error: null,
       });
 
-      yield* Effect.forEach(_files, (file, index) =>
-        Effect.gen(function* () {
-          parserChannel.postMessage({
-            isCompleted: false,
-            state: "SUCCESS",
-            error: null,
-          });
-
-          const pageContent = yield* Effect.sync(() =>
-            convertToImageUrl(file?.extraction?.buffer!),
-          );
-
-          yield* Effect.log(file.fileHeader.name);
-
-          yield* Effect.tryPromise(
-            async () =>
-              await db.insert(pages).values({
-                id: v4(),
-                pageContent,
-                issueId: newIssue.id,
-              }),
-          );
-
-          yield* Effect.sync(() =>
-            parserChannel.postMessage({
-              completed: index,
-              total: _files.length,
-              error: null,
-              isCompleted: false,
-              state: "SUCCESS",
-            }),
-          );
-        }),
+      yield* Effect.forEach(
+        _files.map((file) => ({
+          name: file.fileHeader.name,
+          isDir: file.fileHeader.flags.directory,
+          data: file.extraction?.buffer,
+        })),
+        (page) => savePage(page, newIssue),
+        {
+          concurrency: _files.length,
+        },
       );
 
-      yield* Effect.sync(() =>
-        parserChannel.postMessage({
-          isCompleted: true,
-          error: null,
-          state: "SUCCESS",
-        }),
-      );
-    }).pipe(
-      Effect.orDie,
-      Effect.annotateLogs({
-        file: path,
-        handler: "cbr",
-      }),
-      Effect.runPromise,
-    );
+      parserChannel.postMessage({
+        isCompleted: true,
+        error: null,
+        state: "SUCCESS",
+      });
 
-  export const handleZip = (path: string) =>
-    Effect.gen(function* () {
+      yield* Effect.logInfo(`Saved ${issueTitle} File Successfully`);
+    });
+
+    const zip = Effect.fn(function* (path: string) {
       parserChannel.postMessage({
         isCompleted: false,
         state: "SUCCESS",
         error: null,
       });
-      const files = yield* Fs.readFile(path).pipe(
-        Effect.andThen((buff) =>
-          new Zip(Buffer.from(buff.buffer))
-            .getEntries()
-            .sort((a, b) => sortPages(a.name, b.name))
-            .map((entry) => ({
-              name: entry.name,
-              data: entry.getData(),
-              isDir: entry.isDirectory,
-            }))
-            .filter((file) => !file.isDir),
-        ),
-        Effect.tap(() =>
-          Effect.sync(() =>
-            parserChannel.postMessage({
-              isCompleted: false,
-              state: "SUCCESS",
-              error: null,
-            }),
-          ),
-        ),
-      );
+
+      const files = yield* createZipExtractor(path);
 
       const _files = files.filter((file) => !file.name.includes("xml"));
 
       const issueTitle = yield* Effect.sync(() => parseFileNameFromPath(path));
       const thumbnailUrl = yield* Effect.sync(() =>
-        convertToImageUrl(
-          _files[0].data.buffer ||
-            _files[1].data.buffer ||
-            _files[1].data.buffer,
-        ),
+        convertToImageUrl(_files[0].data || _files[1].data || _files[1].data),
       );
 
       parserChannel.postMessage({
@@ -243,26 +232,11 @@ export namespace Archive {
         error: null,
       });
 
-      const newIssue = yield* Effect.tryPromise(async () =>
-        (
-          await db
-            .insert(issues)
-            .values({
-              id: v4(),
-              issueTitle,
-              thumbnailUrl,
-            })
-            .returning()
-        ).at(0),
-      );
-
-      if (!newIssue) {
-        return yield* Effect.logError("Unable to save Issue");
-      }
+      const newIssue = yield* saveIssue(issueTitle, thumbnailUrl);
 
       yield* Effect.fork(
         parseXML(
-          files.find((file) => file.name.includes("xml"))?.data.buffer,
+          files.find((file) => file.name.includes("xml"))?.data,
           newIssue.id,
         ),
       );
@@ -273,55 +247,28 @@ export namespace Archive {
         error: null,
       });
 
-      yield* Effect.forEach(_files, (file, index) =>
-        Effect.gen(function* () {
-          parserChannel.postMessage({
-            isCompleted: false,
-            state: "SUCCESS",
-            error: null,
-          });
-
-          if (file.isDir) {
-            return yield* Effect.log("found and skipped directory");
-          }
-
-          const pageContent = yield* Effect.sync(() =>
-            convertToImageUrl(file.data.buffer),
-          );
-
-          yield* Effect.tryPromise(
-            async () =>
-              await db.insert(pages).values({
-                id: v4(),
-                pageContent,
-                issueId: newIssue.id,
-              }),
-          );
-
-          parserChannel.postMessage({
-            completed: index,
-            total: _files.length,
-            error: null,
-            isCompleted: false,
-            state: "SUCCESS",
-          });
-        }),
-      );
+      yield* Effect.forEach(_files, (page) => savePage(page, newIssue), {
+        concurrency: "unbounded",
+      });
 
       parserChannel.postMessage({
         isCompleted: true,
         error: null,
         state: "SUCCESS",
       });
-    }).pipe(
-      Effect.orDie,
-      Effect.annotateLogs({
-        file: path,
-        handler: "cbz",
-      }),
-      Effect.runPromise,
-    );
-}
+
+      yield* Effect.logInfo(`Saved ${issueTitle} File Successfully`);
+    });
+
+    return { rar, zip } as const;
+  }).pipe(
+    Effect.orDie,
+    Effect.annotateLogs({
+      service: "archive",
+    }),
+    Effect.withLogSpan("archive.service"),
+  ),
+}) {}
 
 const parseXML = (buffer: ArrayBufferLike | undefined, issueId: string) =>
   Effect.gen(function* () {
@@ -341,6 +288,8 @@ const parseXML = (buffer: ArrayBufferLike | undefined, issueId: string) =>
       },
     );
 
+    yield* Effect.logInfo(comicInfo);
+
     yield* Effect.tryPromise(
       async () =>
         await db.insert(metadata).values({
@@ -349,4 +298,34 @@ const parseXML = (buffer: ArrayBufferLike | undefined, issueId: string) =>
           ...comicInfo,
         }),
     );
-  }).pipe(Effect.orDie);
+  }).pipe(Effect.orDie, Effect.withLogSpan("parseXML.duration"));
+
+const saveIssue = Effect.fn(function* (
+  issueTitle: string,
+  thumbnailUrl: string,
+) {
+  const newIssue = yield* Effect.tryPromise(
+    async () =>
+      await db
+        .insert(issues)
+        .values({
+          id: v4(),
+          issueTitle,
+          thumbnailUrl,
+        })
+        .returning(),
+  ).pipe(Effect.map((result) => result.at(0)));
+
+  if (!newIssue) {
+    parserChannel.postMessage({
+      isCompleted: false,
+      error: "Couldn't save Issue",
+      state: "ERROR",
+    });
+    return yield* Effect.die(
+      new ArchiveError({ cause: "Unable to Save Issue" }),
+    );
+  }
+
+  return newIssue;
+});

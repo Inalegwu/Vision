@@ -1,5 +1,6 @@
 import type { Context } from "@src/shared/context";
 import { initTRPC } from "@trpc/server";
+import { Console } from "effect";
 
 const t = initTRPC.context<Context>().create({
   isServer: true,
@@ -20,7 +21,7 @@ export const publicProcedure = t.procedure.use(async (opts) => {
     durationMS,
   };
 
-  result.ok ? console.log(meta) : console.error(meta);
+  result.ok ? Console.log(meta) : Console.error(meta);
 
   return result;
 });

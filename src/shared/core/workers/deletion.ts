@@ -19,8 +19,8 @@ class DeletionError extends Data.TaggedError("deletion-error")<{
   cause: unknown;
 }> {}
 
-function deleteIssue({ issueId }: DeletionSchema) {
-  return Effect.tryPromise({
+const deleteIssue = ({ issueId }: DeletionSchema) =>
+  Effect.tryPromise({
     try: async () => {
       await db.delete(issues).where(eq(issues.id, issueId)).returning();
       deletionChannel.postMessage({
@@ -31,12 +31,12 @@ function deleteIssue({ issueId }: DeletionSchema) {
     catch: (cause: unknown) => new DeletionError({ cause }),
   }).pipe(
     Effect.orDie,
+    Effect.withLogSpan("deletion.duration"),
     Effect.annotateLogs({
       worker: "deletion",
     }),
     Effect.runPromise,
   );
-}
 
 port.on("message", (message) =>
   parseWorkerMessageWithSchema(deletionWorkerSchema, message).match(

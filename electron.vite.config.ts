@@ -35,6 +35,7 @@ export default defineConfig({
     root: "src/web/",
     resolve: {
       alias: {
+        "@src": resolve(__dirname, "src/"),
         "@shared": resolve(__dirname, "src/shared/"),
         "@components": resolve(__dirname, "src/web/components/index.ts"),
         "@assets": resolve(__dirname, "src/assets/"),

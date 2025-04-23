@@ -17,11 +17,8 @@ const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 
 const handleMessage = ({ action, parsePath }: ParserSchema) =>
   Effect.gen(function* () {
-    parserChannel.postMessage({
-      isCompleted: false,
-      state: "SUCCESS",
-      error: null,
-    });
+    const archive = yield* Archive;
+
     const ext = parsePath.includes("cbr")
       ? "cbr"
       : parsePath.includes("cbz")
@@ -29,6 +26,7 @@ const handleMessage = ({ action, parsePath }: ParserSchema) =>
         : "none";
 
     yield* Effect.logInfo({ ext, parsePath, action });
+
     parserChannel.postMessage({
       isCompleted: false,
       state: "SUCCESS",
@@ -60,10 +58,10 @@ const handleMessage = ({ action, parsePath }: ParserSchema) =>
 
     Match.value({ action, ext }).pipe(
       Match.when({ action: "LINK", ext: "cbr" }, () =>
-        Archive.handleRar(parsePath),
+        archive.rar(parsePath).pipe(Effect.runPromise),
       ),
       Match.when({ action: "LINK", ext: "cbz" }, () =>
-        Archive.handleZip(parsePath),
+        archive.zip(parsePath).pipe(Effect.runPromise),
       ),
       Match.when({ action: "LINK", ext: "none" }, () => Effect.void),
       Match.when({ action: "UNLINK" }, () => Effect.void),
@@ -73,6 +71,7 @@ const handleMessage = ({ action, parsePath }: ParserSchema) =>
     Effect.annotateLogs({
       worker: `parser-${parsePath}`,
     }),
+    Effect.provide(Archive.Default),
     Effect.runPromise,
   );
 

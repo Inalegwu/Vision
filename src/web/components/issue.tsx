@@ -9,10 +9,8 @@ import {
 } from "@radix-ui/themes";
 import t from "@shared/config";
 import { useRouter } from "@tanstack/react-router";
-import React, { useRef } from "react";
+import { useRef } from "react";
 import FlatList from "./flatlist";
-
-const Spinner = React.lazy(() => import("./spinner"));
 
 type Props = {
   issue: Issue;
@@ -173,7 +171,6 @@ export default function Issue({ issue }: Props) {
           <button ref={dialogRef} />
         </Dialog.Trigger>
         <Dialog.Content className="space-y-2 max-h-90" size="1">
-          {isLoading && <Spinner size={10} />}
           <FlatList
             data={data?.collections || []}
             className="h-70"

@@ -15,6 +15,9 @@ const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 const deletionChannel = new BroadcastChannel<DeletionChannel>(
   "deletion-channel",
 );
+const prefetchChannel = new BroadcastChannel<PrefetchChannel>(
+  "prefetch-channel",
+);
 
 const libraryRouter = router({
   createLibraryFolder: publicProcedure.mutation(async ({ ctx }) => {
@@ -62,6 +65,7 @@ const libraryRouter = router({
       })
         .on("message", (m) => {
           console.log({ m });
+          return m;
         })
         .postMessage({
           view: input.view,
@@ -81,8 +85,8 @@ const libraryRouter = router({
         collectionName: input.collectionName,
       });
     }),
-  additions: publicProcedure.subscription(() => {
-    return observable<ParserChannel>((emit) => {
+  additions: publicProcedure.subscription(() =>
+    observable<ParserChannel>((emit) => {
       const listener = (evt: ParserChannel) => {
         emit.next(evt);
       };
@@ -92,10 +96,10 @@ const libraryRouter = router({
       return () => {
         parserChannel.removeEventListener("message", listener);
       };
-    });
-  }),
-  deletions: publicProcedure.subscription(() => {
-    return observable<DeletionChannel>((emit) => {
+    }),
+  ),
+  deletions: publicProcedure.subscription(() =>
+    observable<DeletionChannel>((emit) => {
       const listener = (event: DeletionChannel) => {
         emit.next(event);
       };
@@ -105,8 +109,21 @@ const libraryRouter = router({
       return () => {
         deletionChannel.removeEventListener("message", listener);
       };
-    });
-  }),
+    }),
+  ),
+  prefetch: publicProcedure.subscription(() =>
+    observable<PrefetchChannel>((emit) => {
+      const listener = (event: PrefetchChannel) => {
+        emit.next(event);
+      };
+
+      prefetchChannel.addEventListener("message", listener);
+
+      return () => {
+        prefetchChannel.removeEventListener("message", listener);
+      };
+    }),
+  ),
   addSourceDirectory: publicProcedure.mutation(async ({ ctx }) => {
     const { canceled, filePaths } = await dialog.showOpenDialog({
       buttonLabel: "Select Folder",
