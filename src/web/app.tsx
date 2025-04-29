@@ -8,12 +8,15 @@ import {
   createHashHistory,
   createRouter,
 } from "@tanstack/react-router";
-import { StrictMode } from "react";
+import React, { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import "virtual:uno.css";
 import "./app.css";
 import ErrorComponent from "./components/error";
+import { ToastProvider } from "./components/toast";
 import { routeTree } from "./routeTree.gen";
+
+const Toast = React.lazy(() => import("./components/toast"));
 
 enableReactTracking({
   auto: true,
@@ -52,7 +55,16 @@ if (!rootElement?.innerHTML) {
             grayColor="slate"
             panelBackground="translucent"
           >
-            <RouterProvider defaultViewTransition router={router} />
+            <ToastProvider
+              context={{
+                duration: 4500,
+                position: "bottom-right",
+              }}
+            >
+              <>
+                <RouterProvider defaultViewTransition router={router} />
+              </>
+            </ToastProvider>
           </Theme>
         </PersistQueryClientProvider>
       </t.Provider>

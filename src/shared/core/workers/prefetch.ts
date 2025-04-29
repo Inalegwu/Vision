@@ -19,7 +19,7 @@ function prefetchData({ view, issueId }: PrefetchSchema) {
   return Effect.gen(function* () {
     Match.value(view).pipe(
       Match.when("library", () => resolveLibrary()),
-      Match.when("reader", (view) => resolvePages(issueId)),
+      Match.when("reader", () => resolvePages(issueId)),
     );
   }).pipe(Effect.runPromise);
 }

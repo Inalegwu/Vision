@@ -2,7 +2,6 @@ import { computed } from "@legendapp/state";
 import { Show, useObservable, useObserveEffect } from "@legendapp/state/react";
 import { Button, Flex, Text, Tooltip } from "@radix-ui/themes";
 import t from "@shared/config";
-import { useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { capitalize } from "effect/String";
 import { AnimatePresence, motion } from "framer-motion";
@@ -14,13 +13,13 @@ import Icon from "./icon";
 import SettingsMenu from "./settings";
 import Spinner from "./spinner";
 import ThemeButton from "./theme-button";
+import Toast, { toast } from "./toast";
 
 type LayoutProps = {
   children?: React.ReactNode;
 };
 
 export default function Layout({ children }: LayoutProps) {
-  const qC = useQueryClient();
   const utils = t.useUtils();
   const navigation = useRouter();
   const routerState = useRouterState();
@@ -50,6 +49,7 @@ export default function Layout({ children }: LayoutProps) {
         utils.library.getLibrary.invalidate();
       }
       if (data.isCompleted && data.state === "ERROR") {
+        toast.error(data.error || "Something went wrong");
         isUpdating.set(false);
         console.log(data.error);
       }
@@ -76,6 +76,8 @@ export default function Layout({ children }: LayoutProps) {
 
   useEffect(() => {
     startFileWatcher();
+
+    toast.success("Testing toast component");
 
     if (globalState$.firstLaunch.get()) {
       createSourceDir();
@@ -272,6 +274,7 @@ export default function Layout({ children }: LayoutProps) {
       <AnimatePresence>
         {settingsState$.visible.get() && <SettingsMenu />}
       </AnimatePresence>
+      <Toast />
     </Flex>
   );
 }

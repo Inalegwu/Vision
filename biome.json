@@ -17,6 +17,9 @@
       },
       "suspicious":{
         "noShadowRestrictedNames":"off"
+      },
+      "complexity":{
+        "noForEach":"off"
       }
     },
     "ignore": ["./kuma.config.ts"]

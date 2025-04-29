@@ -1,7 +1,6 @@
 import { Flex, Heading, Text } from "@radix-ui/themes";
-import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
-import React, { useEffect } from "react";
+import React from "react";
 import { readingState$ } from "../state";
 
 const CurrentlyReading = React.lazy(
@@ -16,14 +15,6 @@ export const Route = createFileRoute("/")({
 function Index() {
   const currentlyReading = Array.from(readingState$.currentlyReading.values());
   const doneReading = Array.from(readingState$.doneReading.values());
-
-  const { mutate } = t.library.prefetchLibrary.useMutation();
-
-  useEffect(() => {
-    mutate({
-      view: "library",
-    });
-  }, [mutate]);
 
   if (currentlyReading.length === 0 && doneReading.length === 0) {
     return (

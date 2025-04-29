@@ -33,6 +33,12 @@ export function parseFileNameFromPath(filePath: string) {
     .replace("-", "");
 }
 
+export const extractMetaID = (noteString: string) => {
+  // "Scraped metadata from Comixology [CMXDB852248], [RELDATE:2020-03-31]\"
+  // TODO: find a way to extract       ^ this value from this string
+  return noteString.replace(/^/, "");
+};
+
 export const parseWorkerMessageWithSchema = <T extends z.ZodRawShape>(
   s: z.ZodObject<T>,
   m: string,

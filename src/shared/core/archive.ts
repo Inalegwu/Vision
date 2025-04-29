@@ -14,13 +14,15 @@ import { createExtractorFromData } from "node-unrar-js";
 import { v4 } from "uuid";
 import { MetadataSchema } from "./validations";
 
+const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
+
 type Page = Readonly<{
   name: string;
   data: ArrayBufferLike | undefined;
   isDir: boolean;
 }>;
 
-class ArchiveError extends Data.TaggedError("archive-error")<{
+class ArchiveError extends Data.TaggedError("ArchiveError")<{
   cause: unknown;
 }> {}
 
@@ -62,79 +64,84 @@ const SavePageResolver = (newIssue: typeof issues.$inferSelect) =>
             isCompleted: false,
             state: "SUCCESS",
           });
-        }).pipe(Effect.orDie),
+        }).pipe(Effect.withLogSpan("save-page-request"), Effect.orDie),
     ),
   );
 
 const savePage = (page: Page, newIssue: typeof issues.$inferSelect) =>
   Effect.request(new SavePageRequest(page), SavePageResolver(newIssue));
 
-const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
+const createRarExtractor = Effect.fn(function* (path: string) {
+  const wasmBinary = yield* Fs.readFile(
+    require.resolve("node-unrar-js/dist/js/unrar.wasm"),
+  ).pipe(Effect.andThen((binary) => binary.buffer));
 
-const createRarExtractor = (path: string) =>
-  Effect.gen(function* () {
-    const wasmBinary = yield* Fs.readFile(
-      require.resolve("node-unrar-js/dist/js/unrar.wasm"),
-    ).pipe(Effect.andThen((binary) => binary.buffer));
-
-    return yield* Fs.readFile(path).pipe(
-      Effect.map((file) => file.buffer),
-      Effect.andThen((data) =>
-        Effect.tryPromise(
-          async () =>
-            await createExtractorFromData({
-              data,
-              wasmBinary,
-            }),
-        ),
-      ),
-      Effect.andThen((extractor) =>
-        Effect.try(() =>
-          extractor.extract({
-            files: [...extractor.getFileList().fileHeaders].map(
-              (header) => header.name,
-            ),
+  return yield* Fs.readFile(path).pipe(
+    Effect.map((file) => file.buffer),
+    Effect.andThen((data) =>
+      Effect.tryPromise(
+        async () =>
+          await createExtractorFromData({
+            data,
+            wasmBinary,
           }),
-        ),
       ),
-      Effect.andThen((extracted) =>
-        Array.fromIterable(extracted.files)
-          .sort((a, b) => sortPages(a.fileHeader.name, b.fileHeader.name))
-          .filter((file) => !file.fileHeader.flags.directory),
+    ),
+    Effect.andThen((extractor) =>
+      Effect.try(() =>
+        extractor.extract({
+          files: [...extractor.getFileList().fileHeaders].map(
+            (header) => header.name,
+          ),
+        }),
       ),
-    );
-  });
+    ),
+    Effect.andThen((extracted) =>
+      Array.fromIterable(extracted.files)
+        .sort((a, b) => sortPages(a.fileHeader.name, b.fileHeader.name))
+        .filter((file) => !file.fileHeader.flags.directory),
+    ),
+    Effect.map((extracted) =>
+      extracted.map((file) => ({
+        name: file.fileHeader.name,
+        isDir: file.fileHeader.flags.directory,
+        data: file.extraction?.buffer,
+      })),
+    ),
+  );
+});
 
-const createZipExtractor = (path: string) =>
-  Effect.gen(function* () {
-    return yield* Fs.readFile(path).pipe(
-      Effect.andThen((buff) =>
-        new Zip(Buffer.from(buff.buffer))
-          .getEntries()
-          .sort((a, b) => sortPages(a.name, b.name))
-          .map((entry) => ({
-            name: entry.name,
-            data: entry.getData().buffer,
-            isDir: entry.isDirectory,
-          }))
-          .filter((file) => !file.isDir),
-      ),
-    );
-  });
+const createZipExtractor = Effect.fn(function* (path: string) {
+  return yield* Fs.readFile(path).pipe(
+    Effect.map((buff) =>
+      new Zip(Buffer.from(buff.buffer))
+        .getEntries()
+        .sort((a, b) => sortPages(a.name, b.name))
+        .map((entry) => ({
+          name: entry.name,
+          data: entry.getData().buffer,
+          isDir: entry.isDirectory,
+        }))
+        .filter((file) => !file.isDir),
+    ),
+  );
+});
 
 export class Archive extends Effect.Service<Archive>()("Archive", {
   effect: Effect.gen(function* () {
     const rar = Effect.fn(function* (path: string) {
-      parserChannel.postMessage({
-        isCompleted: false,
-        state: "SUCCESS",
-        error: null,
-      });
+      yield* Effect.sync(() =>
+        parserChannel.postMessage({
+          isCompleted: false,
+          state: "SUCCESS",
+          error: null,
+        }),
+      ).pipe(Effect.fork);
 
       const files = yield* createRarExtractor(path);
 
       if (files.length === 0) {
-        return yield* Effect.sync(() =>
+        yield* Effect.sync(() =>
           parserChannel.postMessage({
             error: "File appears to be empty",
             isCompleted: false,
@@ -143,69 +150,52 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
         );
       }
 
-      parserChannel.postMessage({
-        isCompleted: false,
-        state: "SUCCESS",
-        error: null,
-      });
+      yield* Effect.sync(() =>
+        parserChannel.postMessage({
+          isCompleted: false,
+          state: "SUCCESS",
+          error: null,
+        }),
+      );
 
       const issueTitle = yield* Effect.sync(() => parseFileNameFromPath(path));
 
-      parserChannel.postMessage({
-        isCompleted: false,
-        state: "SUCCESS",
-        error: null,
-      });
-
-      const _files = files.filter(
-        (file) => !file.fileHeader.name.includes("xml"),
-      );
-
-      const thumbnailUrl = yield* Effect.sync(() =>
-        convertToImageUrl(
-          _files[0]?.extraction?.buffer || _files[1]?.extraction?.buffer!,
+      yield* Effect.fork(
+        Effect.sync(() =>
+          parserChannel.postMessage({
+            isCompleted: false,
+            state: "SUCCESS",
+            error: null,
+          }),
         ),
       );
 
-      parserChannel.postMessage({
-        isCompleted: false,
-        state: "SUCCESS",
-        error: null,
-      });
+      const _files = files.filter((file) => !file.name.includes("xml"));
+
+      const thumbnailUrl = yield* Effect.sync(() =>
+        convertToImageUrl(_files[0]?.data || _files[1]?.data!),
+      );
 
       const newIssue = yield* saveIssue(issueTitle, thumbnailUrl);
 
       yield* Effect.fork(
         parseXML(
-          files.find((file) => file.fileHeader.name.includes("xml"))?.extraction
-            ?.buffer,
+          files.find((file) => file.name.includes("xml"))?.data,
           newIssue.id,
         ),
       );
 
-      parserChannel.postMessage({
-        isCompleted: false,
-        state: "SUCCESS",
-        error: null,
+      yield* Effect.forEach(_files, (page) => savePage(page, newIssue), {
+        concurrency: _files.length,
       });
 
-      yield* Effect.forEach(
-        _files.map((file) => ({
-          name: file.fileHeader.name,
-          isDir: file.fileHeader.flags.directory,
-          data: file.extraction?.buffer,
-        })),
-        (page) => savePage(page, newIssue),
-        {
-          concurrency: _files.length,
-        },
+      yield* Effect.sync(() =>
+        parserChannel.postMessage({
+          isCompleted: true,
+          error: null,
+          state: "SUCCESS",
+        }),
       );
-
-      parserChannel.postMessage({
-        isCompleted: true,
-        error: null,
-        state: "SUCCESS",
-      });
 
       yield* Effect.logInfo(`Saved ${issueTitle} File Successfully`);
     });
@@ -270,35 +260,37 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
   ),
 }) {}
 
-const parseXML = (buffer: ArrayBufferLike | undefined, issueId: string) =>
-  Effect.gen(function* () {
-    const xmlParser = new XMLParser();
+const parseXML = Effect.fn(function* (
+  buffer: ArrayBufferLike | undefined,
+  issueId: string,
+) {
+  const xmlParser = new XMLParser();
 
-    if (!buffer) return;
+  if (!buffer) return;
 
-    const file = Buffer.from(buffer).toString();
+  const file = Buffer.from(buffer).toString();
 
-    const contents = yield* Effect.sync(() => xmlParser.parse(file));
+  const contents = yield* Effect.sync(() => xmlParser.parse(file));
 
-    const comicInfo = yield* Schema.decodeUnknown(MetadataSchema)(
-      contents.ComicInfo,
-      {
-        onExcessProperty: "ignore",
-        exact: false,
-      },
-    );
+  const comicInfo = yield* Schema.decodeUnknown(MetadataSchema)(
+    contents.ComicInfo,
+    {
+      onExcessProperty: "ignore",
+      exact: false,
+    },
+  );
 
-    yield* Effect.logInfo(comicInfo);
+  yield* Effect.logInfo(comicInfo);
 
-    yield* Effect.tryPromise(
-      async () =>
-        await db.insert(metadata).values({
-          id: v4(),
-          issueId,
-          ...comicInfo,
-        }),
-    );
-  }).pipe(Effect.orDie, Effect.withLogSpan("parseXML.duration"));
+  yield* Effect.tryPromise(
+    async () =>
+      await db.insert(metadata).values({
+        id: v4(),
+        issueId,
+        ...comicInfo,
+      }),
+  );
+});
 
 const saveIssue = Effect.fn(function* (
   issueTitle: string,
