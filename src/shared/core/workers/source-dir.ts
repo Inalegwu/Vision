@@ -3,7 +3,7 @@ import {
   parseWorkerMessageWithSchema,
 } from "@src/shared/utils";
 import chokidar from "chokidar";
-import { Effect, Mailbox, Stream, pipe } from "effect";
+import { Chunk, Effect, Queue, Stream, pipe } from "effect";
 import { parentPort } from "node:worker_threads";
 import { sourceDirSchema } from "../validations";
 
@@ -17,10 +17,18 @@ type Task = {
   ext: "cbr" | "cbz" | "none";
 };
 
-const takeBatch = (messageBox: Mailbox.Mailbox<Task>) =>
+const execute = Effect.fn(function* (chunk: Chunk.Chunk<Task>) {
+  yield* chunk.pipe(Chunk.toReadonlyArray, Effect.forEach(Effect.log));
+});
+
+const takeBatch = (messageBox: Queue.Queue<Task>) =>
   pipe(
-    messageBox.takeN(4),
-    Effect.map(([maybeChunk]) => maybeChunk),
+    messageBox.takeBetween(2, 5),
+    // !IMPORTANT consider the necessity of timing out
+    // Effect.timeout(Duration.seconds(10)),
+    // Effect.retry({
+    //   schedule: Schedule.exponential(Duration.seconds(2), 3),
+    // }),
     Effect.withLogSpan("take-batch"),
   );
 
@@ -28,16 +36,11 @@ const handleBatch = (stream: Stream.Stream<Task>) =>
   pipe(
     stream,
     Stream.runCollect,
-    Effect.flatMap((chunk) =>
-      Effect.gen(function* () {
-        // TODO
-        // yield* Effect.logInfo(chunk);
-      }),
-    ),
+    Effect.flatMap(execute),
     Effect.withLogSpan("execute-batch"),
   );
 
-const batch = (messageBox: Mailbox.Mailbox<Task>) =>
+const batch = (messageBox: Queue.Queue<Task>) =>
   pipe(
     takeBatch(messageBox),
     Stream.repeatEffect,
@@ -50,9 +53,7 @@ const batch = (messageBox: Mailbox.Mailbox<Task>) =>
 const handleMessage = Effect.fn(function* (message: SourceDirSchema) {
   yield* Effect.logInfo(message);
 
-  const messageBox = yield* Mailbox.make<Task>({
-    strategy: "dropping",
-  });
+  const queue = yield* Queue.unbounded<Task>();
 
   yield* Effect.try(() =>
     chokidar.watch(message.sourceDirectory, {
@@ -62,7 +63,7 @@ const handleMessage = Effect.fn(function* (message: SourceDirSchema) {
   ).pipe(
     Effect.tap((watcher) =>
       watcher.on("add", (path) =>
-        messageBox.unsafeOffer({
+        queue.unsafeOffer({
           ext: path.includes("cbr")
             ? "cbr"
             : path.includes("cbz")
@@ -75,7 +76,7 @@ const handleMessage = Effect.fn(function* (message: SourceDirSchema) {
     ),
   );
 
-  yield* batch(messageBox);
+  yield* batch(queue);
 });
 
 port.on("message", (message) =>

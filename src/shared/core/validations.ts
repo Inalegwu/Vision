@@ -38,5 +38,5 @@ export const MetadataSchema = Schema.Struct({
 
 export const sourceDirSchema = z.object({
   sourceDirectory: z.array(z.string()),
-  cacheDirectory: z.optional(z.string()),
+  cacheDirectory: z.string(),
 });
