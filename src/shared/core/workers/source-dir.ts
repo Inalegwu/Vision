@@ -9,7 +9,7 @@ import { sourceDirSchema } from "../validations";
 
 const port = parentPort;
 
-if (!port) throw new Error("Parse Process Port is Missing");
+if (!port) throw new Error("Source Directory Watcher Process Port is Missing");
 
 type Task = {
   path: string;
