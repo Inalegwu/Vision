@@ -1,9 +1,5 @@
-import Zip from "adm-zip";
-import { Array, Effect } from "effect";
 import { err, ok } from "neverthrow";
-import { createExtractorFromData } from "node-unrar-js";
 import type { z } from "zod";
-import { Fs } from "./fs";
 
 export function sortPages(a: string, b: string) {
   const aName = a.replace(/\.[^/.]+$/, "");
@@ -75,59 +71,3 @@ export function debounce<A = unknown[], R = void>(
 
   return [debounceFn, tearDown];
 }
-
-export const createRarExtractor = Effect.fn(function* (path: string) {
-  const wasmBinary = yield* Fs.readFile(
-    require.resolve("node-unrar-js/dist/js/unrar.wasm"),
-  ).pipe(Effect.andThen((binary) => binary.buffer));
-
-  return yield* Fs.readFile(path).pipe(
-    Effect.map((file) => file.buffer),
-    Effect.andThen((data) =>
-      Effect.tryPromise(
-        async () =>
-          await createExtractorFromData({
-            data,
-            wasmBinary,
-          }),
-      ),
-    ),
-    Effect.andThen((extractor) =>
-      Effect.try(() =>
-        extractor.extract({
-          files: [...extractor.getFileList().fileHeaders].map(
-            (header) => header.name,
-          ),
-        }),
-      ),
-    ),
-    Effect.andThen((extracted) =>
-      Array.fromIterable(extracted.files)
-        .sort((a, b) => sortPages(a.fileHeader.name, b.fileHeader.name))
-        .filter((file) => !file.fileHeader.flags.directory),
-    ),
-    Effect.andThen((extracted) =>
-      extracted.map((file) => ({
-        name: file.fileHeader.name,
-        isDir: file.fileHeader.flags.directory,
-        data: file.extraction?.buffer,
-      })),
-    ),
-  );
-});
-
-export const createZipExtractor = Effect.fn(function* (path: string) {
-  return yield* Fs.readFile(path).pipe(
-    Effect.map((buff) =>
-      new Zip(Buffer.from(buff.buffer))
-        .getEntries()
-        .sort((a, b) => sortPages(a.name, b.name))
-        .map((entry) => ({
-          name: entry.name,
-          data: entry.getData().buffer,
-          isDir: entry.isDirectory,
-        }))
-        .filter((file) => !file.isDir),
-    ),
-  );
-});

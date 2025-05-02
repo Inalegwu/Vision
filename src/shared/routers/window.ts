@@ -1,8 +1,22 @@
 import { publicProcedure, router } from "@src/trpc";
+import { globalState$ } from "@src/web/state";
+import { app } from "electron";
+import * as fs from "node:fs";
+import path from "node:path";
 
 export const windowRouter = router({
   closeWindow: publicProcedure.mutation(async ({ ctx }) => {
     if (!ctx.window) return;
+
+    const config = globalState$.get();
+
+    fs.writeFileSync(
+      path.join(app.getPath("appData"), "Vision", "config.json"),
+      JSON.stringify(config),
+      {
+        encoding: "utf-8",
+      },
+    );
 
     ctx.window.close();
   }),

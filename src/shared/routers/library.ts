@@ -1,11 +1,9 @@
-import watchFS from "@core/watcher";
 import prefetchWorker from "@core/workers/prefetch?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import { observable } from "@trpc/server/observable";
 import { BroadcastChannel } from "broadcast-channel";
 import * as Array from "effect/Array";
 import { dialog } from "electron";
-import { mkdirSync } from "node:fs";
 import { v4 } from "uuid";
 import z from "zod";
 import { view } from "../core/validations";
@@ -20,13 +18,6 @@ const prefetchChannel = new BroadcastChannel<PrefetchChannel>(
 );
 
 const libraryRouter = router({
-  createLibraryFolder: publicProcedure.mutation(async ({ ctx }) => {
-    const path = `${ctx.app.getPath("documents")}/Vision`;
-    mkdirSync(path);
-  }),
-  startLibraryWatcher: publicProcedure.mutation(async ({ ctx }) =>
-    watchFS(`${ctx.app.getPath("documents")}/Vision`),
-  ),
   getLibrary: publicProcedure.query(async ({ ctx }) => {
     const collections = await ctx.db.query.collections.findMany({
       with: {
@@ -138,7 +129,7 @@ const libraryRouter = router({
     }
 
     return {
-      complete: false,
+      complete: true,
       filePaths,
     };
   }),

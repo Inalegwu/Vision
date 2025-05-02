@@ -3,6 +3,7 @@ import type {
   deletionWorkerSchema,
   parserSchema,
   prefetchWorkerSchema,
+  sourceDirSchema,
   workerResponseSchema,
 } from "@shared/core/validations";
 import type * as Schema from "effect/Schema";
@@ -14,7 +15,6 @@ declare global {
     colorMode: "dark" | "light";
     firstLaunch: boolean;
     isFullscreen: boolean;
-    sourceDirectories: Array<string>;
     libraryView: "issues" | "collections";
   };
 
@@ -96,4 +96,5 @@ declare global {
   export type DeletionSchema = z.infer<typeof deletionWorkerSchema>;
   export type PrefetchSchema = z.infer<typeof prefetchWorkerSchema>;
   export type Metadata = Schema.Schema.Type<typeof MetadataSchema>;
+  export type SourceDirSchema = z.infer<typeof sourceDirSchema>;
 }

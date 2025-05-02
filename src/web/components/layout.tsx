@@ -1,6 +1,6 @@
 import { computed } from "@legendapp/state";
-import { Show, useObservable, useObserveEffect } from "@legendapp/state/react";
-import { Button, Flex, Text, Tooltip } from "@radix-ui/themes";
+import { useObservable, useObserveEffect } from "@legendapp/state/react";
+import { Flex, Text, Tooltip } from "@radix-ui/themes";
 import t from "@shared/config";
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { capitalize } from "effect/String";
@@ -8,9 +8,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Home, Sidebar } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect } from "react";
-import { globalState$, settingsState$ } from "../state";
+import { globalState$ } from "../state";
 import Icon from "./icon";
-import SettingsMenu from "./settings";
 import Spinner from "./spinner";
 import ThemeButton from "./theme-button";
 import Toast, { toast } from "./toast";
@@ -24,20 +23,14 @@ export default function Layout({ children }: LayoutProps) {
   const navigation = useRouter();
   const routerState = useRouterState();
 
-  const isNotHome = computed(() => routerState.location.pathname !== "/").get();
-  const isFullscreen = globalState$.isFullscreen.get();
-  const isUpdating = useObservable(false);
-  const sidebar = useObservable(false);
-
-  const { mutate: createSourceDir } =
-    t.library.createLibraryFolder.useMutation();
-
   const { mutate: minimizeWindow } = t.window.minimize.useMutation();
   const { mutate: maximizeWindow } = t.window.maximize.useMutation();
   const { mutate: closeWindow } = t.window.closeWindow.useMutation();
 
-  const { mutate: startFileWatcher } =
-    t.library.startLibraryWatcher.useMutation();
+  const isNotHome = computed(() => routerState.location.pathname !== "/").get();
+  const isFullscreen = globalState$.isFullscreen.get();
+  const isUpdating = useObservable(false);
+  const sidebar = useObservable(false);
 
   const refreshLibrary = useCallback(() => {}, []);
 
@@ -75,17 +68,12 @@ export default function Layout({ children }: LayoutProps) {
   });
 
   useEffect(() => {
-    startFileWatcher();
-
-    toast.success("Testing toast component");
-
     if (globalState$.firstLaunch.get()) {
-      createSourceDir();
       navigation.navigate({
         to: "/first-launch",
       });
     }
-  }, [startFileWatcher, createSourceDir, navigation]);
+  }, [navigation]);
 
   return (
     <Flex
@@ -153,7 +141,7 @@ export default function Layout({ children }: LayoutProps) {
                   justify="center"
                   grow="1"
                   gap="2"
-                  className="p-1 rounded-lg w-2/6 bg-neutral-100/50 dark:bg-neutral-100/4 border-1 border-solid border-neutral-100 dark:border-neutral-100/5"
+                  className="p-1 rounded-md w-2/6 bg-neutral-100/50 dark:bg-neutral-100/4 border-1 border-solid border-neutral-100 dark:border-neutral-100/5"
                 >
                   <Text size="1" className="text-moonlightSlight">
                     {capitalize(
@@ -240,7 +228,6 @@ export default function Layout({ children }: LayoutProps) {
                   gap="2"
                   className="h-14 bg-white dark:bg-moonlightOverlay border-t-solid border-t-1 border-t-neutral-100 dark:border-t-moonlightSlight/10 px-3"
                 >
-                  <SettingsButton />
                   <button
                     onClick={() => refreshLibrary()}
                     className="px-2 py-2 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
@@ -271,9 +258,6 @@ export default function Layout({ children }: LayoutProps) {
           </motion.div>
         )}
       </AnimatePresence>
-      <AnimatePresence>
-        {settingsState$.visible.get() && <SettingsMenu />}
-      </AnimatePresence>
       <Toast />
     </Flex>
   );
@@ -291,111 +275,5 @@ function AddButton() {
     >
       {isLoading ? <Spinner /> : <Icon name="Plus" size={13} />}
     </button>
-  );
-}
-
-function SettingsButton() {
-  const { mutate: addSourceDir } = t.library.addSourceDirectory.useMutation({
-    onSuccess: (data) => {
-      console.log(data);
-      if (!data.complete || !data.filePaths) return;
-
-      for (const dir of data.filePaths) {
-        globalState$.sourceDirectories.push(dir);
-      }
-    },
-  });
-
-  const settingsVisible = useObservable(false);
-
-  return (
-    <>
-      <button
-        onClick={() => settingsVisible.set(!settingsVisible.get())}
-        className="p-2 rounded-md cursor-pointer dark:text-moonlightText hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
-      >
-        <Icon name="Settings" size={10} />
-      </button>
-      <AnimatePresence>
-        <Show if={settingsVisible}>
-          <motion.div
-            initial={{ opacity: 0, scale: 0, display: "none" }}
-            animate={{
-              opacity: 1,
-              scale: 1,
-              display: "flex",
-            }}
-            exit={{ opacity: 0, scale: 0, display: "none" }}
-            transition={{
-              duration: 0.2,
-            }}
-            className="w-full h-full top-0 left-0 flex items-center justify-center absolute z-20"
-          >
-            <Flex
-              direction="column"
-              gap="1"
-              className="bg-white dark:bg-moonlightOverlay p-2 border-1 w-3/6 h-3/6 rounded-md border-solid border-neutral-200 dark:border-neutral-800"
-            >
-              <Flex width="100%" align="center" justify="end">
-                <button
-                  className="p-2 rounded-md cursor-pointer text-red-500 hover:bg-red-400/10"
-                  onClick={() => settingsVisible.set(false)}
-                >
-                  <Icon name="X" size={11} />
-                </button>
-              </Flex>
-              <Flex mt="2" gap="1" direction="column">
-                <Flex gap="3" direction="column">
-                  <Flex direction="column">
-                    <Text
-                      size="2"
-                      weight="medium"
-                      className="text-moonlightOrange"
-                    >
-                      Comics Directory
-                    </Text>
-                    <Text weight="medium" size="1" color="gray">
-                      Tell Vision where to look for your library
-                    </Text>
-                  </Flex>
-                  {globalState$.sourceDirectories.get().map((value, idx) => (
-                    <Flex
-                      align="center"
-                      justify="between"
-                      key={`${value}-${idx}`}
-                      className="p-1 rounded-md flex text-black bg-neutral-400/8 dark:text-neutral-400"
-                    >
-                      <Text size="1" className="ml-2">
-                        Folder: {value}
-                      </Text>
-                      <button
-                        onClick={() =>
-                          globalState$.sourceDirectories.set([
-                            ...globalState$.sourceDirectories
-                              .get()
-                              .filter((dir) => dir !== value),
-                          ])
-                        }
-                        className="p-2 overflow-hidden space-x-2 rounded-md cursor-pointer text-red-500 hover:bg-red-400/10"
-                      >
-                        <Icon name="Trash" size={12} />
-                      </button>
-                    </Flex>
-                  ))}
-                </Flex>
-                <Button
-                  onClick={() => addSourceDir()}
-                  variant="surface"
-                  size="1"
-                  className="cursor-pointer"
-                >
-                  <Text size="1">Add Source Directory</Text>
-                </Button>
-              </Flex>
-            </Flex>
-          </motion.div>
-        </Show>
-      </AnimatePresence>
-    </>
   );
 }

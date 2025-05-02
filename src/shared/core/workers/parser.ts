@@ -15,9 +15,6 @@ if (!port) throw new Error("Parse Process Port is Missing");
 
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 
-// TODO: refactor to use batching stream implementation
-// to implement "pseudo-clustering" to improve performance
-// also look into STM's and how that could help performance
 const handleMessage = ({ action, parsePath }: ParserSchema) =>
   Effect.gen(function* () {
     const archive = yield* Archive;

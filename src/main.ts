@@ -1,8 +1,12 @@
+import sourceDirWatcherWorker from "@core/workers/source-dir?nodeWorker";
 import { createContext } from "@shared/context";
 import { appRouter } from "@shared/routers/_app";
+import { pipe } from "effect";
 import { BrowserWindow, app, screen } from "electron";
 import { createIPCHandler } from "electron-trpc/main";
+import * as fs from "node:fs";
 import path, { join } from "node:path";
+import { globalState$ } from "./web/state";
 
 app.setName("Vision");
 
@@ -66,11 +70,54 @@ const createWindow = () => {
     });
   }
 
+  pipe(
+    path.join(app.getPath("appData"), "Vision", "config.json"),
+    (_) => fs.readFileSync(_, { encoding: "utf-8" }),
+    (_) => JSON.parse(_) as GlobalState,
+    globalState$.set,
+    (_) => console.log({ loadedConfig: _.get() }),
+  );
+
   // mainWindow.webContents.openDevTools({ mode: "detach" });
 };
 
 app.whenReady().then(() => {
+  pipe(
+    globalState$.get(),
+    JSON.stringify,
+    (config) => ({
+      config,
+      path: path.join(app.getPath("appData"), "Vision", "config.json"),
+    }),
+    (_) =>
+      fs.writeFileSync(_.path, _.config, {
+        encoding: "utf-8",
+      }),
+  );
+
   createWindow();
+  sourceDirWatcherWorker({
+    name: "source-dir-watcher",
+  })
+    .on("message", (message) => {
+      console.log({ message });
+    })
+    .postMessage({
+      sourceDirectory: [path.join(app.getPath("downloads"), "comics")],
+      cacheDirectory: path.join(app.getPath("appData"), "Vision", "cache_data"),
+    } satisfies SourceDirSchema);
 });
 
-app.once("window-all-closed", () => app.quit());
+app.once("window-all-closed", () => {
+  const config = globalState$.get();
+
+  fs.writeFileSync(
+    path.join(app.getPath("appData"), "Vision", "config.json"),
+    JSON.stringify(config),
+    {
+      encoding: "utf-8",
+    },
+  );
+
+  app.quit();
+});
