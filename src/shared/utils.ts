@@ -71,3 +71,9 @@ export function debounce<A = unknown[], R = void>(
 
   return [debounceFn, tearDown];
 }
+
+// TODO construct a path from this info that can be interpreted
+// later on to locate a file
+export function makePath(issueId: string, issueTitle: string): string {
+  return "";
+}

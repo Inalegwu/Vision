@@ -15,67 +15,72 @@ if (!port) throw new Error("Parse Process Port is Missing");
 
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 
-const handleMessage = ({ action, parsePath }: ParserSchema) =>
-  Effect.gen(function* () {
-    const archive = yield* Archive;
+const handleMessage = Effect.fn(function* ({
+  action,
+  parsePath,
+}: ParserSchema) {
+  const archive = yield* Archive;
 
-    const ext = parsePath.includes("cbr")
-      ? "cbr"
-      : parsePath.includes("cbz")
-        ? "cbz"
-        : "none";
+  yield* Effect.logInfo({ action, parsePath });
 
-    parserChannel.postMessage({
-      isCompleted: false,
-      state: "SUCCESS",
-      error: null,
-    });
+  const ext = parsePath.includes("cbr")
+    ? "cbr"
+    : parsePath.includes("cbz")
+      ? "cbz"
+      : "none";
 
-    const exists = yield* Effect.tryPromise(
-      async () =>
-        await db.query.issues.findFirst({
-          where: (issue, { eq }) =>
-            eq(issue.issueTitle, parseFileNameFromPath(parsePath)),
-        }),
-    );
+  // parserChannel.postMessage({
+  //   isCompleted: false,
+  //   state: "SUCCESS",
+  //   error: null,
+  // });
 
-    if (exists) {
-      parserChannel.postMessage({
-        isCompleted: true,
-        error: "Issue Already Exists",
-        state: "ERROR",
-      });
-      return yield* Effect.logError(`${exists.issueTitle} Already Saved`);
-    }
-
-    parserChannel.postMessage({
-      isCompleted: false,
-      state: "SUCCESS",
-      error: null,
-    });
-
-    Match.value({ action, ext }).pipe(
-      Match.when({ action: "LINK", ext: "cbr" }, () =>
-        archive.rar(parsePath).pipe(Effect.runPromise),
-      ),
-      Match.when({ action: "LINK", ext: "cbz" }, () =>
-        archive.zip(parsePath).pipe(Effect.runPromise),
-      ),
-      Match.when({ action: "LINK", ext: "none" }, () => Effect.void),
-      Match.when({ action: "UNLINK" }, () => Effect.void),
-    );
-  }).pipe(
-    Effect.orDie,
-    Effect.annotateLogs({
-      worker: `parser-${parsePath}`,
-    }),
-    Effect.provide(Archive.Default),
-    Effect.runPromise,
+  const exists = yield* Effect.tryPromise(
+    async () =>
+      await db.query.issues.findFirst({
+        where: (issue, { eq }) =>
+          eq(issue.issueTitle, parseFileNameFromPath(parsePath)),
+      }),
   );
+
+  if (exists) {
+    parserChannel.postMessage({
+      isCompleted: true,
+      error: "Issue Already Exists",
+      state: "ERROR",
+    });
+    return yield* Effect.logError(`${exists.issueTitle} Already Saved`);
+  }
+
+  parserChannel.postMessage({
+    isCompleted: false,
+    state: "SUCCESS",
+    error: null,
+  });
+
+  Match.value({ action, ext }).pipe(
+    Match.when({ action: "LINK", ext: "cbr" }, () =>
+      archive.rar(parsePath).pipe(Effect.runPromise),
+    ),
+    Match.when({ action: "LINK", ext: "cbz" }, () =>
+      archive.zip(parsePath).pipe(Effect.runPromise),
+    ),
+    Match.when({ action: "LINK", ext: "none" }, () => Effect.void),
+    Match.when({ action: "UNLINK" }, () => Effect.void),
+  );
+});
 
 port.on("message", (message) =>
   parseWorkerMessageWithSchema(parserSchema, message).match(
-    (data) => handleMessage(data),
+    (data) =>
+      handleMessage(data).pipe(
+        Effect.orDie,
+        Effect.annotateLogs({
+          worker: "parser-worker",
+        }),
+        Effect.provide(Archive.Default),
+        Effect.runPromise,
+      ),
     (message) => console.error({ message }),
   ),
 );

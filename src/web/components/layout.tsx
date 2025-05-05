@@ -1,5 +1,5 @@
 import { computed } from "@legendapp/state";
-import { useObservable, useObserveEffect } from "@legendapp/state/react";
+import { Show, useObservable, useObserveEffect } from "@legendapp/state/react";
 import { Flex, Text, Tooltip } from "@radix-ui/themes";
 import t from "@shared/config";
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
@@ -36,14 +36,16 @@ export default function Layout({ children }: LayoutProps) {
 
   t.library.additions.useSubscription(undefined, {
     onData: (data) => {
-      isUpdating.set(true);
+      // isUpdating.set(true);
+      toast.loading("Adding Issue To Library");
       if (data.isCompleted && data.state === "SUCCESS") {
-        isUpdating.set(false);
+        // isUpdating.set(false);
+        toast.dismiss();
         utils.library.getLibrary.invalidate();
       }
       if (data.isCompleted && data.state === "ERROR") {
         toast.error(data.error || "Something went wrong");
-        isUpdating.set(false);
+        // isUpdating.set(false);
         console.log(data.error);
       }
     },
@@ -52,6 +54,7 @@ export default function Layout({ children }: LayoutProps) {
   t.library.deletions.useSubscription(undefined, {
     onData: (data) => {
       if (data.isDone) {
+        toast.success("Deletion Complete");
         utils.library.invalidate();
       }
     },
@@ -154,6 +157,7 @@ export default function Layout({ children }: LayoutProps) {
                   </Text>
                 </Flex>
                 <ThemeButton />
+                {/* <BrowserButton /> */}
                 <Flex grow="1" id="drag-region" p="2" />
               </Flex>
               <Flex align="center" justify="end">
@@ -275,5 +279,63 @@ function AddButton() {
     >
       {isLoading ? <Spinner /> : <Icon name="Plus" size={13} />}
     </button>
+  );
+}
+
+function BrowserButton() {
+  const overlay$ = useObservable(false);
+
+  return (
+    <>
+      <button
+        onClick={() => overlay$.set(!overlay$.get())}
+        className="p-2 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/8 dark:hover:bg-neutral-400/5"
+      >
+        <Icon name="Globe" size={13} />
+      </button>
+      <AnimatePresence>
+        <Show if={overlay$}>
+          <motion.div
+            initial={{
+              opacity: 0,
+              scale: 0,
+              display: "none",
+            }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              display: "flex",
+            }}
+            exit={{ opacity: 0, scale: 0, display: "none" }}
+            className="absolute z-20 top-0 left-0 w-full h-[100vh] bg-black/10 flex items-center justify-center"
+          >
+            <Flex
+              direction="column"
+              className="dark:bg-moonlightFocusLow w-4/6 h-4/6 border-1 border-solid border-neutral-100 rounded-md dark:border-neutral-400/10"
+            >
+              <Flex align="center" justify="between" className="py-1 px-1">
+                <Flex
+                  align="center"
+                  justify="center"
+                  grow="1"
+                  className="p-1.4 rounded-md w-4/6 bg-neutral-100/50 dark:bg-neutral-100/4 border-1 border-solid border-neutral-100 dark:border-neutral-100/5"
+                >
+                  <Text size="2" className="text-moonlightSlight">
+                    search bar
+                  </Text>
+                </Flex>
+                <button
+                  onClick={() => overlay$.set(false)}
+                  className="p-2.7 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/8 dark:hover:bg-neutral-400/5"
+                >
+                  <Icon name="X" size={13} />
+                </button>
+              </Flex>
+              webview
+            </Flex>
+          </motion.div>
+        </Show>
+      </AnimatePresence>
+    </>
   );
 }

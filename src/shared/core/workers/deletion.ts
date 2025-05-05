@@ -4,8 +4,9 @@ import db from "@shared/storage";
 import { parseWorkerMessageWithSchema } from "@src/shared/utils";
 import { BroadcastChannel } from "broadcast-channel";
 import { eq } from "drizzle-orm";
-import { Data, Effect } from "effect";
+import { Effect } from "effect";
 import { parentPort } from "node:worker_threads";
+import { DeletionError } from "../errors";
 
 const port = parentPort;
 
@@ -14,10 +15,6 @@ const deletionChannel = new BroadcastChannel<DeletionChannel>(
 );
 
 if (!port) throw new Error("Illegal State");
-
-class DeletionError extends Data.TaggedError("deletion-error")<{
-  cause: unknown;
-}> {}
 
 const deleteIssue = ({ issueId }: DeletionSchema) =>
   Effect.tryPromise({
@@ -28,7 +25,7 @@ const deleteIssue = ({ issueId }: DeletionSchema) =>
       });
       return;
     },
-    catch: (cause: unknown) => new DeletionError({ cause }),
+    catch: (cause) => new DeletionError({ cause }),
   }).pipe(
     Effect.orDie,
     Effect.withLogSpan("deletion.duration"),

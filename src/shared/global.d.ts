@@ -91,6 +91,12 @@ declare global {
     theme: "dark" | "light";
   };
 
+  export type Task = Readonly<{
+    path: string;
+    fileName: string;
+    ext: "cbr" | "cbz" | "none";
+  }>;
+
   export type ParserSchema = z.infer<typeof parserSchema>;
   export type WorkerResponse = z.infer<typeof workerResponseSchema>;
   export type DeletionSchema = z.infer<typeof deletionWorkerSchema>;

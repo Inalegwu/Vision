@@ -8,11 +8,12 @@ import {
 } from "@shared/utils";
 import Zip from "adm-zip";
 import { BroadcastChannel } from "broadcast-channel";
-import { Array, Data, Effect, Request, RequestResolver, Schema } from "effect";
+import { Array, Effect, Request, RequestResolver, Schema } from "effect";
 import { XMLParser } from "fast-xml-parser";
 import { createExtractorFromData } from "node-unrar-js";
 import { v4 } from "uuid";
 import { Fs } from "../fs";
+import { ArchiveError } from "./errors";
 import { MetadataSchema } from "./validations";
 
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
@@ -22,10 +23,6 @@ type Page = Readonly<{
   data: ArrayBufferLike | undefined;
   isDir: boolean;
 }>;
-
-class ArchiveError extends Data.TaggedError("ArchiveError")<{
-  cause: unknown;
-}> {}
 
 class SavePageRequest extends Request.TaggedClass("SavePage")<
   {
@@ -41,6 +38,7 @@ const SavePageResolver = (newIssue: typeof issues.$inferSelect) =>
       entries.flatMap((entry) => entry),
       (file, index) =>
         Effect.gen(function* () {
+          console.log({ file });
           if (file.isDir) {
             return yield* Effect.log("found and skipped directory");
           }
@@ -75,6 +73,7 @@ const savePage = (page: Page, newIssue: typeof issues.$inferSelect) =>
 export class Archive extends Effect.Service<Archive>()("Archive", {
   effect: Effect.gen(function* () {
     const rar = Effect.fn(function* (path: string) {
+      yield* Effect.logInfo({ path });
       parserChannel.postMessage({
         isCompleted: false,
         state: "SUCCESS",
@@ -113,6 +112,8 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
 
       const newIssue = yield* saveIssue(issueTitle, thumbnailUrl);
 
+      yield* Effect.logInfo({ newIssue });
+
       yield* parseXML(
         files.find((file) => file.name.includes("xml"))?.data,
         newIssue.id,
@@ -132,6 +133,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
     });
 
     const zip = Effect.fn(function* (path: string) {
+      yield* Effect.logInfo({ path });
       parserChannel.postMessage({
         isCompleted: false,
         state: "SUCCESS",
@@ -154,6 +156,8 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
       });
 
       const newIssue = yield* saveIssue(issueTitle, thumbnailUrl);
+
+      yield* Effect.logInfo({ newIssue });
 
       yield* parseXML(
         files.find((file) => file.name.includes("xml"))?.data,

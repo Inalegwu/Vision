@@ -23,6 +23,7 @@
     "app-release": "pnpm exec np --no-publish --no-cleanup --no-tests --no-release-draft"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.3.0",
     "@electron/rebuild": "^3.4.1",
     "@legendapp/state": "^2.1.4",
     "@radix-ui/themes": "^2.0.3",
@@ -58,6 +59,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.7.3",
+    "@effect/language-service": "^0.9.1",
     "@tanstack/router-devtools": "^1.45.2",
     "@tanstack/router-plugin": "^1.45.8",
     "@types/adm-zip": "^0.5.5",

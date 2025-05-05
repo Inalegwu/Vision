@@ -11,42 +11,24 @@ const port = parentPort;
 
 if (!port) throw new Error("Source Directory Watcher Process Port is Missing");
 
-type Task = {
-  path: string;
-  fileName: string;
-  ext: "cbr" | "cbz" | "none";
-};
-
 const execute = Effect.fn(function* (chunk: Chunk.Chunk<Task>) {
-  yield* chunk.pipe(Chunk.toReadonlyArray, Effect.forEach(Effect.log));
+  const tasks = Chunk.toReadonlyArray(chunk);
+  yield* Effect.forEach(tasks, Effect.logInfo);
 });
 
 const takeBatch = (messageBox: Queue.Queue<Task>) =>
-  pipe(
-    messageBox.takeBetween(2, 5),
-    // !IMPORTANT consider the necessity of timing out
-    // Effect.timeout(Duration.seconds(10)),
-    // Effect.retry({
-    //   schedule: Schedule.exponential(Duration.seconds(2), 3),
-    // }),
-    Effect.withLogSpan("take-batch"),
-  );
+  pipe(messageBox.takeBetween(2, 5), Effect.withLogSpan("take-batch"));
 
 const handleBatch = (stream: Stream.Stream<Task>) =>
-  pipe(
-    stream,
-    Stream.runCollect,
-    Effect.flatMap(execute),
-    Effect.withLogSpan("execute-batch"),
-  );
+  pipe(stream, Stream.runCollect, Effect.flatMap(execute));
 
-const batch = (messageBox: Queue.Queue<Task>) =>
+const batch = (mailbox: Queue.Queue<Task>) =>
   pipe(
-    takeBatch(messageBox),
+    takeBatch(mailbox),
     Stream.repeatEffect,
     Stream.filter((chunk) => chunk.length > 0),
     Stream.map(Stream.fromChunk),
-    Stream.tap(handleBatch),
+    Stream.map(handleBatch),
     Stream.runDrain,
   );
 

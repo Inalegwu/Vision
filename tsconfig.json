@@ -16,12 +16,16 @@
       "@assets/*": ["src/assets/*"],
       "@pages/*": ["src/web/routes/*"],
       "@core/*": ["src/shared/core/*"]
-    }
+    },
+    "plugins": [
+      {
+        "name": "@effect/language-service",
+        "diagnostics":true,
+        "quickinfo":true,
+        "completions":true,
+        "refactors":true
+      }
+    ]
   },
-  "include": ["src", "src/web/kuma.config.ts"],
-  "ts-node": {
-    "compilerOptions": {
-      "module": "CommonJS"
-    }
-  }
+  "include": ["src"],
 }

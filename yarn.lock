@@ -363,6 +363,16 @@
   resolved "https://registry.yarnpkg.com/@drizzle-team/brocli/-/brocli-0.8.2.tgz#a397253fa1094b16f761b776f39dbdd119838ef7"
   integrity sha512-zTrFENsqGvOkBOuHDC1pXCkDXNd2UhP4lI3gYGhQ1R1SPeAAfqzPsV1dcpMy4uNU6kB5VpU5NGhvwxVNETR02A==
 
+"@effect/language-service@^0.9.1":
+  version "0.9.1"
+  resolved "https://registry.yarnpkg.com/@effect/language-service/-/language-service-0.9.1.tgz#bb5794409f591caacfa3b0b59daa5ea279111307"
+  integrity sha512-Us1D4MxVSKXnQEd3ogSUb4XPos2iMRG9ocx1gNk7ILQCu9+pSPRyuRRq9bVwvywdS8KRKFNw/BwN4MnQx47k2w==
+
+"@electric-sql/pglite@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@electric-sql/pglite/-/pglite-0.3.0.tgz#485d3520cdd5b07b329e224d8559f26f4345c28e"
+  integrity sha512-ou1PA24kStSNpQVGdzDg1FGRzO7AQ3O6OX5FryupMdHkSfSswG2ZVXjCzzJKK88KLk+Q4QinKjZIUtmMeec5rg==
+
 "@electron/asar@^3.2.1":
   version "3.4.1"
   resolved "https://registry.yarnpkg.com/@electron/asar/-/asar-3.4.1.tgz#4e9196a4b54fba18c56cd8d5cac67c5bdc588065"

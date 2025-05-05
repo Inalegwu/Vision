@@ -82,6 +82,7 @@ const createWindow = () => {
 };
 
 app.whenReady().then(() => {
+  // load saved config
   pipe(
     globalState$.get(),
     JSON.stringify,

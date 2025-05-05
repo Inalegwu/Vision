@@ -1,4 +1,4 @@
-import { Console, Data, Effect } from "effect";
+import { Data, Effect } from "effect";
 import { build } from "electron-builder";
 
 class BuildError extends Data.TaggedError("BuildError")<{
@@ -43,19 +43,18 @@ Effect.tryPromise({
           runAfterFinish: true,
         },
       },
-    }).then((result) => {
-      Console.log(result);
     }),
   catch: (error) => new BuildError({ error }),
 }).pipe(
+  Effect.andThen(Effect.logInfo),
   Effect.catchTags({
-    BuildError: (error) =>
+    BuildError: ({ error }) =>
       Effect.logFatal(
         // @ts-ignore: it's correctly typed
-        `Build failed with Exit Code ${error.error.exitCode} ERROR CODE ==> ${error.error.code}`,
+        `Build failed with Exit Code ${error.exitCode} ERROR CODE ==> ${error.code}`,
       ),
   }),
-  Effect.withLogSpan("build"),
+  Effect.withLogSpan("app.build"),
   Effect.runPromise,
 );
 

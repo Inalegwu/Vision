@@ -1,5 +1,5 @@
 import { observable } from "@legendapp/state";
-import { Flex } from "@radix-ui/themes";
+import { Flex, Text } from "@radix-ui/themes";
 import { AnimatePresence, motion } from "framer-motion";
 import React from "react";
 import { useTimeout } from "../hooks";
@@ -28,7 +28,7 @@ export const toastContext = React.createContext<ToastContext | undefined>(
 );
 
 type ProviderProps = {
-  children: React.JSX.Element;
+  children: React.JSX.Element | React.JSX.Element[];
   context: ToastContext;
 };
 
@@ -39,24 +39,37 @@ export function ToastProvider({ children, context }: ProviderProps) {
 }
 
 export const toast = {
-  success: (message: string) =>
+  success: (message: string) => {
     toastState$.set({
       show: true,
       mode: "success",
       message,
-    }),
-  error: (message: string) =>
+    });
+  },
+  error: (message: string) => {
     toastState$.set({
       show: true,
       mode: "error",
       message,
-    }),
-  loading: (message: string) =>
+    });
+  },
+  loading: (message: string) => {
     toastState$.set({
       show: true,
       mode: "loading",
       message,
-    }),
+    });
+  },
+  info: (message: string) => {
+    toastState$.set({
+      show: true,
+      mode: "info",
+      message,
+    });
+  },
+  dismiss: () => {
+    toastState$.show.set(false);
+  },
 };
 
 const Toast = React.memo(() => {
@@ -64,19 +77,32 @@ const Toast = React.memo(() => {
 
   const { mode, message, show } = toastState$.get();
 
+  const position = context?.position || "bottom-right";
+
+  const _posClass = {
+    "bottom-right": "bottom-3 right-3",
+    "bottom-center": "bottom-3 left-[44%]",
+    "bottom-left": "bottom-3 left-3 ",
+  };
+
+  const _iconClass = {
+    error: "text-red-500",
+    success: "text-green-600",
+    loading: "text-gray-500",
+    info: "text-yellow-500",
+    default: "text-indigo-500",
+  };
+
   const className = {
-    error:
-      "border-1 border-solid border-moonlightSlight/40 rounded-md rounded-md p-2",
-    success: "border-1 border-solid border-green-500 rounded-md rounded-md p-2",
-    loading:
-      "border-1 border-solid border-moonlightSlight/40 rounded-md rounded-md p-2",
-    info: "border-1 border-solid border-moonlightSlight/40 rounded-md rounded-md p-2",
-    default:
-      "border-1 border-solid border-moonlightSlight/40 rounded-md rounded-md p-2",
+    error: " border-red-400/30 bg-red-400/4 ",
+    success: " border-green-400/30 bg-green-400/4 ",
+    loading: "border-solid border-moonlightSlight/40",
+    info: " border-yellow-400/30 bg-yellow-400/4",
+    default: "border-gray-400/30 bg-gray-400/4",
   };
 
   useTimeout(() => {
-    if (toastState$.get()) {
+    if (toastState$.get() && mode !== "loading") {
       toastState$.show.set(false);
     }
   }, context?.duration || 3000);
@@ -84,32 +110,95 @@ const Toast = React.memo(() => {
   return (
     <AnimatePresence>
       {show && (
-        <motion.div>
+        <motion.div
+          onClick={() => toastState$.show.set(false)}
+          initial={{
+            transform: "translateY(50px)",
+          }}
+          animate={{
+            transform: "translateY(0px)",
+          }}
+          exit={{
+            transform: "translateY(50px)",
+          }}
+          className="w-full absolute z-10 bottom-0 left-0"
+        >
           <Flex
             align="center"
             justify="start"
-            gap="3"
-            className={`absolute z-20 ${className[mode]}`}
+            className={`absolute z-20 cursor-pointer ${className[mode]} ${_posClass[position]} px-3 py-2 rounded-md border-1 border-solid backdrop-blur-2xl`}
+            gap="2"
           >
-            <Icon
-              size={13}
-              name={
+            {mode === "loading" ? (
+              <Spinner size={13} />
+            ) : (
+              <Icon
+                size={16}
+                name={
+                  mode === "success"
+                    ? "Check"
+                    : mode === "error"
+                      ? "X"
+                      : mode === "info"
+                        ? "Info"
+                        : "Waves"
+                }
+                className={`${_iconClass[mode]}`}
+              />
+            )}
+            <Text
+              size="2"
+              color={
                 mode === "success"
-                  ? "Check"
+                  ? "green"
                   : mode === "error"
-                    ? "Cross"
+                    ? "tomato"
                     : mode === "info"
-                      ? "Info"
-                      : "Aperture"
+                      ? "yellow"
+                      : mode === "loading"
+                        ? "gray"
+                        : mode === "default"
+                          ? "iris"
+                          : "gray"
               }
-            />
-            {mode === "loading" && <Spinner size={11} />}
-            {message}
+            >
+              {message}
+            </Text>
           </Flex>
         </motion.div>
       )}
     </AnimatePresence>
   );
+
+  // return (
+  //   <AnimatePresence>
+  //     {show && (
+  //       <motion.div layout initial={{}}>
+  //         <Flex
+  //           align="center"
+  //           justify="start"
+  //           gap="3"
+  //           className={`absolute bg-transparent backdrop-blur-2xl z-20 ${className[mode]}`}
+  //         >
+  //           <Icon
+  //             size={13}
+  //             name={
+  //               mode === "success"
+  //                 ? "Check"
+  //                 : mode === "error"
+  //                   ? "Cross"
+  //                   : mode === "info"
+  //                     ? "Info"
+  //                     : "Aperture"
+  //             }
+  //           />
+  //           {mode === "loading" && <Spinner size={11} />}
+  //           {message}
+  //         </Flex>
+  //       </motion.div>
+  //     )}
+  //   </AnimatePresence>
+  // );
 });
 
 export default Toast;
