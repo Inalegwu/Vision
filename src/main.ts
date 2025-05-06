@@ -5,10 +5,14 @@ import { pipe } from "effect";
 import { BrowserWindow, app, screen } from "electron";
 import { createIPCHandler } from "electron-trpc/main";
 import * as fs from "node:fs";
-import path, { join } from "node:path";
+import path from "node:path";
 import { globalState$ } from "./web/state";
 
 app.setName("Vision");
+
+process.env = {
+  DB_URL: path.join(app.getPath("appData"), "Vision", "vision.db"),
+};
 
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
@@ -34,7 +38,7 @@ const createWindow = () => {
     minHeight: height - 25,
     webPreferences: {
       sandbox: false,
-      preload: join(__dirname, "../preload/preload.js"),
+      preload: path.join(__dirname, "../preload/preload.js"),
     },
   });
 
@@ -51,7 +55,7 @@ const createWindow = () => {
   if (import.meta.env.DEV) {
     mainWindow.loadURL("http://localhost:5173");
   } else {
-    mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
+    mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
   }
 
   if (!instanceLock) {
@@ -112,12 +116,13 @@ app.whenReady().then(() => {
 app.once("window-all-closed", () => {
   const config = globalState$.get();
 
-  fs.writeFileSync(
+  pipe(
     path.join(app.getPath("appData"), "Vision", "config.json"),
-    JSON.stringify(config),
-    {
-      encoding: "utf-8",
-    },
+    (path) => ({
+      path,
+      config: JSON.stringify(config),
+    }),
+    (_) => fs.writeFileSync(_.path, _.config, { encoding: "utf-8" }),
   );
 
   app.quit();

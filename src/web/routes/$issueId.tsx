@@ -2,7 +2,7 @@ import { useObservable } from "@legendapp/state/react";
 import { Flex } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
-import { AnimatePresence, motion, useMotionValue } from "framer-motion";
+import { AnimatePresence, motion, useMotionValue } from "motion/react";
 import { Bookmark, ChevronLeft, ChevronRight, Expand } from "lucide-react";
 import { memo, useEffect, useMemo, useState } from "react";
 import { Spinner } from "../components";

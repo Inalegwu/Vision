@@ -1,6 +1,6 @@
 import { observable } from "@legendapp/state";
 import { Flex, Text } from "@radix-ui/themes";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import React from "react";
 import { useTimeout } from "../hooks";
 import Icon from "./icon";

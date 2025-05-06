@@ -4,8 +4,8 @@ import { Flex, Text, Tooltip } from "@radix-ui/themes";
 import t from "@shared/config";
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { capitalize } from "effect/String";
-import { AnimatePresence, motion } from "framer-motion";
 import { Home, Sidebar } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import type React from "react";
 import { useCallback, useEffect } from "react";
 import { globalState$ } from "../state";
@@ -32,7 +32,7 @@ export default function Layout({ children }: LayoutProps) {
   const isUpdating = useObservable(false);
   const sidebar = useObservable(false);
 
-  const refreshLibrary = useCallback(() => {}, []);
+  const refreshLibrary = useCallback(() => utils.library.invalidate(), [utils]);
 
   t.library.additions.useSubscription(undefined, {
     onData: (data) => {
@@ -54,7 +54,6 @@ export default function Layout({ children }: LayoutProps) {
   t.library.deletions.useSubscription(undefined, {
     onData: (data) => {
       if (data.isDone) {
-        toast.success("Deletion Complete");
         utils.library.invalidate();
       }
     },
@@ -95,6 +94,9 @@ export default function Layout({ children }: LayoutProps) {
             }}
             exit={{
               transform: "translateY(-50px)",
+            }}
+            transition={{
+              ease: "easeInOut",
             }}
             className="w-full absolute top-0 shadow-sm shadow-black/5 dark:shadow-none left-0 z-10"
           >

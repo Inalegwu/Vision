@@ -8,7 +8,7 @@ import { app } from "electron";
 import path from "node:path";
 import * as schema from "./schema";
 
-const client = new Database("vision.db");
+const client = new Database(process.env.DB_URL!);
 const db = drizzle(client, { schema });
 
 const pg = new PGlite(path.join(app.getPath("appData"), "Vision", "data_dir"), {

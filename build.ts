@@ -44,7 +44,7 @@ Effect.tryPromise({
           runAfterFinish: true,
         },
       },
-    }),
+    }).then(console.log),
   catch: (error) => new BuildError({ error }),
 }).pipe(
   Effect.andThen(Effect.logInfo),
@@ -52,7 +52,7 @@ Effect.tryPromise({
     BuildError: ({ error }) =>
       Effect.logFatal(
         // @ts-ignore: it's correctly typed
-        `Build failed with Exit Code ${error.exitCode} ERROR CODE ==> ${error.code}`,
+        `Build failed with Exit Code ${error.exitCode} ERROR CODE ==> ${error.code}...${error}`,
       ),
   }),
   Effect.withLogSpan("app.build"),

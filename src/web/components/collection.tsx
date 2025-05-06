@@ -3,7 +3,7 @@ import { ContextMenu, Flex, Text, Tooltip } from "@radix-ui/themes";
 import t from "@shared/config";
 import { useRouter } from "@tanstack/react-router";
 import * as A from "effect/Array";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import React from "react";
 
 type Props = {

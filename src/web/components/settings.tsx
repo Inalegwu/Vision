@@ -1,5 +1,5 @@
 import { Flex, Text } from "@radix-ui/themes";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Folders, Palette, X } from "lucide-react";
 import { settingsState$ } from "../state";
 

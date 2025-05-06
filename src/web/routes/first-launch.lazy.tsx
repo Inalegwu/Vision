@@ -1,7 +1,7 @@
 import { useObservable } from "@legendapp/state/react";
 import { Flex, Heading, Kbd, Text } from "@radix-ui/themes";
 import { Link, createLazyFileRoute } from "@tanstack/react-router";
-import { AnimatePresence, motion, useMotionValue } from "framer-motion";
+import { AnimatePresence, motion, useMotionValue } from "motion/react";
 import { memo, useEffect, useState } from "react";
 import { Icon } from "../components";
 import { useDebounce, useKeyPress, useTimeout } from "../hooks";

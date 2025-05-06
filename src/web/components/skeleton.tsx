@@ -1,4 +1,4 @@
-import { type MotionStyle, motion } from "framer-motion";
+import { type MotionStyle, motion } from "motion/react";
 
 type SkeletonProps = {
   style?: MotionStyle;

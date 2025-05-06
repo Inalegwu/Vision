@@ -11,7 +11,7 @@ import {
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "motion/react";
 import React, { memo, Suspense, useRef } from "react";
 import { useTimeout } from "../hooks";
 import { globalState$ } from "../state";
