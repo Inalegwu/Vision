@@ -11,15 +11,11 @@ import * as schema from "./schema";
 const client = new Database("vision.db");
 const db = drizzle(client, { schema });
 
-export const pg = Effect.tryPromise(
-  async () =>
-    await PGlite.create({
-      dataDir: path.join(app.getPath("appData"), "Vision", "data"),
-      extensions: {
-        live,
-      },
-    }),
-).pipe(Effect.runPromise);
+const pg = new PGlite(path.join(app.getPath("appData"), "Vision", "data_dir"), {
+  extensions: {
+    live,
+  },
+});
 
 Effect.try(() => migrate(db, { migrationsFolder: "drizzle" })).pipe(
   Effect.catchTag("UnknownException", (e) => Effect.logFatal({ e })),

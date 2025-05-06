@@ -22,6 +22,7 @@ Effect.tryPromise({
           hardenedRuntime: true,
         },
         win: {
+          icon: "build/win.png",
           target: [
             {
               target: "msi",
