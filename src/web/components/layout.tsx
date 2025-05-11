@@ -36,16 +36,15 @@ export default function Layout({ children }: LayoutProps) {
 
   t.library.additions.useSubscription(undefined, {
     onData: (data) => {
-      // isUpdating.set(true);
       toast.loading("Adding Issue To Library");
+
       if (data.isCompleted && data.state === "SUCCESS") {
-        // isUpdating.set(false);
         toast.dismiss();
         utils.library.getLibrary.invalidate();
       }
+
       if (data.isCompleted && data.state === "ERROR") {
         toast.error(data.error || "Something went wrong");
-        // isUpdating.set(false);
         console.log(data.error);
       }
     },

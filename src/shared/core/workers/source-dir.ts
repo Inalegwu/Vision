@@ -65,6 +65,8 @@ port.on("message", (message) =>
   parseWorkerMessageWithSchema(sourceDirSchema, message).match(
     (data) =>
       handleMessage(data).pipe(
+        Effect.orDie,
+        Effect.withLogSpan("source-dir.duration"),
         Effect.annotateLogs({
           worker: "source-directory",
         }),

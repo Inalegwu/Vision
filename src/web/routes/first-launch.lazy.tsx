@@ -156,11 +156,6 @@ function Component() {
         {welcomeMessages.map((m, idx) => (
           <div
             onClick={() => setItemIndex(idx)}
-            // className={`w-4 h-4 rounded-full ${
-            //   itemIndex === idx
-            //     ? "bg-moonlightOrange"
-            //     : "bg-neutral-200 dark:bg-neutral-800"
-            // }`}
             className={`px-1 py-1 flex items-center justify-center rounded-full ${
               itemIndex === idx ? "bg-moonlightOrange" : "bg-moonlightOverlay/5"
             } cursor-pointer`}

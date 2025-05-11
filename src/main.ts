@@ -12,6 +12,7 @@ app.setName("Vision");
 
 process.env = {
   DB_URL: path.join(app.getPath("appData"), "Vision", "vision.db"),
+  DATA_DIR: path.join(app.getPath("appData"), "Vision", "vision_data"),
 };
 
 if (process.defaultApp) {
@@ -79,14 +80,12 @@ const createWindow = () => {
     (_) => fs.readFileSync(_, { encoding: "utf-8" }),
     (_) => JSON.parse(_) as GlobalState,
     globalState$.set,
-    (_) => console.log({ loadedConfig: _.get() }),
   );
 
   // mainWindow.webContents.openDevTools({ mode: "detach" });
 };
 
 app.whenReady().then(() => {
-  // load saved config
   pipe(
     globalState$.get(),
     JSON.stringify,
@@ -101,6 +100,7 @@ app.whenReady().then(() => {
   );
 
   createWindow();
+
   sourceDirWatcherWorker({
     name: "source-dir-watcher",
   })

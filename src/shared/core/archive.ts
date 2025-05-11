@@ -38,7 +38,6 @@ const SavePageResolver = (newIssue: typeof issues.$inferSelect) =>
       entries.flatMap((entry) => entry),
       (file, index) =>
         Effect.gen(function* () {
-          console.log({ file });
           if (file.isDir) {
             return yield* Effect.log("found and skipped directory");
           }

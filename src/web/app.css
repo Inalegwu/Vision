@@ -17,7 +17,7 @@
 }
 
 .radix-themes{
-    --default-font-family:Font;
+  --default-font-family:Font;
   --heading-font-family: Font;
   --code-font-family:Font;
   --strong-font-family:Font;
