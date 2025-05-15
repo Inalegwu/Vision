@@ -12,7 +12,6 @@ app.setName("Vision");
 
 process.env = {
   DB_URL: path.join(app.getPath("appData"), "Vision", "vision.db"),
-  DATA_DIR: path.join(app.getPath("appData"), "Vision", "vision_data"),
 };
 
 if (process.defaultApp) {
@@ -63,6 +62,7 @@ const createWindow = () => {
     app.quit();
   } else {
     app.on("second-instance", (_, command, __) => {
+      _.preventDefault();
       if (mainWindow) {
         if (mainWindow.isMaximized()) mainWindow.restore();
         mainWindow.focus();

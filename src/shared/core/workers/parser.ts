@@ -41,7 +41,7 @@ const handleMessage = Effect.fn(function* ({
         where: (issue, { eq }) =>
           eq(issue.issueTitle, parseFileNameFromPath(parsePath)),
       }),
-  );
+  ).pipe(Effect.orDie);
 
   if (exists) {
     parserChannel.postMessage({

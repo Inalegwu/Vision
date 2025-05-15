@@ -14,6 +14,10 @@ Effect.tryPromise({
         artifactName: "${productName}-${version}_${platform}_${arch}.${ext}",
         buildDependenciesFromSource: true,
         files: ["out/**/*", "drizzle/**/*"],
+        extraFiles: {
+          from: "drizzle/",
+          to: "drizzle/",
+        },
         directories: {
           output: "release/${version}",
         },

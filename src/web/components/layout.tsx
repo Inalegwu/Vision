@@ -41,12 +41,16 @@ export default function Layout({ children }: LayoutProps) {
       if (data.isCompleted && data.state === "SUCCESS") {
         toast.dismiss();
         utils.library.getLibrary.invalidate();
+        return;
       }
 
       if (data.isCompleted && data.state === "ERROR") {
         toast.error(data.error || "Something went wrong");
         console.log(data.error);
+        return;
       }
+
+      return;
     },
   });
 
@@ -239,6 +243,12 @@ export default function Layout({ children }: LayoutProps) {
                   >
                     <Icon name="RefreshCw" size={12} />
                   </button>
+                  <Link
+                    className="px-2 py-0.5 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+                    to="/settings"
+                  >
+                    <Icon name="Settings" size={12} />
+                  </Link>
                 </Flex>
               </motion.div>
             )}

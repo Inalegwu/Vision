@@ -23,12 +23,6 @@ export const fullScreenState$ = observable<{ isFullscreen: boolean }>({
   isFullscreen: false,
 });
 
-export const settingsState$ = observable<{
-  visible: boolean;
-}>({
-  visible: false,
-});
-
 export const readingState$ = observable<ReadingState>({
   doneReading: new Map<string, DoneReading>(),
   currentlyReading: new Map<string, CurrentlyReading>(),

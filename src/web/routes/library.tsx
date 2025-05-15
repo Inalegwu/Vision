@@ -3,6 +3,7 @@ import { Switch, useObservable } from "@legendapp/state/react";
 import {
   Button,
   Flex,
+  Heading,
   Popover,
   Text,
   TextField,
@@ -28,12 +29,13 @@ function Component() {
 
   const view = globalState$.libraryView.get();
 
-  // TODO:look into infinite queries
   const { data } = t.library.getLibrary.useQuery(undefined, {
     enabled: isEnabled.get(),
   });
 
-  useTimeout(() => isEnabled.set(true), 3_000);
+  useTimeout(() => isEnabled.set(true), 500);
+
+  console.log({ data });
 
   return (
     <Flex direction="column" className="w-full h-screen pt-8">
@@ -110,6 +112,24 @@ const RenderIssues = memo(({ issues }: { issues: Issue[] }) => {
     getScrollElement: () => parentView.current,
   });
 
+  if (issues.length === 0) {
+    return (
+      <Flex
+        direction="column"
+        className="w-full h-full"
+        align="center"
+        justify="center"
+      >
+        <Heading className="text-moonlightOrange" size="8">
+          No Issues
+        </Heading>
+        <Text size="3" className="text-moonlightSlight">
+          add some issues to see them in your library
+        </Text>
+      </Flex>
+    );
+  }
+
   return (
     <Flex
       ref={parentView}
@@ -165,6 +185,24 @@ const RenderCollections = memo(
       estimateSize: () => 35,
       getScrollElement: () => parentView.current,
     });
+
+    if (collections.length === 0) {
+      return (
+        <Flex
+          direction="column"
+          className="w-full h-full"
+          align="center"
+          justify="center"
+        >
+          <Heading className="text-moonlightOrange" size="8">
+            No Collections
+          </Heading>
+          <Text size="3" className="text-moonlightSlight">
+            create some collections to organize your library
+          </Text>
+        </Flex>
+      );
+    }
 
     return (
       <Flex

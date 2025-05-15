@@ -6,6 +6,7 @@ import chokidar from "chokidar";
 import { Chunk, Effect, Queue, Stream, pipe } from "effect";
 import { parentPort } from "node:worker_threads";
 import { sourceDirSchema } from "../validations";
+import { SharedMemory } from "./shared-memory";
 
 const port = parentPort;
 
@@ -16,15 +17,15 @@ const execute = Effect.fn(function* (chunk: Chunk.Chunk<Task>) {
   yield* Effect.forEach(tasks, Effect.logInfo);
 });
 
-const takeBatch = (messageBox: Queue.Queue<Task>) =>
-  pipe(messageBox.takeBetween(2, 5), Effect.withLogSpan("take-batch"));
+const takeBatch = (queue: Queue.Queue<Task>) =>
+  pipe(queue.takeBetween(2, 5), Effect.withLogSpan("take-batch"));
 
 const handleBatch = (stream: Stream.Stream<Task>) =>
   pipe(stream, Stream.runCollect, Effect.flatMap(execute));
 
-const batch = (mailbox: Queue.Queue<Task>) =>
+const batch = (queue: Queue.Queue<Task>) =>
   pipe(
-    takeBatch(mailbox),
+    takeBatch(queue),
     Stream.repeatEffect,
     Stream.filter((chunk) => chunk.length > 0),
     Stream.map(Stream.fromChunk),
@@ -33,7 +34,12 @@ const batch = (mailbox: Queue.Queue<Task>) =>
   );
 
 const handleMessage = Effect.fn(function* (message: SourceDirSchema) {
+  const _shared = yield* SharedMemory;
+
   yield* Effect.logInfo(message);
+
+  _shared.saveToSharedMemory("cacheDir", message.cacheDirectory);
+  _shared.saveToSharedMemory("sourceDir", message.sourceDirectory);
 
   const queue = yield* Queue.unbounded<Task>();
 
@@ -65,6 +71,7 @@ port.on("message", (message) =>
   parseWorkerMessageWithSchema(sourceDirSchema, message).match(
     (data) =>
       handleMessage(data).pipe(
+        Effect.provide(SharedMemory.Default),
         Effect.orDie,
         Effect.withLogSpan("source-dir.duration"),
         Effect.annotateLogs({

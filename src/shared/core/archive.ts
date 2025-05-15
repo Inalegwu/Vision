@@ -8,13 +8,22 @@ import {
 } from "@shared/utils";
 import Zip from "adm-zip";
 import { BroadcastChannel } from "broadcast-channel";
-import { Array, Effect, Request, RequestResolver, Schema } from "effect";
+import {
+  Array,
+  Effect,
+  Option,
+  Request,
+  RequestResolver,
+  Schema,
+  pipe,
+} from "effect";
 import { XMLParser } from "fast-xml-parser";
 import { createExtractorFromData } from "node-unrar-js";
 import { v4 } from "uuid";
 import { Fs } from "../fs";
 import { ArchiveError } from "./errors";
 import { MetadataSchema } from "./validations";
+import { SharedMemory } from "./workers/shared-memory";
 
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 
@@ -38,9 +47,12 @@ const SavePageResolver = (newIssue: typeof issues.$inferSelect) =>
       entries.flatMap((entry) => entry),
       (file, index) =>
         Effect.gen(function* () {
+          yield* Effect.logInfo(file);
           if (file.isDir) {
-            return yield* Effect.log("found and skipped directory");
+            return yield* Effect.void;
           }
+
+          // TODO: write log
 
           const pageContent = yield* Effect.sync(() =>
             convertToImageUrl(file.data!),
@@ -62,6 +74,8 @@ const SavePageResolver = (newIssue: typeof issues.$inferSelect) =>
             isCompleted: false,
             state: "SUCCESS",
           });
+
+          yield* Effect.logInfo(`Saved ${newIssue.issueTitle} to Storage`);
         }).pipe(Effect.withLogSpan("save-page-request"), Effect.orDie),
     ),
   );
@@ -72,7 +86,6 @@ const savePage = (page: Page, newIssue: typeof issues.$inferSelect) =>
 export class Archive extends Effect.Service<Archive>()("Archive", {
   effect: Effect.gen(function* () {
     const rar = Effect.fn(function* (path: string) {
-      yield* Effect.logInfo({ path });
       parserChannel.postMessage({
         isCompleted: false,
         state: "SUCCESS",
@@ -88,6 +101,8 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
           state: "ERROR",
         });
       }
+
+      yield* Effect.logInfo(`File Length ${files.length}`);
 
       parserChannel.postMessage({
         isCompleted: false,
@@ -111,7 +126,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
 
       const newIssue = yield* saveIssue(issueTitle, thumbnailUrl);
 
-      yield* Effect.logInfo({ newIssue });
+      yield* Effect.logInfo(newIssue);
 
       yield* parseXML(
         files.find((file) => file.name.includes("xml"))?.data,
@@ -127,12 +142,9 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
         error: null,
         state: "SUCCESS",
       });
-
-      yield* Effect.logInfo(`Saved ${issueTitle} File Successfully`);
     });
 
     const zip = Effect.fn(function* (path: string) {
-      yield* Effect.logInfo({ path });
       parserChannel.postMessage({
         isCompleted: false,
         state: "SUCCESS",
@@ -156,8 +168,6 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
 
       const newIssue = yield* saveIssue(issueTitle, thumbnailUrl);
 
-      yield* Effect.logInfo({ newIssue });
-
       yield* parseXML(
         files.find((file) => file.name.includes("xml"))?.data,
         newIssue.id,
@@ -178,13 +188,12 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
         error: null,
         state: "SUCCESS",
       });
-
-      yield* Effect.logInfo(`Saved ${issueTitle} File Successfully`);
     });
 
     return { rar, zip } as const;
   }).pipe(
     Effect.orDie,
+    Effect.provide(SharedMemory.Default),
     Effect.annotateLogs({
       service: "archive",
     }),
@@ -211,9 +220,11 @@ const parseXML = Effect.fn(function* (
       exact: false,
     },
   );
-  const metaID = extractMetaID(comicInfo.Notes || "");
 
-  yield* Effect.logInfo({ ...comicInfo, metaID });
+  const metaID = pipe(extractMetaID(comicInfo.Notes), Option.getOrNull);
+
+  // TODO: try and fetch additional metadata
+  yield* Effect.tryPromise(async () => {}).pipe(Effect.forkScoped);
 
   yield* Effect.tryPromise(
     async () =>
@@ -229,6 +240,8 @@ const saveIssue = Effect.fn(function* (
   issueTitle: string,
   thumbnailUrl: string,
 ) {
+  yield* Effect.logInfo({ issueTitle, thumbnailUrl });
+
   const newIssue = yield* Effect.tryPromise(
     async () =>
       await db
