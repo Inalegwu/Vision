@@ -13,7 +13,7 @@ Effect.tryPromise({
         productName: "Vision",
         artifactName: "${productName}-${version}_${platform}_${arch}.${ext}",
         buildDependenciesFromSource: true,
-        files: ["out/**/*", "drizzle/**/*"],
+        files: ["out/**/*"],
         extraFiles: {
           from: "drizzle/",
           to: "drizzle/",

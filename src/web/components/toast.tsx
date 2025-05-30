@@ -39,6 +39,7 @@ export function ToastProvider({ children, context }: ProviderProps) {
 }
 
 export const toast = {
+  showing: toastState$.show.get(),
   success: (message: string) => {
     toastState$.set({
       show: true,

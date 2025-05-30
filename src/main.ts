@@ -1,7 +1,7 @@
 import sourceDirWatcherWorker from "@core/workers/source-dir?nodeWorker";
 import { createContext } from "@shared/context";
 import { appRouter } from "@shared/routers/_app";
-import { pipe } from "effect";
+import * as Fn from "effect/Function";
 import { BrowserWindow, app, screen } from "electron";
 import { createIPCHandler } from "electron-trpc/main";
 import * as fs from "node:fs";
@@ -12,6 +12,7 @@ app.setName("Vision");
 
 process.env = {
   DB_URL: path.join(app.getPath("appData"), "Vision", "vision.db"),
+  DATA_DIR: path.join(app.getPath("appData"), "Vision", "vision_data"),
 };
 
 if (process.defaultApp) {
@@ -75,7 +76,7 @@ const createWindow = () => {
     });
   }
 
-  pipe(
+  Fn.pipe(
     path.join(app.getPath("appData"), "Vision", "config.json"),
     (_) => fs.readFileSync(_, { encoding: "utf-8" }),
     (_) => JSON.parse(_) as GlobalState,
@@ -86,8 +87,13 @@ const createWindow = () => {
 };
 
 app.whenReady().then(() => {
-  pipe(
+  Fn.pipe(
     globalState$.get(),
+    (config) =>
+      ({
+        ...config,
+        sourceDirectory: path.join(app.getPath("downloads"), "comics"),
+      }) satisfies GlobalState,
     JSON.stringify,
     (config) => ({
       config,
@@ -116,7 +122,7 @@ app.whenReady().then(() => {
 app.once("window-all-closed", () => {
   const config = globalState$.get();
 
-  pipe(
+  Fn.pipe(
     path.join(app.getPath("appData"), "Vision", "config.json"),
     (path) => ({
       path,

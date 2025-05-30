@@ -3,7 +3,7 @@ import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import React, { Suspense, useRef } from "react";
-import { Spinner } from "../../components";
+import { LoadingSkeleton, Spinner } from "../../components";
 
 const Issue = React.lazy(() => import("../../components/issue"));
 
@@ -40,45 +40,12 @@ function Component() {
           {data?.collection?.collectionName}
         </Text>
       </Flex>
-      <Flex
-        ref={parentView}
-        className="px-3"
-        style={{ height: "900px", overflow: "auto" }}
-      >
-        <Flex
-          style={{
-            width: "100%",
-            position: "relative",
-            height: `${virtualizer.getTotalSize()}px`,
-          }}
-          gap="2"
-          wrap="wrap"
-        >
-          <Suspense
-            fallback={
-              <Flex
-                className="w-full h-[700px] bg-transparent"
-                align="center"
-                justify="center"
-              >
-                <Spinner
-                  className="border-2 border-moonlightOrange"
-                  size={35}
-                />
-              </Flex>
-            }
-          >
-            {/* {data?.collection?.issues.map((issue) => (
-                <Issue key={issue.id} issue={issue} />
-              ))} */}
-            {virtualizer.getVirtualItems().map((virtual) => (
-              <Issue
-                key={virtual.key}
-                issue={data.collection.issues[virtual.index]}
-              />
-            ))}
-          </Suspense>
-        </Flex>
+      <Flex wrap="wrap" gap="2" className="px-3 pb-20 overflow-y-scroll">
+        <Suspense fallback={<LoadingSkeleton />}>
+          {data?.collection?.issues.map((issue) => (
+            <Issue key={issue.id} issue={issue} />
+          ))}
+        </Suspense>
       </Flex>
     </Flex>
   );

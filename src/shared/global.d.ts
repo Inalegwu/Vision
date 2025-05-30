@@ -16,6 +16,7 @@ declare global {
     firstLaunch: boolean;
     isFullscreen: boolean;
     libraryView: "issues" | "collections";
+    sourceDirectory: string | null;
   };
 
   export type Issue = Omit<

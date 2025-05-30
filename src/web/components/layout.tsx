@@ -4,10 +4,10 @@ import { Flex, Text, Tooltip } from "@radix-ui/themes";
 import t from "@shared/config";
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { capitalize } from "effect/String";
-import { Home, Sidebar } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import type React from "react";
 import { useCallback, useEffect } from "react";
+import { useInterval } from "../hooks";
 import { globalState$ } from "../state";
 import Icon from "./icon";
 import Spinner from "./spinner";
@@ -30,13 +30,16 @@ export default function Layout({ children }: LayoutProps) {
   const isNotHome = computed(() => routerState.location.pathname !== "/").get();
   const isFullscreen = globalState$.isFullscreen.get();
   const isUpdating = useObservable(false);
-  const sidebar = useObservable(false);
 
   const refreshLibrary = useCallback(() => utils.library.invalidate(), [utils]);
 
   t.library.additions.useSubscription(undefined, {
     onData: (data) => {
-      toast.loading("Adding Issue To Library");
+      console.log(data);
+
+      if (!data.isCompleted && data.state === "SUCCESS") {
+        toast.loading("Adding Issue To Library");
+      }
 
       if (data.isCompleted && data.state === "SUCCESS") {
         toast.dismiss();
@@ -61,6 +64,11 @@ export default function Layout({ children }: LayoutProps) {
       }
     },
   });
+
+  useInterval(() => {
+    utils.library.invalidate();
+    if (toast.showing) toast.dismiss();
+  }, 4_500);
 
   useObserveEffect(() => {
     if (globalState$.colorMode.get() === "dark") {
@@ -116,14 +124,16 @@ export default function Layout({ children }: LayoutProps) {
                   Vision
                 </Text>
                 <Flex gap="1">
-                  <button
-                    onClick={() => sidebar.set(!sidebar.get())}
-                    className="px-2 py-1 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
-                  >
-                    <Sidebar size={12} />
-                  </button>
                   <Tooltip content="Add Issue To Library">
                     <AddButton />
+                  </Tooltip>
+                  <Tooltip content="View Reading History">
+                    <Link
+                      to="/history"
+                      className="px-2 py-1 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+                    >
+                      <Icon name="History" size={12} />
+                    </Link>
                   </Tooltip>
                 </Flex>
               </Flex>
@@ -155,9 +165,9 @@ export default function Layout({ children }: LayoutProps) {
                     {capitalize(
                       routerState.location.pathname === "/"
                         ? "Home"
-                        : routerState.location.pathname === "/library"
-                          ? "Library"
-                          : "Exploring",
+                        : routerState.location.pathname === "/history"
+                          ? "History"
+                          : "",
                     )}
                   </Text>
                 </Flex>
@@ -192,72 +202,9 @@ export default function Layout({ children }: LayoutProps) {
           </motion.div>
         )}
       </AnimatePresence>
-      <AnimatePresence initial={false}>
-        <Flex width="100%" height="100%">
-          <AnimatePresence>
-            {sidebar.get() && (
-              <motion.div
-                className="bg-light-1 dark:bg-moonlightFocusLow flex flex-col space-y-1"
-                initial={{ width: 0, display: "none", opacity: 0 }}
-                animate={{ width: "20%", display: "flex", opacity: 1 }}
-                exit={{ width: 0, display: "none", opacity: 0 }}
-              >
-                <Flex
-                  grow="1"
-                  gap="2"
-                  direction="column"
-                  className="px-3 pt-13"
-                >
-                  <Link
-                    className="text-black space-x-2 hover:bg-neutral-400/6 px-2 py-2 rounded-md text-moonlightSlight"
-                    to="/"
-                  >
-                    <Flex align="center" justify="start" gap="2">
-                      <Home size={14} />
-                      <Text weight="medium" size="2">
-                        Home
-                      </Text>
-                    </Flex>
-                  </Link>
-                  <Link
-                    className="text-black space-x-2 hover:bg-neutral-400/6 px-2 py-2 rounded-md text-moonlightSlight"
-                    to="/library"
-                  >
-                    <Flex align="center" justify="start" gap="2">
-                      <Icon name="Library" size={14} />
-                      <Text weight="medium" size="2">
-                        Library
-                      </Text>
-                    </Flex>
-                  </Link>
-                </Flex>
-                <Flex
-                  align="center"
-                  justify="start"
-                  gap="2"
-                  className="h-14 bg-white dark:bg-moonlightOverlay border-t-solid border-t-1 border-t-neutral-100 dark:border-t-moonlightSlight/10 px-3"
-                >
-                  <button
-                    onClick={() => refreshLibrary()}
-                    className="px-2 py-2 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
-                  >
-                    <Icon name="RefreshCw" size={12} />
-                  </button>
-                  <Link
-                    className="px-2 py-0.5 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
-                    to="/settings"
-                  >
-                    <Icon name="Settings" size={12} />
-                  </Link>
-                </Flex>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <motion.div animate={{ width: sidebar.get() ? "80%" : "100%" }}>
-            {children}
-          </motion.div>
-        </Flex>
-      </AnimatePresence>
+      <Flex width="100%" height="100%">
+        {children}
+      </Flex>
       <AnimatePresence>
         {isUpdating.get() && (
           <motion.div

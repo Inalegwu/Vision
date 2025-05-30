@@ -55,7 +55,7 @@ export default function Issue({ issue }: Props) {
       <ContextMenu.Root>
         <ContextMenu.Trigger>
           <Flex
-            className="w-[200px] h-[300px] mb-5 mt-6 cursor-pointer"
+            className="w-[200px] h-[300px] mb-5 cursor-pointer"
             gap="1"
             direction="column"
             onClick={go}
@@ -71,7 +71,7 @@ export default function Issue({ issue }: Props) {
                 weight="medium"
                 className="text-black dark:text-white"
               >
-                {issue.issueTitle}
+                {issue.issueTitle.slice(0,30)}{" "}...
               </Text>
             </Flex>
           </Flex>

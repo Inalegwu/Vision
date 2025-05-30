@@ -8,15 +8,13 @@ import {
 } from "@shared/utils";
 import Zip from "adm-zip";
 import { BroadcastChannel } from "broadcast-channel";
-import {
-  Array,
-  Effect,
-  Option,
-  Request,
-  RequestResolver,
-  Schema,
-  pipe,
-} from "effect";
+import * as Array from "effect/Array";
+import * as Effect from "effect/Effect";
+import * as Fn from "effect/Function";
+import * as Option from "effect/Option";
+import * as Request from "effect/Request";
+import * as RequestResolver from "effect/RequestResolver";
+import * as Schema from "effect/Schema";
 import { XMLParser } from "fast-xml-parser";
 import { createExtractorFromData } from "node-unrar-js";
 import { v4 } from "uuid";
@@ -47,12 +45,9 @@ const SavePageResolver = (newIssue: typeof issues.$inferSelect) =>
       entries.flatMap((entry) => entry),
       (file, index) =>
         Effect.gen(function* () {
-          yield* Effect.logInfo(file);
           if (file.isDir) {
             return yield* Effect.void;
           }
-
-          // TODO: write log
 
           const pageContent = yield* Effect.sync(() =>
             convertToImageUrl(file.data!),
@@ -71,7 +66,7 @@ const SavePageResolver = (newIssue: typeof issues.$inferSelect) =>
             completed: index,
             total: length,
             error: null,
-            isCompleted: false,
+            isCompleted: index === length - 1,
             state: "SUCCESS",
           });
 
@@ -85,7 +80,11 @@ const savePage = (page: Page, newIssue: typeof issues.$inferSelect) =>
 
 export class Archive extends Effect.Service<Archive>()("Archive", {
   effect: Effect.gen(function* () {
-    const rar = Effect.fn(function* (path: string) {
+    const sharedMem = yield* SharedMemory;
+
+    const cacheDir = sharedMem.getFromSharedMemory("cacheDir");
+
+    const rar = Effect.fn(function* (path: string, fileName?: string) {
       parserChannel.postMessage({
         isCompleted: false,
         state: "SUCCESS",
@@ -102,15 +101,15 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
         });
       }
 
-      yield* Effect.logInfo(`File Length ${files.length}`);
-
       parserChannel.postMessage({
         isCompleted: false,
         state: "SUCCESS",
         error: null,
       });
 
-      const issueTitle = yield* Effect.sync(() => parseFileNameFromPath(path));
+      const issueTitle = yield* Effect.sync(
+        () => fileName || parseFileNameFromPath(path),
+      );
 
       parserChannel.postMessage({
         isCompleted: false,
@@ -126,25 +125,17 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
 
       const newIssue = yield* saveIssue(issueTitle, thumbnailUrl);
 
-      yield* Effect.logInfo(newIssue);
-
       yield* parseXML(
         files.find((file) => file.name.includes("xml"))?.data,
         newIssue.id,
-      ).pipe(Effect.fork);
+      ).pipe(Effect.orDie, Effect.fork);
 
       yield* Effect.forEach(_files, (page) => savePage(page, newIssue), {
         concurrency: _files.length,
       });
-
-      parserChannel.postMessage({
-        isCompleted: true,
-        error: null,
-        state: "SUCCESS",
-      });
     });
 
-    const zip = Effect.fn(function* (path: string) {
+    const zip = Effect.fn(function* (path: string, fileName?: string) {
       parserChannel.postMessage({
         isCompleted: false,
         state: "SUCCESS",
@@ -155,7 +146,9 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
 
       const _files = files.filter((file) => !file.name.includes("xml"));
 
-      const issueTitle = yield* Effect.sync(() => parseFileNameFromPath(path));
+      const issueTitle = yield* Effect.sync(
+        () => fileName || parseFileNameFromPath(path),
+      );
       const thumbnailUrl = yield* Effect.sync(() =>
         convertToImageUrl(_files[0].data || _files[1].data || _files[1].data),
       );
@@ -171,7 +164,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
       yield* parseXML(
         files.find((file) => file.name.includes("xml"))?.data,
         newIssue.id,
-      ).pipe(Effect.fork);
+      ).pipe(Effect.orDie, Effect.fork);
 
       parserChannel.postMessage({
         isCompleted: false,
@@ -221,10 +214,9 @@ const parseXML = Effect.fn(function* (
     },
   );
 
-  const metaID = pipe(extractMetaID(comicInfo.Notes), Option.getOrNull);
+  const metaID = Fn.pipe(extractMetaID(comicInfo.Notes), Option.getOrNull);
 
-  // TODO: try and fetch additional metadata
-  yield* Effect.tryPromise(async () => {}).pipe(Effect.forkScoped);
+  yield* Effect.logInfo({ metaID });
 
   yield* Effect.tryPromise(
     async () =>
@@ -240,8 +232,6 @@ const saveIssue = Effect.fn(function* (
   issueTitle: string,
   thumbnailUrl: string,
 ) {
-  yield* Effect.logInfo({ issueTitle, thumbnailUrl });
-
   const newIssue = yield* Effect.tryPromise(
     async () =>
       await db

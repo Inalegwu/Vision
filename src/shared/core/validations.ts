@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import * as Schema from "effect/Schema";
 import { z } from "zod";
 
 export const parserSchema = z.object({

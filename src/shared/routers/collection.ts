@@ -37,10 +37,13 @@ const collections = router({
     )
     .mutation(async ({ ctx, input }) => {
       console.log({ input });
+
       const deleted = await ctx.db
         .delete(collectionsSchema)
         .where(eq(collectionsSchema.id, input.collectionId))
         .returning();
+
+      console.log(deleted);
 
       return deleted;
     }),

@@ -3,8 +3,14 @@ import {
   parseWorkerMessageWithSchema,
 } from "@src/shared/utils";
 import chokidar from "chokidar";
-import { Chunk, Effect, Queue, Stream, pipe } from "effect";
+import type * as Chunk from "effect/Chunk";
+import * as Effect from "effect/Effect";
+import * as Fn from "effect/Function";
+import * as Match from "effect/Match";
+import * as Queue from "effect/Queue";
+import * as Stream from "effect/Stream";
 import { parentPort } from "node:worker_threads";
+import { Archive } from "../archive";
 import { sourceDirSchema } from "../validations";
 import { SharedMemory } from "./shared-memory";
 
@@ -12,22 +18,38 @@ const port = parentPort;
 
 if (!port) throw new Error("Source Directory Watcher Process Port is Missing");
 
-const execute = Effect.fn(function* (chunk: Chunk.Chunk<Task>) {
-  const tasks = Chunk.toReadonlyArray(chunk);
-  yield* Effect.forEach(tasks, Effect.logInfo);
-});
+const execute = (tasks: Chunk.Chunk<Task>) =>
+  Effect.forEach(
+    tasks,
+    (task) =>
+      Effect.gen(function* () {
+        yield* Effect.logInfo(task);
+        const archive = yield* Archive;
+
+        Match.value(task.ext).pipe(
+          Match.when("cbr", () => archive.rar(task.path, task.fileName)),
+          Match.when("cbz", () => archive.zip(task.path, task.fileName)),
+          Match.when("none", () => console.log("unknown file")),
+          Match.exhaustive,
+        );
+      }).pipe(Effect.provide(Archive.Default)),
+    {
+      concurrency: "unbounded",
+      batching: true,
+    },
+  );
 
 const takeBatch = (queue: Queue.Queue<Task>) =>
-  pipe(queue.takeBetween(2, 5), Effect.withLogSpan("take-batch"));
+  Fn.pipe(queue.takeBetween(2, 4));
 
 const handleBatch = (stream: Stream.Stream<Task>) =>
-  pipe(stream, Stream.runCollect, Effect.flatMap(execute));
+  Fn.pipe(stream, Stream.runCollect, Effect.flatMap(execute));
 
 const batch = (queue: Queue.Queue<Task>) =>
-  pipe(
+  Fn.pipe(
     takeBatch(queue),
     Stream.repeatEffect,
-    Stream.filter((chunk) => chunk.length > 0),
+    // Stream.filter((chunk) => chunk.length > 0),
     Stream.map(Stream.fromChunk),
     Stream.map(handleBatch),
     Stream.runDrain,
@@ -44,12 +66,12 @@ const handleMessage = Effect.fn(function* (message: SourceDirSchema) {
   const queue = yield* Queue.unbounded<Task>();
 
   yield* Effect.try(() =>
-    chokidar.watch(message.sourceDirectory, {
+    chokidar.watch(message.sourceDirectory[0], {
       ignoreInitial: false,
       awaitWriteFinish: true,
     }),
   ).pipe(
-    Effect.tap((watcher) =>
+    Effect.map((watcher) =>
       watcher.on("add", (path) =>
         queue.unsafeOffer({
           ext: path.includes("cbr")
