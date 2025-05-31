@@ -2,7 +2,9 @@ import deletionWorker from "@core/workers/deletion?nodeWorker";
 import parseWorker from "@core/workers/parser?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import { eq } from "drizzle-orm";
+import * as Fn from "effect/Function";
 import { dialog } from "electron";
+import * as fs from "node:fs";
 import z from "zod";
 import { issues } from "../schema";
 
@@ -61,13 +63,13 @@ const issueRouter = router({
       const issue = await ctx.db.query.issues.findFirst({
         where: (issue, { eq }) => eq(issue.id, input.issueId),
       });
-      const pages = await ctx.db.query.pages.findMany({
-        where: (page, { eq }) => eq(page.issueId, input.issueId),
-        columns: {
-          id: true,
-          pageContent: true,
-        },
-      });
+      const pages = Fn.pipe(
+        fs.readdirSync(issue?.path!, {
+          recursive: true,
+        }),
+      );
+
+      console.log({ pages });
 
       const merged = {
         ...issue,

@@ -1,14 +1,6 @@
-import { Icon, LoadingSkeleton, Spinner } from "@components";
+import { Icon, LoadingSkeleton } from "@components";
 import { Switch, useObservable } from "@legendapp/state/react";
-import {
-  Button,
-  Flex,
-  Heading,
-  Popover,
-  Text,
-  TextField,
-  Tooltip,
-} from "@radix-ui/themes";
+import { Flex, Heading, Text, Tooltip } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -78,28 +70,12 @@ function Component() {
             </Tooltip>
           </Flex>
         </Flex>
-        <Flex align="center" justify="end" gap="3">
-          <CreateCollection />
-          {data && (
-            <>
-              <Text size="2" className="text-zinc-400">
-                {data.issues.length || 0} Issue(s)
-              </Text>
-              <Text size="2" className="text-zinc-400">
-                {data.collections.length || 0} Collection(s)
-              </Text>
-            </>
-          )}
-        </Flex>
       </Flex>
       <Flex grow="1" className="px-3">
         <AnimatePresence>
           <Switch value={view}>
             {{
               issues: () => <RenderIssues issues={data?.issues || []} />,
-              collections: () => (
-                <RenderCollections collections={data?.collections || []} />
-              ),
               default: () => null,
               undefined: () => null,
             }}
@@ -273,59 +249,3 @@ const RenderCollections = memo(
     // );
   },
 );
-
-const CreateCollection = React.memo(() => {
-  const utils = t.useUtils();
-  const { mutate: createCollection, isLoading } =
-    t.library.createCollection.useMutation({
-      onSuccess: () => {
-        utils.library.getLibrary.invalidate();
-        utils.collection.getCollections.invalidate();
-      },
-    });
-
-  const collectionName = useObservable("");
-
-  const create = () =>
-    createCollection({
-      collectionName: collectionName.get(),
-    });
-
-  return (
-    <Popover.Root>
-      <Popover.Trigger>
-        <button className="p-2 rounded-md cursor-pointer text-moonlightOrange hover:bg-moonlightOrange/10">
-          <Tooltip content="Create a new collection">
-            {isLoading ? <Spinner /> : <Icon name="Plus" size={10} />}
-          </Tooltip>
-        </button>
-      </Popover.Trigger>
-      <Popover.Content className="transition bg-white dark:bg-moonlightBase relative">
-        <Flex direction="column" gap="2" align="start">
-          <Flex align="center" justify="start">
-            <Text size="1">Give your collection a name</Text>
-          </Flex>
-          <TextField.Root>
-            <TextField.Input
-              onChange={(e) => collectionName.set(e.target.value)}
-              size="2"
-            />
-          </TextField.Root>
-          <Popover.Close>
-            <Button
-              onClick={create}
-              className="cursor-pointer"
-              variant="soft"
-              size="1"
-            >
-              <Flex align="center" justify="center" gap="2">
-                <Icon name="Plus" size={10} />
-                <Text>Create Collection</Text>
-              </Flex>
-            </Button>
-          </Popover.Close>
-        </Flex>
-      </Popover.Content>
-    </Popover.Root>
-  );
-});

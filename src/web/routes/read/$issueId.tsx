@@ -144,7 +144,7 @@ function Component() {
               }}
               className="flex cursor-grab active:cursor-grabbing items-center"
             >
-              {data?.pages.map((v) => (
+              {/* {data?.pages.map((v) => (
                 <div
                   className="w-full h-screen flex items-center justify-center shrink-0"
                   key={v.issueId}
@@ -155,7 +155,7 @@ function Component() {
                     className="h-full w-[50%] object-contain"
                   />
                 </div>
-              ))}
+              ))} */}
             </motion.div>
           </AnimatePresence>
         </div>

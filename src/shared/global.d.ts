@@ -2,7 +2,6 @@ import type {
   MetadataSchema,
   deletionWorkerSchema,
   parserSchema,
-  prefetchWorkerSchema,
   sourceDirSchema,
   workerResponseSchema,
 } from "@shared/core/validations";
@@ -77,11 +76,6 @@ declare global {
     isDone: boolean;
   };
 
-  export type PrefetchChannel = {
-    view: Pick<PrefetchSchema, "view">["view"];
-    data: Record<string, unknown>;
-  };
-
   export type Index = {
     index: Array<{
       path: string;
@@ -101,7 +95,6 @@ declare global {
   export type ParserSchema = z.infer<typeof parserSchema>;
   export type WorkerResponse = z.infer<typeof workerResponseSchema>;
   export type DeletionSchema = z.infer<typeof deletionWorkerSchema>;
-  export type PrefetchSchema = z.infer<typeof prefetchWorkerSchema>;
   export type Metadata = Schema.Schema.Type<typeof MetadataSchema>;
   export type SourceDirSchema = z.infer<typeof sourceDirSchema>;
 }

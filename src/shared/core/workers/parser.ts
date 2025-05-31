@@ -60,10 +60,10 @@ const handleMessage = Effect.fn(function* ({
 
   Match.value({ action, ext }).pipe(
     Match.when({ action: "LINK", ext: "cbr" }, () =>
-      archive.rar(parsePath).pipe(Effect.runPromise),
+      archive.rar(parsePath).pipe(Effect.scoped, Effect.runPromise),
     ),
     Match.when({ action: "LINK", ext: "cbz" }, () =>
-      archive._zip(parsePath).pipe(Effect.runPromise),
+      archive.zip(parsePath).pipe(Effect.scoped, Effect.runPromise),
     ),
     Match.when({ action: "LINK", ext: "none" }, () => Effect.void),
     Match.when({ action: "UNLINK" }, () => Effect.void),
