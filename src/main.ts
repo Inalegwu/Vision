@@ -10,10 +10,17 @@ import { globalState$ } from "./web/state";
 
 app.setName("Vision");
 
-process.env = {
-  DB_URL: path.join(app.getPath("appData"), "Vision", "vision.db"),
-  DATA_DIR: path.join(app.getPath("appData"), "Vision", "vision_data"),
-};
+process.env.DB_URL = path.join(app.getPath("appData"), "vision", "vision.db");
+process.env.DATA_DIR = path.join(
+  app.getPath("appData"),
+  "vision",
+  "vision_data",
+);
+process.env.cache_dir = path.join(
+  app.getPath("appData"),
+  "vision",
+  "library_cache",
+);
 
 if (process.defaultApp) {
   if (process.argv.length >= 2) {

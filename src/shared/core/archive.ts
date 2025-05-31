@@ -10,13 +10,13 @@ import Zip from "adm-zip";
 import { BroadcastChannel } from "broadcast-channel";
 import * as Array from "effect/Array";
 import * as Effect from "effect/Effect";
-import * as Fn from "effect/Function";
 import * as Option from "effect/Option";
 import * as Request from "effect/Request";
 import * as RequestResolver from "effect/RequestResolver";
 import * as Schema from "effect/Schema";
 import { XMLParser } from "fast-xml-parser";
 import { createExtractorFromData } from "node-unrar-js";
+import path from "node:path";
 import { v4 } from "uuid";
 import { Fs } from "../fs";
 import { ArchiveError } from "./errors";
@@ -53,6 +53,11 @@ const SavePageResolver = (newIssue: typeof issues.$inferSelect) =>
             convertToImageUrl(file.data!),
           );
 
+          yield* Fs.writeFile(
+            path.join(process.env.cache_dir!, newIssue.issueTitle, file.name),
+            pageContent,
+          );
+
           yield* Effect.tryPromise(
             async () =>
               await db.insert(pages).values({
@@ -80,18 +85,14 @@ const savePage = (page: Page, newIssue: typeof issues.$inferSelect) =>
 
 export class Archive extends Effect.Service<Archive>()("Archive", {
   effect: Effect.gen(function* () {
-    const sharedMem = yield* SharedMemory;
-
-    const cacheDir = sharedMem.getFromSharedMemory("cacheDir");
-
-    const rar = Effect.fn(function* (path: string, fileName?: string) {
+    const rar = Effect.fn(function* (filePath: string, fileName?: string) {
       parserChannel.postMessage({
         isCompleted: false,
         state: "SUCCESS",
         error: null,
       });
 
-      const files = yield* createRarExtractor(path);
+      const files = yield* createRarExtractor(filePath);
 
       if (files.length === 0) {
         parserChannel.postMessage({
@@ -108,8 +109,10 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
       });
 
       const issueTitle = yield* Effect.sync(
-        () => fileName || parseFileNameFromPath(path),
+        () => fileName || parseFileNameFromPath(filePath),
       );
+
+      yield* Fs.makeDirectory(path.join(process.env.cache_dir!, issueTitle));
 
       parserChannel.postMessage({
         isCompleted: false,
@@ -135,20 +138,23 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
       });
     });
 
-    const zip = Effect.fn(function* (path: string, fileName?: string) {
+    const zip = Effect.fn(function* (filePath: string, fileName?: string) {
       parserChannel.postMessage({
         isCompleted: false,
         state: "SUCCESS",
         error: null,
       });
 
-      const files = yield* createZipExtractor(path);
+      const files = yield* createZipExtractor(filePath);
 
       const _files = files.filter((file) => !file.name.includes("xml"));
 
       const issueTitle = yield* Effect.sync(
-        () => fileName || parseFileNameFromPath(path),
+        () => fileName || parseFileNameFromPath(filePath),
       );
+
+      yield* Fs.makeDirectory(path.join(process.env.cache_dir!, issueTitle));
+
       const thumbnailUrl = yield* Effect.sync(() =>
         convertToImageUrl(_files[0].data || _files[1].data || _files[1].data),
       );
@@ -183,7 +189,33 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
       });
     });
 
-    return { rar, zip } as const;
+    const _zip = Effect.fn(function* (filePath: string) {
+      const zip = yield* _createZipExtractor(filePath);
+
+      const issueTitle = yield* Effect.sync(() =>
+        parseFileNameFromPath(filePath),
+      );
+
+      const _files = zip
+        .getEntries()
+        .sort((a, b) => sortPages(a.name, b.name))
+        .map((entry) => ({
+          name: entry.name,
+          data: entry.getData().buffer,
+          isDir: entry.isDirectory,
+        }))
+        .filter((file) => !file.isDir);
+
+      const thumbnailUrl = yield* Effect.sync(() =>
+        convertToImageUrl(_files[0].data || _files[1].data || _files[1].data),
+      );
+
+      const newIssue = yield* saveIssue(issueTitle, thumbnailUrl);
+
+      zip.extractAllTo(path.join(process.env.cache_dir!, newIssue.issueTitle));
+    });
+
+    return { rar, zip, _zip } as const;
   }).pipe(
     Effect.orDie,
     Effect.provide(SharedMemory.Default),
@@ -214,9 +246,9 @@ const parseXML = Effect.fn(function* (
     },
   );
 
-  const metaID = Fn.pipe(extractMetaID(comicInfo.Notes), Option.getOrNull);
+  const metaId = extractMetaID(comicInfo.Notes).pipe(Option.getOrNull);
 
-  yield* Effect.logInfo({ metaID });
+  yield* Effect.logInfo({ metaId });
 
   yield* Effect.tryPromise(
     async () =>
@@ -258,12 +290,12 @@ const saveIssue = Effect.fn(function* (
   return newIssue;
 });
 
-const createRarExtractor = Effect.fn(function* (path: string) {
+const createRarExtractor = Effect.fn(function* (filePath: string) {
   const wasmBinary = yield* Fs.readFile(
     require.resolve("node-unrar-js/dist/js/unrar.wasm"),
   ).pipe(Effect.andThen((binary) => binary.buffer));
 
-  return yield* Fs.readFile(path).pipe(
+  return yield* Fs.readFile(filePath).pipe(
     Effect.map((file) => file.buffer),
     Effect.andThen((data) =>
       Effect.tryPromise(
@@ -298,8 +330,8 @@ const createRarExtractor = Effect.fn(function* (path: string) {
   );
 });
 
-const createZipExtractor = Effect.fn(function* (path: string) {
-  return yield* Fs.readFile(path).pipe(
+const createZipExtractor = Effect.fn(function* (filePath: string) {
+  return yield* Fs.readFile(filePath).pipe(
     Effect.map((buff) =>
       new Zip(Buffer.from(buff.buffer))
         .getEntries()
@@ -311,5 +343,11 @@ const createZipExtractor = Effect.fn(function* (path: string) {
         }))
         .filter((file) => !file.isDir),
     ),
+  );
+});
+
+const _createZipExtractor = Effect.fn(function* (filePath: string) {
+  return yield* Fs.readFile(filePath).pipe(
+    Effect.map((buff) => new Zip(Buffer.from(buff.buffer))),
   );
 });

@@ -11,10 +11,14 @@ Effect.tryPromise({
       config: {
         appId: "com.vision.app",
         productName: "Vision",
-        artifactName: "${productName}-${version}_${platform}_${arch}.${ext}",
+        artifactName: "${productName}-${version}-${platform}-${arch}.${ext}",
         buildDependenciesFromSource: true,
         files: ["out/**/*"],
         extraFiles: {
+          from: "drizzle/",
+          to: "drizzle/",
+        },
+        extraResources: {
           from: "drizzle/",
           to: "drizzle/",
         },

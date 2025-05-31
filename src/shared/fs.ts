@@ -17,9 +17,46 @@ export namespace Fs {
       }),
     );
 
-  export const writeStream = (fileName: string, data: ArrayBufferLike) =>
+  export const makeDirectory = (filePath: string) =>
+    Effect.async<void, FSError>((resume) =>
+      NodeFS.mkdir(filePath, undefined, (error) => {
+        if (error) resume(Effect.fail(new FSError({ cause: error })));
+
+        resume(Effect.void);
+      }),
+    );
+
+  export const writeFile = (
+    path: string,
+    data: string | DataView<ArrayBufferLike>,
+  ) =>
+    Effect.async<void, FSError>((resume) =>
+      NodeFS.writeFile(
+        path,
+        data,
+        {
+          encoding: "utf-8",
+        },
+        (error) => {
+          if (error) resume(Effect.fail(new FSError({ cause: error })));
+
+          resume(Effect.void);
+        },
+      ),
+    );
+
+  export const writeFileSync = (
+    path: string,
+    data: string | DataView<ArrayBufferLike>,
+  ) =>
+    Effect.try({
+      try: () => NodeFS.writeFileSync(path, data),
+      catch: (cause) => new FSError({ cause }),
+    });
+
+  export const writeStream = (filePath: string, data: ArrayBufferLike) =>
     Effect.async<void, FSError>((resume) => {
-      const stream = NodeFS.createWriteStream(fileName);
+      const stream = NodeFS.createWriteStream(filePath);
 
       stream.write(data);
 
@@ -30,8 +67,8 @@ export namespace Fs {
       );
 
       return Effect.sync(() => {
-        console.log(`Cleaning up ${fileName}`);
-        NodeFS.unlinkSync(fileName);
+        console.log(`Cleaning up ${filePath}`);
+        NodeFS.unlinkSync(filePath);
       });
     });
 }

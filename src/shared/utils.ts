@@ -34,7 +34,7 @@ export const parseFileNameFromPath = (filePath: string) =>
 // "Scraped metadata from Comixology [CMXDB852248], [RELDATE:2020-03-31]\"
 // TODO: find a way to extract       ^ this value from this string
 export const extractMetaID = (noteString?: string) =>
-  Option.fromNullable(noteString.replace(/^/, ""));
+  Option.fromNullable(noteString?.replace(/^/, ""));
 
 export const parseWorkerMessageWithSchema = <T extends z.ZodRawShape>(
   s: z.ZodObject<T>,

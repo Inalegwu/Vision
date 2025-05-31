@@ -49,7 +49,7 @@ const batch = (queue: Queue.Queue<Task>) =>
   Fn.pipe(
     takeBatch(queue),
     Stream.repeatEffect,
-    // Stream.filter((chunk) => chunk.length > 0),
+    Stream.filter((chunk) => chunk.length > 0),
     Stream.map(Stream.fromChunk),
     Stream.map(handleBatch),
     Stream.runDrain,
@@ -66,7 +66,7 @@ const handleMessage = Effect.fn(function* (message: SourceDirSchema) {
   const queue = yield* Queue.unbounded<Task>();
 
   yield* Effect.try(() =>
-    chokidar.watch(message.sourceDirectory[0], {
+    chokidar.watch(message.sourceDirectory, {
       ignoreInitial: false,
       awaitWriteFinish: true,
     }),
@@ -94,11 +94,12 @@ port.on("message", (message) =>
     (data) =>
       handleMessage(data).pipe(
         Effect.provide(SharedMemory.Default),
-        Effect.orDie,
         Effect.withLogSpan("source-dir.duration"),
         Effect.annotateLogs({
           worker: "source-directory",
         }),
+        Effect.orDie,
+        Effect.scoped,
         Effect.runPromise,
       ),
     (message) => console.error({ message }),

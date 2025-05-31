@@ -12,6 +12,16 @@ export class SharedMemory extends Effect.Service<SharedMemory>()(
       const getFromSharedMemory = (key: string) =>
         memory.pipe(HashMap.get(key), Option.getOrUndefined);
 
+      // const _memory = memory.pipe(
+      //   HashMap.toValues,
+      //   Array.map((item) => ({ item })),
+      //   (_) => JSON.stringify({ memory: _ }),
+      // );
+
+      // yield* Fs.writeFile("", _memory).pipe(
+      //   Effect.schedule(Schedule.spaced(Duration.seconds(5))),
+      // );
+
       return {
         saveToSharedMemory,
         getFromSharedMemory,

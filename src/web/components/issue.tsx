@@ -44,7 +44,7 @@ export default function Issue({ issue }: Props) {
 
   const go = () =>
     navigation.navigate({
-      to: "/$issueId",
+      to: "/read/$issueId",
       params: {
         issueId: issue.id,
       },
@@ -71,12 +71,17 @@ export default function Issue({ issue }: Props) {
                 weight="medium"
                 className="text-black dark:text-white"
               >
-                {issue.issueTitle.slice(0,30)}{" "}...
+                {issue.issueTitle.slice(0, 30)} ...
               </Text>
             </Flex>
           </Flex>
         </ContextMenu.Trigger>
-        <ContextMenu.Content size="1" variant="soft" color="orange">
+        <ContextMenu.Content
+          size="1"
+          variant="soft"
+          className="dark:bg-moonlightFocusLow"
+          color="orange"
+        >
           <Flex align="center" justify="start" gap="1" width="100%">
             {issue.collectionId !== null ? (
               <Tooltip
@@ -170,7 +175,10 @@ export default function Issue({ issue }: Props) {
         <Dialog.Trigger>
           <button ref={dialogRef} />
         </Dialog.Trigger>
-        <Dialog.Content className="space-y-2 max-h-90" size="1">
+        <Dialog.Content
+          className="space-y-2 max-h-90 dark:bg-moonlightFocusLow"
+          size="1"
+        >
           <FlatList
             data={data?.collections || []}
             className="h-70"

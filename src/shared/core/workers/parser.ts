@@ -41,7 +41,7 @@ const handleMessage = Effect.fn(function* ({
         where: (issue, { eq }) =>
           eq(issue.issueTitle, parseFileNameFromPath(parsePath)),
       }),
-  ).pipe(Effect.orDie);
+  );
 
   if (exists) {
     parserChannel.postMessage({
@@ -63,7 +63,7 @@ const handleMessage = Effect.fn(function* ({
       archive.rar(parsePath).pipe(Effect.runPromise),
     ),
     Match.when({ action: "LINK", ext: "cbz" }, () =>
-      archive.zip(parsePath).pipe(Effect.runPromise),
+      archive._zip(parsePath).pipe(Effect.runPromise),
     ),
     Match.when({ action: "LINK", ext: "none" }, () => Effect.void),
     Match.when({ action: "UNLINK" }, () => Effect.void),

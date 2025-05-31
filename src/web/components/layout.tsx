@@ -6,7 +6,7 @@ import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { capitalize } from "effect/String";
 import { AnimatePresence, motion } from "motion/react";
 import type React from "react";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import { useInterval } from "../hooks";
 import { globalState$ } from "../state";
 import Icon from "./icon";
@@ -30,8 +30,6 @@ export default function Layout({ children }: LayoutProps) {
   const isNotHome = computed(() => routerState.location.pathname !== "/").get();
   const isFullscreen = globalState$.isFullscreen.get();
   const isUpdating = useObservable(false);
-
-  const refreshLibrary = useCallback(() => utils.library.invalidate(), [utils]);
 
   t.library.additions.useSubscription(undefined, {
     onData: (data) => {
@@ -66,7 +64,6 @@ export default function Layout({ children }: LayoutProps) {
   });
 
   useInterval(() => {
-    utils.library.invalidate();
     if (toast.showing) toast.dismiss();
   }, 4_500);
 
@@ -81,6 +78,7 @@ export default function Layout({ children }: LayoutProps) {
   });
 
   useEffect(() => {
+    if (globalState$.isFullscreen.get()) globalState$.isFullscreen.set(false);
     if (globalState$.firstLaunch.get()) {
       navigation.navigate({
         to: "/first-launch",
@@ -130,7 +128,7 @@ export default function Layout({ children }: LayoutProps) {
                   <Tooltip content="View Reading History">
                     <Link
                       to="/history"
-                      className="px-2 py-1 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+                      className="px-2 py-1 flex items-center justify-center rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
                     >
                       <Icon name="History" size={12} />
                     </Link>
@@ -167,7 +165,13 @@ export default function Layout({ children }: LayoutProps) {
                         ? "Home"
                         : routerState.location.pathname === "/history"
                           ? "History"
-                          : "",
+                          : routerState.location.pathname.includes(
+                                "/collection/",
+                              )
+                            ? "Collection"
+                            : routerState.location.pathname.includes("read")
+                              ? "Reading"
+                              : "Exploring",
                     )}
                   </Text>
                 </Flex>
@@ -235,7 +239,7 @@ function AddButton() {
       disabled={isLoading}
       onClick={() => addIssueToLibrary()}
     >
-      {isLoading ? <Spinner /> : <Icon name="Plus" size={13} />}
+      {isLoading ? <Spinner /> : <Icon name="Plus" size={12} />}
     </button>
   );
 }

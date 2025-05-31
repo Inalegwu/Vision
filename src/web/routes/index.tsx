@@ -35,15 +35,13 @@ function Component() {
 
   useTimeout(() => isEnabled.set(true), 500);
 
-  console.log({ data });
-
   return (
     <Flex direction="column" className="w-full h-screen pt-8">
       <Flex align="center" justify="between" className="w-full px-3 py-4">
         <Flex grow="1" align="center" justify="start">
           <Flex
             gap="1"
-            className="bg-neutral-100 rounded-md p-0.6 relative dark:bg-moonlightFocusMedium"
+            className="bg-neutral-100 rounded-lg p-0.6 relative dark:bg-moonlightFocusMedium"
           >
             <motion.div
               animate={{
@@ -52,7 +50,7 @@ function Component() {
                     ? "translateX(0px)"
                     : "translateX(28px)",
               }}
-              className="absolute z-0 w-[45%] h-[89%] rounded-md bg-white dark:bg-moonlightFocusLow"
+              className="absolute z-0 w-[45%] h-[89%] rounded-lg bg-white dark:bg-moonlightFocusLow"
             />
             <Tooltip content="My Collections">
               <button
@@ -140,8 +138,8 @@ const RenderIssues = memo(({ issues }: { issues: Issue[] }) => {
   }
 
   return (
-    <Flex width="100%" wrap="wrap" gap="2" className="overflow-y-scroll pb-17">
-      <Suspense fallback={<LoadingSkeleton estimatedLength={20} />}>
+    <Flex width="100%" wrap="wrap" gap="1" className="overflow-y-scroll pb-17">
+      <Suspense fallback={<LoadingSkeleton />}>
         {issues.map((issue) => (
           <Issue issue={issue} key={issue.id} />
         ))}
@@ -224,8 +222,8 @@ const RenderCollections = memo(
     }
 
     return (
-      <Flex width="100%" gap="2" wrap="wrap">
-        <Suspense fallback={<LoadingSkeleton estimatedLength={20} />}>
+      <Flex width="100%" gap="5" wrap="wrap">
+        <Suspense fallback={<LoadingSkeleton />}>
           {collections.map((collection) => (
             <Collection key={collection.id} collection={collection} />
           ))}

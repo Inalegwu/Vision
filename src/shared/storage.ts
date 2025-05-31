@@ -6,11 +6,13 @@ import * as Fn from "effect/Function";
 import * as schema from "./schema";
 
 const db = Fn.pipe(
-  new Database(import.meta.env.DEV ? "vision.db" : process.env.DB_URL!),
+  new Database(import.meta.env.DEV ? "vision.db" : process.env.DB_URL!, {
+    fileMustExist: false,
+  }),
   (client) => drizzle(client, { schema }),
 );
 
-Effect.try(() => migrate(db, { migrationsFolder: "drizzle" })).pipe(
+Effect.try(() => migrate(db, { migrationsFolder: "drizzle/" })).pipe(
   Effect.catchTag("UnknownException", (e) => Effect.logFatal(e)),
   Effect.annotateLogs({
     module: "storage.migrate",
