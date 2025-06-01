@@ -48,9 +48,10 @@ export namespace Fs {
   export const writeFileSync = (
     path: string,
     data: string | DataView<ArrayBufferLike>,
+    options?: NodeFS.WriteFileOptions,
   ) =>
     Effect.try({
-      try: () => NodeFS.writeFileSync(path, data),
+      try: () => NodeFS.writeFileSync(path, data, options),
       catch: (cause) => new FSError({ cause }),
     });
 

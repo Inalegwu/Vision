@@ -46,18 +46,9 @@ body {
   cursor: grab;
 }
 
-::-webkit-scrollbar {
-  width: .6vw;
-}
-
-::-webkit-scrollbar-track{
-  background-color: hsl(1,0%,100%,0.1);
-  border-radius: 5vw;
-}
-
-::-webkit-scrollbar-thumb{
-  background-color: #FFBB88;
-  border-radius: 5vw;
+::-webkit-scrollbar{
+  width: 0;
+  background: none;
 }
 
 button{

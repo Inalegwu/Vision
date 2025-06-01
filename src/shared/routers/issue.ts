@@ -1,10 +1,9 @@
+import * as fs from "node:fs";
 import deletionWorker from "@core/workers/deletion?nodeWorker";
 import parseWorker from "@core/workers/parser?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import { eq } from "drizzle-orm";
-import * as Fn from "effect/Function";
 import { dialog } from "electron";
-import * as fs from "node:fs";
 import z from "zod";
 import { issues } from "../schema";
 
@@ -63,11 +62,11 @@ const issueRouter = router({
       const issue = await ctx.db.query.issues.findFirst({
         where: (issue, { eq }) => eq(issue.id, input.issueId),
       });
-      const pages = Fn.pipe(
-        fs.readdirSync(issue?.path!, {
-          recursive: true,
-        }),
-      );
+
+      const pages = fs.readdirSync(issue?.path!, {
+        recursive: true,
+        encoding: "utf-8",
+      });
 
       console.log({ pages });
 

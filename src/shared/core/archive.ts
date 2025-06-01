@@ -8,9 +8,9 @@ import {
 } from "@shared/utils";
 import Zip from "adm-zip";
 import { BroadcastChannel } from "broadcast-channel";
+import { Option } from "effect";
 import * as Array from "effect/Array";
 import * as Effect from "effect/Effect";
-import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
 import { XMLParser } from "fast-xml-parser";
 import { createExtractorFromData } from "node-unrar-js";
@@ -25,6 +25,14 @@ const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 
 export class Archive extends Effect.Service<Archive>()("Archive", {
   effect: Effect.gen(function* () {
+    /**
+     *
+     * Extracts .CBR files to a predefined cache directory
+     * and saves metadata to a local database for easy retrieval
+     * aimed at improving app performance as well as reduce
+     * storage consumption
+     *
+     */
     const rar = Effect.fnUntraced(function* (filePath: string) {
       const _files = yield* createRarExtractor(filePath);
 
@@ -43,19 +51,30 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
       yield* parseXML(
         _files.find((file) => file.name.includes(".xml"))?.data,
         newIssue.id,
-      ).pipe(Effect.forkScoped);
+      ).pipe(Effect.fork);
 
       yield* Fs.makeDirectory(savePath);
 
       yield* Effect.forEach(_files, (file) =>
-        Fs.writeFile(
-          path.join(savePath, newIssue.issueTitle),
-          convertToImageUrl(file.data!),
+        Fs.writeFileSync(
+          path.join(savePath, file.name),
+          Buffer.from(file.data!).toString("base64"),
+          {
+            encoding: "base64",
+          },
         ),
       );
     });
 
-    const zip = Effect.fn(function* (filePath: string) {
+    /**
+     *
+     * Extracts .CBZ files to a predefined cache directory
+     * and saves metadata to a local database for easy retrieval
+     * aimed at improving app performance as well as reduce
+     * storage consumption
+     *
+     */
+    const zip = Effect.fnUntraced(function* (filePath: string) {
       const zip = yield* createZipExtractor(filePath);
 
       const issueTitle = yield* Effect.sync(() =>
@@ -75,7 +94,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
         .filter((file) => !file.isDir);
 
       const thumbnailUrl = yield* Effect.sync(() =>
-        convertToImageUrl(_files[0].data || _files[1].data || _files[1].data),
+        convertToImageUrl(_files[0].data || _files[1].data || _files[2].data),
       );
 
       const newIssue = yield* saveIssue(issueTitle, thumbnailUrl, savePath);
@@ -83,7 +102,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
       yield* parseXML(
         _files.find((file) => file.name.includes(".xml"))?.data,
         newIssue.id,
-      ).pipe(Effect.forkScoped);
+      ).pipe(Effect.fork);
 
       zip.extractAllTo(savePath);
     });
@@ -107,19 +126,20 @@ const parseXML = Effect.fn(function* (
 
   if (!buffer) return;
 
-  const file = Buffer.from(buffer).toString();
-
-  const contents = yield* Effect.sync(() => xmlParser.parse(file));
-
-  const comicInfo = yield* Schema.decodeUnknown(MetadataSchema)(
-    contents.ComicInfo,
-    {
-      onExcessProperty: "ignore",
-      exact: false,
-    },
+  const { metadata: parsedMeta, metaId } = yield* Effect.sync(() =>
+    xmlParser.parse(Buffer.from(buffer).toString()),
+  ).pipe(
+    Effect.andThen((file) =>
+      Schema.decodeUnknown(MetadataSchema)(file.comicInfo, {
+        exact: false,
+        onExcessProperty: "ignore",
+      }),
+    ),
+    Effect.map((metadata) => ({
+      metadata,
+      metaId: extractMetaID(metadata.Notes).pipe(Option.getOrNull),
+    })),
   );
-
-  const metaId = extractMetaID(comicInfo.Notes).pipe(Option.getOrNull);
 
   yield* Effect.logInfo({ metaId });
 
@@ -128,7 +148,7 @@ const parseXML = Effect.fn(function* (
       await db.insert(metadata).values({
         id: v4(),
         issueId,
-        ...comicInfo,
+        ...parsedMeta,
       }),
   );
 });

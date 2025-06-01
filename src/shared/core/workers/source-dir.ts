@@ -1,7 +1,4 @@
-import {
-  parseFileNameFromPath,
-  parseWorkerMessageWithSchema,
-} from "@src/shared/utils";
+import { parseWorkerMessageWithSchema } from "@src/shared/utils";
 import chokidar from "chokidar";
 import type * as Chunk from "effect/Chunk";
 import * as Effect from "effect/Effect";
@@ -27,8 +24,8 @@ const execute = (tasks: Chunk.Chunk<Task>) =>
         const archive = yield* Archive;
 
         Match.value(task.ext).pipe(
-          Match.when("cbr", () => archive.rar(task.path, task.fileName)),
-          Match.when("cbz", () => archive.zip(task.path, task.fileName)),
+          Match.when("cbr", () => archive.rar(task.path)),
+          Match.when("cbz", () => archive.zip(task.path)),
           Match.when("none", () => console.log("unknown file")),
           Match.exhaustive,
         );
@@ -79,7 +76,6 @@ const handleMessage = Effect.fn(function* (message: SourceDirSchema) {
             : path.includes("cbz")
               ? "cbz"
               : "none",
-          fileName: parseFileNameFromPath(path),
           path,
         }),
       ),

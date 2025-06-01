@@ -88,7 +88,6 @@ declare global {
 
   export type Task = Readonly<{
     path: string;
-    fileName: string;
     ext: "cbr" | "cbz" | "none";
   }>;
 
