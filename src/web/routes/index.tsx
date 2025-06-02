@@ -78,7 +78,9 @@ function Component() {
           <Switch value={view}>
             {{
               issues: () => <RenderIssues issues={data?.issues || []} />,
-              collections:()=><RenderCollections collections={data?.collections||[]}/>
+              collections: () => (
+                <RenderCollections collections={data?.collections || []} />
+              ),
               default: () => null,
               undefined: () => null,
             }}
