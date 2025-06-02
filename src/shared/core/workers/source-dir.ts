@@ -9,7 +9,6 @@ import * as Stream from "effect/Stream";
 import { parentPort } from "node:worker_threads";
 import { Archive } from "../archive";
 import { sourceDirSchema } from "../validations";
-import { SharedMemory } from "./shared-memory";
 
 const port = parentPort;
 
@@ -53,17 +52,10 @@ const batch = (queue: Queue.Queue<Task>) =>
   );
 
 const handleMessage = Effect.fn(function* (message: SourceDirSchema) {
-  const _shared = yield* SharedMemory;
-
-  yield* Effect.logInfo(message);
-
-  _shared.saveToSharedMemory("cacheDir", message.cacheDirectory);
-  _shared.saveToSharedMemory("sourceDir", message.sourceDirectory);
-
   const queue = yield* Queue.unbounded<Task>();
 
   yield* Effect.try(() =>
-    chokidar.watch(message.sourceDirectory, {
+    chokidar.watch(process.env.source_dir!, {
       ignoreInitial: false,
       awaitWriteFinish: true,
     }),
@@ -89,7 +81,6 @@ port.on("message", (message) =>
   parseWorkerMessageWithSchema(sourceDirSchema, message).match(
     (data) =>
       handleMessage(data).pipe(
-        Effect.provide(SharedMemory.Default),
         Effect.withLogSpan("source-dir.duration"),
         Effect.annotateLogs({
           worker: "source-directory",

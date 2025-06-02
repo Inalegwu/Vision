@@ -7,7 +7,7 @@ import type {
 } from "@shared/core/validations";
 import type * as Schema from "effect/Schema";
 import type z from "zod";
-import type { collections, issues, pages } from "./schema";
+import type { collections, issues } from "./schema";
 
 declare global {
   export type GlobalState = {
@@ -15,7 +15,6 @@ declare global {
     firstLaunch: boolean;
     isFullscreen: boolean;
     libraryView: "issues" | "collections";
-    sourceDirectory: string | null;
   };
 
   export type Issue = Omit<
@@ -33,8 +32,6 @@ declare global {
     dateCreated: string | null;
     dateUpdated: string | null;
   };
-
-  export type Page = typeof pages.$inferSelect;
 
   export type ParserResponse = {
     completed: boolean;

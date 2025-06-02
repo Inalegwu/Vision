@@ -10,8 +10,8 @@ import { globalState$ } from "./web/state";
 
 app.setName("Vision");
 
-process.env.DB_URL = path.join(app.getPath("appData"), "vision", "vision.db");
-process.env.DATA_DIR = path.join(
+process.env.db_url = path.join(app.getPath("appData"), "vision", "vision.db");
+process.env.data_dir = path.join(
   app.getPath("appData"),
   "vision",
   "vision_data",
@@ -21,6 +21,7 @@ process.env.cache_dir = path.join(
   "vision",
   "library_cache",
 );
+process.env.source_dir = path.join(app.getPath("downloads"), "Vision");
 
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
@@ -96,11 +97,11 @@ const createWindow = () => {
 app.whenReady().then(() => {
   Fn.pipe(
     globalState$.get(),
-    (config) =>
-      ({
-        ...config,
-        sourceDirectory: path.join(app.getPath("downloads"), "comics"),
-      }) satisfies GlobalState,
+    // (config) =>
+    //   ({
+    //     ...config,
+    //     sourceDirectory: path.join(app.getPath("downloads"), "comics"),
+    //   }) satisfies GlobalState,
     JSON.stringify,
     (config) => ({
       config,

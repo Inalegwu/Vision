@@ -65,7 +65,9 @@ export default function Layout({ children }: LayoutProps) {
 
   useInterval(() => {
     if (toast.showing) toast.dismiss();
-  }, 4_500);
+  }, 2_500);
+
+  // useInterval(() => utils.library.getLibrary.invalidate(), 1500);
 
   useObserveEffect(() => {
     if (globalState$.colorMode.get() === "dark") {
@@ -76,6 +78,11 @@ export default function Layout({ children }: LayoutProps) {
       globalState$.colorMode.set("light");
     }
   });
+
+  const goToSettings = () =>
+    navigation.navigate({
+      to: "/settings",
+    });
 
   useEffect(() => {
     if (globalState$.isFullscreen.get()) globalState$.isFullscreen.set(false);
@@ -180,6 +187,13 @@ export default function Layout({ children }: LayoutProps) {
                 <Flex grow="1" id="drag-region" p="2" />
               </Flex>
               <Flex align="center" justify="end">
+                <button
+                  className="p-3 hover:bg-neutral-400/10 dark:text-moonlightText dark:hover:bg-neutral-400/5"
+                  onClick={goToSettings}
+                  type="button"
+                >
+                  <Icon name="Settings2" size={12} />
+                </button>
                 <button
                   className="p-3 hover:bg-neutral-400/10 dark:text-moonlightText dark:hover:bg-neutral-400/5"
                   onClick={() => minimizeWindow()}

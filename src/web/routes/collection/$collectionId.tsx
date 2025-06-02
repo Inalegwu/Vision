@@ -1,7 +1,6 @@
 import { Flex, Text } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
-import { useVirtualizer } from "@tanstack/react-virtual";
 import React, { Suspense, useRef } from "react";
 import { LoadingSkeleton, Spinner } from "../../components";
 
@@ -15,14 +14,8 @@ function Component() {
   const parentView = useRef<HTMLDivElement>(null);
   const { collectionId } = Route.useParams();
 
-  const { data, isLoading } = t.collection.getCollectionById.useQuery({
+  const { data, isLoading } = t.library.getCollectionById.useQuery({
     collectionId,
-  });
-
-  const virtualizer = useVirtualizer({
-    count: data?.collection?.issues.length || 1000,
-    estimateSize: () => 35,
-    getScrollElement: () => parentView.current,
   });
 
   if (isLoading) {

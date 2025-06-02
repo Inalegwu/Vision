@@ -16,10 +16,9 @@ const Collection = React.memo(({ collection }: Props) => {
   const utils = t.useUtils();
   const navigation = useRouter();
 
-  const { mutate: deleteCollection } =
-    t.collection.deleteCollection.useMutation({
-      onSuccess: () => utils.library.invalidate(),
-    });
+  const { mutate: deleteCollection } = t.library.deleteCollection.useMutation({
+    onSuccess: () => utils.library.invalidate(),
+  });
 
   const go = () =>
     navigation.navigate({

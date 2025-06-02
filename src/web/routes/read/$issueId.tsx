@@ -83,10 +83,6 @@ function Component() {
 
   useTimeout(() => isEnabled.set(true), 2_000);
 
-  const goRight = () => setItemIndex((index) => index - 1);
-
-  const goLeft = () => setItemIndex((index) => index - 1);
-
   const debounceKeyPress = useDebounce((e: KeyboardEvent) => {
     if (e.keyCode === 93 && itemIndex < contentLength - 1) {
       setItemIndex((index) => index + 1);
@@ -182,15 +178,13 @@ function Component() {
               >
                 <Flex align="center" justify="start">
                   <button
-                    // onClick={() => setItemIndex((index) => index - 1)}
-                    onClick={goLeft}
+                    onClick={() => setItemIndex((index) => index - 1)}
                     className="text-neutral-700 px-5 py-5 cursor-pointer hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 dark:text-neutral-300"
                   >
                     <ChevronLeft size={18} />
                   </button>
                   <button
-                    // onClick={() => setItemIndex((index) => index + 1)}
-                    onClick={goRight}
+                    onClick={() => setItemIndex((index) => index + 1)}
                     className="text-neutral-700 px-5 cursor-pointer py-5 hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 dark:text-neutral-300"
                   >
                     <ChevronRight size={18} />
