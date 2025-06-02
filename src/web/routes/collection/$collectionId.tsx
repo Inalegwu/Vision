@@ -1,8 +1,8 @@
 import { Flex, Text } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
-import React, { Suspense, useRef } from "react";
-import { LoadingSkeleton, Spinner } from "../../components";
+import React, { Suspense } from "react";
+import { LoadingSkeleton } from "../../components";
 
 const Issue = React.lazy(() => import("../../components/issue"));
 
@@ -11,20 +11,11 @@ export const Route = createFileRoute("/collection/$collectionId")({
 });
 
 function Component() {
-  const parentView = useRef<HTMLDivElement>(null);
   const { collectionId } = Route.useParams();
 
-  const { data, isLoading } = t.library.getCollectionById.useQuery({
+  const { data } = t.library.getCollectionById.useQuery({
     collectionId,
   });
-
-  if (isLoading) {
-    return (
-      <Flex className="w-full h-screen" align="center" justify="center">
-        <Spinner size={35} className="border-2 border-moonlightOrange" />
-      </Flex>
-    );
-  }
 
   return (
     <Flex className="h-screen pt-8 w-full" direction="column">
