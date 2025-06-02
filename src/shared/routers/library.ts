@@ -1,7 +1,9 @@
 import { publicProcedure, router } from "@src/trpc";
 import { observable } from "@trpc/server/observable";
 import { BroadcastChannel } from "broadcast-channel";
+import * as Array from "effect/Array";
 import { dialog } from "electron";
+import type { issues as issueSchema } from "../schema";
 
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 const deletionChannel = new BroadcastChannel<DeletionChannel>(
@@ -10,17 +12,24 @@ const deletionChannel = new BroadcastChannel<DeletionChannel>(
 
 const libraryRouter = router({
   getLibrary: publicProcedure.query(async ({ ctx }) => {
-    const issues = await ctx.db.query.issues.findMany({
-      orderBy: (fields, { asc }) => asc(fields.issueTitle),
-    });
-
     const collections = await ctx.db.query.collections.findMany({
       with: {
         issues: true,
       },
     });
 
-    // const issues=Array.differenceWith<Issue>((issue))
+    const issues = await ctx.db.query.issues
+      .findMany({
+        orderBy: (fields, { asc }) => asc(fields.issueTitle),
+      })
+      .then((result) =>
+        Array.differenceWith<typeof issueSchema.$inferSelect>(
+          (a, b) => a.issueTitle === b.issueTitle,
+        )(
+          result,
+          collections.flatMap((c) => c.issues),
+        ),
+      );
 
     return {
       issues,
