@@ -1,11 +1,15 @@
 import { publicProcedure, router } from "@src/trpc";
 import { observable } from "@trpc/server/observable";
 import { BroadcastChannel } from "broadcast-channel";
+import { eq } from "drizzle-orm";
 import * as Array from "effect/Array";
 import { dialog } from "electron";
 import { v4 } from "uuid";
 import { z } from "zod";
-import { collections, type issues as issueSchema } from "../schema";
+import {
+  collections as collectionsSchema,
+  issues as issueSchema,
+} from "../schema";
 
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 const deletionChannel = new BroadcastChannel<DeletionChannel>(
@@ -38,6 +42,24 @@ const libraryRouter = router({
       collections,
     };
   }),
+  getCollectionById: publicProcedure
+    .input(
+      z.object({
+        collectionId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const collection = await ctx.db.query.collections.findFirst({
+        where: (collections, { eq }) => eq(collections.id, input.collectionId),
+        with: {
+          issues: true,
+        },
+      });
+
+      return {
+        collection,
+      };
+    }),
   getCollections: publicProcedure.query(async ({ ctx }) => {
     const collections = await ctx.db.query.collections.findMany({});
 
@@ -45,6 +67,77 @@ const libraryRouter = router({
       collections,
     };
   }),
+  deleteCollection: publicProcedure
+    .input(
+      z.object({
+        collectionId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log({ input });
+
+      const deleted = await ctx.db
+        .delete(collectionsSchema)
+        .where(eq(collectionsSchema.id, input.collectionId))
+        .returning();
+
+      console.log(deleted);
+
+      return deleted;
+    }),
+  addIssueToCollection: publicProcedure
+    .input(
+      z.object({
+        collectionId: z.string(),
+        issueId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log(input);
+
+      const returns = await ctx.db
+        .update(issueSchema)
+        .set({
+          collectionId: input.collectionId,
+        })
+        .where(eq(issueSchema.id, input.issueId))
+        .returning();
+
+      return {
+        data: returns,
+      };
+    }),
+  removeFromCollection: publicProcedure
+    .input(
+      z.object({
+        issueId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const changes = await ctx.db
+        .update(issueSchema)
+        .set({
+          collectionId: null,
+        })
+        .where(eq(issueSchema.id, input.issueId));
+
+      return {
+        changes,
+      };
+    }),
+  createCollection: publicProcedure
+    .input(
+      z.object({
+        collectionName: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log({ input });
+      await ctx.db.insert(collectionsSchema).values({
+        id: v4(),
+        collectionName: input.collectionName,
+      });
+    }),
   additions: publicProcedure.subscription(() =>
     observable<ParserChannel>((emit) => {
       const listener = (evt: ParserChannel) => {
@@ -58,19 +151,6 @@ const libraryRouter = router({
       };
     }),
   ),
-  createCollection: publicProcedure
-    .input(
-      z.object({
-        collectionName: z.string(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      console.log({ input });
-      await ctx.db.insert(collections).values({
-        id: v4(),
-        collectionName: input.collectionName,
-      });
-    }),
   deletions: publicProcedure.subscription(() =>
     observable<DeletionChannel>((emit) => {
       const listener = (event: DeletionChannel) => {

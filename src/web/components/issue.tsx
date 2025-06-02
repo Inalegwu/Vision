@@ -26,21 +26,20 @@ export default function Issue({ issue }: Props) {
   });
 
   const { mutate: addToCollection, isLoading: adding } =
-    t.collection.addIssueToCollection.useMutation({
+    t.library.addIssueToCollection.useMutation({
       onSuccess: () => {
         utils.library.getLibrary.invalidate();
       },
     });
 
   const { mutate: removeFromCollection } =
-    t.collection.removeFromCollection.useMutation({
+    t.library.removeFromCollection.useMutation({
       onSuccess: () => {
         utils.library.invalidate();
-        utils.collection.invalidate();
       },
     });
 
-  const { data, isLoading } = t.collection.getCollections.useQuery();
+  const { data, isLoading } = t.library.getCollections.useQuery();
 
   const go = () =>
     navigation.navigate({
