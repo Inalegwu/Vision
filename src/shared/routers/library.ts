@@ -3,7 +3,9 @@ import { observable } from "@trpc/server/observable";
 import { BroadcastChannel } from "broadcast-channel";
 import * as Array from "effect/Array";
 import { dialog } from "electron";
-import type { issues as issueSchema } from "../schema";
+import { v4 } from "uuid";
+import { z } from "zod";
+import { collections, type issues as issueSchema } from "../schema";
 
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 const deletionChannel = new BroadcastChannel<DeletionChannel>(
@@ -36,6 +38,13 @@ const libraryRouter = router({
       collections,
     };
   }),
+  getCollections: publicProcedure.query(async ({ ctx }) => {
+    const collections = await ctx.db.query.collections.findMany({});
+
+    return {
+      collections,
+    };
+  }),
   additions: publicProcedure.subscription(() =>
     observable<ParserChannel>((emit) => {
       const listener = (evt: ParserChannel) => {
@@ -49,6 +58,19 @@ const libraryRouter = router({
       };
     }),
   ),
+  createCollection: publicProcedure
+    .input(
+      z.object({
+        collectionName: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log({ input });
+      await ctx.db.insert(collections).values({
+        id: v4(),
+        collectionName: input.collectionName,
+      });
+    }),
   deletions: publicProcedure.subscription(() =>
     observable<DeletionChannel>((emit) => {
       const listener = (event: DeletionChannel) => {

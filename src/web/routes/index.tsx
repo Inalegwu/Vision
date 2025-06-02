@@ -1,6 +1,14 @@
-import { Icon, LoadingSkeleton } from "@components";
+import { Icon, LoadingSkeleton, Spinner } from "@components";
 import { Switch, useObservable } from "@legendapp/state/react";
-import { Flex, Heading, Text, Tooltip } from "@radix-ui/themes";
+import {
+  Button,
+  Flex,
+  Heading,
+  Popover,
+  Text,
+  TextField,
+  Tooltip,
+} from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -72,6 +80,19 @@ function Component() {
             </Tooltip>
           </Flex>
         </Flex>
+        <Flex align="center" justify="end" gap="3">
+          <CreateCollection />
+          {data && (
+            <>
+              <Text size="2" className="text-zinc-400">
+                {data.issues.length || 0} Issue(s)
+              </Text>
+              <Text size="2" className="text-zinc-400">
+                {data.collections.length || 0} Collection(s)
+              </Text>
+            </>
+          )}
+        </Flex>
       </Flex>
       <Flex grow="1" className="px-3">
         <AnimatePresence>
@@ -127,43 +148,6 @@ const RenderIssues = memo(({ issues }: { issues: Issue[] }) => {
       </Suspense>
     </Flex>
   );
-
-  // return (
-  //   <Flex
-  //     ref={parentView}
-  //     style={{
-  //       height: "700px",
-  //       overflow: "auto",
-  //     }}
-  //     className="w-full"
-  //   >
-  //     <Flex
-  //       style={{
-  //         width: "100%",
-  //         position: "relative",
-  //         height: `${virtualizer.getTotalSize()}px`,
-  //       }}
-  //       gap="2"
-  //       wrap="wrap"
-  //     >
-  //       <Suspense
-  //         fallback={
-  //           <Flex
-  //             className="w-full h-full bg-transparent"
-  //             align="center"
-  //             justify="center"
-  //           >
-  //             <Spinner className="border-2 border-moonlightOrange" size={35} />
-  //           </Flex>
-  //         }
-  //       >
-  //         {virtualizer.getVirtualItems().map((virtual) => (
-  //           <Issue key={virtual.key} issue={issues[virtual.index]} />
-  //         ))}
-  //       </Suspense>
-  //     </Flex>
-  //   </Flex>
-  // );
 });
 
 const RenderCollections = memo(
@@ -177,12 +161,6 @@ const RenderCollections = memo(
     >;
   }) => {
     const parentView = useRef<HTMLDivElement>(null);
-
-    const virtualizer = useVirtualizer({
-      count: collections.length,
-      estimateSize: () => 35,
-      getScrollElement: () => parentView.current,
-    });
 
     if (collections.length === 0) {
       return (
@@ -211,46 +189,60 @@ const RenderCollections = memo(
         </Suspense>
       </Flex>
     );
-    // return (
-    //   <Flex
-    //     ref={parentView}
-    //     style={{
-    //       height: "700px",
-    //       overflow: "auto",
-    //     }}
-    //     className="w-full"
-    //   >
-    //     <Flex
-    //       style={{
-    //         width: "100%",
-    //         position: "relative",
-    //         height: `${virtualizer.getTotalSize()}px`,
-    //       }}
-    //       gap="4"
-    //     >
-    //       <Suspense
-    //         fallback={
-    //           <Flex
-    //             className="w-full h-[700px] bg-transparent"
-    //             align="center"
-    //             justify="center"
-    //           >
-    //             <Spinner
-    //               className="border-2 border-moonlightOrange"
-    //               size={35}
-    //             />
-    //           </Flex>
-    //         }
-    //       >
-    //         {virtualizer.getVirtualItems().map((virtual) => (
-    //           <Collection
-    //             key={virtual.key}
-    //             collection={collections[virtual.index]}
-    //           />
-    //         ))}
-    //       </Suspense>
-    //     </Flex>
-    //   </Flex>
-    // );
   },
 );
+
+const CreateCollection = React.memo(() => {
+  const utils = t.useUtils();
+  const { mutate: createCollection, isLoading } =
+    t.library.createCollection.useMutation({
+      onSuccess: () => {
+        utils.library.getLibrary.invalidate();
+      },
+    });
+
+  const collectionName = useObservable("");
+
+  const create = () =>
+    createCollection({
+      collectionName: collectionName.get(),
+    });
+
+  return (
+    <Popover.Root>
+      <Popover.Trigger>
+        <button className="p-2 rounded-md cursor-pointer text-moonlightOrange hover:bg-moonlightOrange/10">
+          <Tooltip content="Create a new collection">
+            {isLoading ? <Spinner /> : <Icon name="Plus" size={10} />}
+          </Tooltip>
+        </button>
+      </Popover.Trigger>
+      <Popover.Content className="transition bg-white dark:bg-moonlightBase relative">
+        <Flex direction="column" gap="2" align="start">
+          <Flex align="center" justify="start">
+            <Text size="1">Give your collection a name</Text>
+          </Flex>
+          <TextField.Root>
+            <TextField.Input
+              onChange={(e) => collectionName.set(e.target.value)}
+              size="2"
+            />
+          </TextField.Root>
+          <Popover.Close>
+            <Button
+              onClick={create}
+              className="cursor-pointer"
+              variant="soft"
+              size="1"
+            >
+              <Flex align="center" justify="center" gap="2">
+                <Icon name="Plus" size={10} />
+                <Text>Create Collection</Text>
+              </Flex>
+            </Button>
+          </Popover.Close>
+        </Flex>
+      </Popover.Content>
+    </Popover.Root>
+  );
+});
