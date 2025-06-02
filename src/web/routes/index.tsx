@@ -3,7 +3,6 @@ import { Switch, useObservable } from "@legendapp/state/react";
 import {
   Button,
   Flex,
-  Heading,
   Popover,
   Text,
   TextField,
@@ -122,21 +121,22 @@ const RenderIssues = memo(({ issues }: { issues: Issue[] }) => {
   });
 
   if (issues.length === 0) {
-    return (
-      <Flex
-        direction="column"
-        className="w-full h-full"
-        align="center"
-        justify="center"
-      >
-        <Heading className="text-moonlightOrange" size="8">
-          No Issues
-        </Heading>
-        <Text size="3" className="text-moonlightSlight">
-          add some issues to see them in your library
-        </Text>
-      </Flex>
-    );
+    // return (
+    //   <Flex
+    //     direction="column"
+    //     className="w-full h-full"
+    //     align="center"
+    //     justify="center"
+    //   >
+    //     <Heading className="text-moonlightOrange" size="8">
+    //       No Issues
+    //     </Heading>
+    //     <Text size="3" className="text-moonlightSlight">
+    //       Add some issues to see them in your library
+    //     </Text>
+    //   </Flex>
+    // );
+    return null;
   }
 
   return (
@@ -163,21 +163,22 @@ const RenderCollections = memo(
     const parentView = useRef<HTMLDivElement>(null);
 
     if (collections.length === 0) {
-      return (
-        <Flex
-          direction="column"
-          className="w-full h-full"
-          align="center"
-          justify="center"
-        >
-          <Heading className="text-moonlightOrange" size="8">
-            No Collections
-          </Heading>
-          <Text size="3" className="text-moonlightSlight">
-            create some collections to organize your library
-          </Text>
-        </Flex>
-      );
+      // return (
+      //   <Flex
+      //     direction="column"
+      //     className="w-full h-full"
+      //     align="center"
+      //     justify="center"
+      //   >
+      //     <Heading className="text-moonlightOrange" size="8">
+      //       No Collections
+      //     </Heading>
+      //     <Text size="3" className="text-moonlightSlight">
+      //       Create some collections to organize your library
+      //     </Text>
+      //   </Flex>
+      // );
+      return null;
     }
 
     return (

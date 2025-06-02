@@ -244,8 +244,11 @@ export default function Layout({ children }: LayoutProps) {
 }
 
 function AddButton() {
+  const utils=t.useUtils();
   const { mutate: addIssueToLibrary, isLoading } =
-    t.issue.addIssue.useMutation();
+    t.issue.addIssue.useMutation({
+      onSuccess:()=>utils.library.getLibrary.invalidate()
+    });
 
   return (
     <button

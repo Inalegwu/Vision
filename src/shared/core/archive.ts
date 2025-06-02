@@ -19,7 +19,6 @@ import { v4 } from "uuid";
 import { Fs } from "../fs";
 import { ArchiveError } from "./errors";
 import { MetadataSchema } from "./validations";
-import { SharedMemory } from "./workers/shared-memory";
 
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 
@@ -117,7 +116,6 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
     return { rar, zip } as const;
   }).pipe(
     Effect.orDie,
-    Effect.provide(SharedMemory.Default),
     Effect.annotateLogs({
       service: "archive",
     }),

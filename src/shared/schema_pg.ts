@@ -1,5 +1,12 @@
 import { relations } from "drizzle-orm";
-import { date, index, integer, pgTable, varchar } from "drizzle-orm/pg-core";
+import {
+  date,
+  index,
+  integer,
+  pgTable,
+  text,
+  varchar,
+} from "drizzle-orm/pg-core";
 
 export const collections = pgTable(
   "collections",
@@ -21,6 +28,7 @@ export const issues = pgTable(
     issueTitle: varchar("issue_title").notNull(),
     thumbnailUrl: varchar("thumbnail_url").notNull(),
     collectionId: varchar("collection_id").references(() => collections.id),
+    path: text("path").notNull(),
     dateCreated: date("date_created").default(new Date().toString()),
     dateUpdated: date("date_udpdated").default(new Date().toString()),
   },
@@ -46,23 +54,6 @@ export const metadata = pgTable("metadata", {
   Summary: varchar("summary"),
 });
 
-export const pages = pgTable(
-  "pages",
-  {
-    id: varchar("id").notNull().primaryKey(),
-    pageContent: varchar("page_content").notNull(),
-    issueId: varchar("issue_id")
-      .notNull()
-      .references(() => issues.id, { onDelete: "cascade" }),
-    dateCreated: date("date_created").default(new Date().toString()),
-    dateUpdated: date("date_udpdated").default(new Date().toString()),
-  },
-  (table) => ({
-    pageIdIndex: index("page_id_index").on(table.id),
-    issueIdIndex: index("page_issue_id_index").on(table.issueId),
-  }),
-);
-
 export const collectionToIssue = relations(collections, ({ many }) => ({
   issues: many(issues),
 }));
@@ -82,16 +73,5 @@ export const issueToCollection = relations(issues, ({ one }) => ({
   collection: one(collections, {
     fields: [issues.collectionId],
     references: [collections.id],
-  }),
-}));
-
-export const issueToPage = relations(issues, ({ many }) => ({
-  pages: many(pages),
-}));
-
-export const pageToIssue = relations(pages, ({ one }) => ({
-  issue: one(issues, {
-    fields: [pages.issueId],
-    references: [issues.id],
   }),
 }));

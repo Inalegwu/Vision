@@ -1,4 +1,3 @@
-import sourceDirWatcherWorker from "@core/workers/source-dir?nodeWorker";
 import { createContext } from "@shared/context";
 import { appRouter } from "@shared/routers/_app";
 import * as Fn from "effect/Function";
@@ -11,11 +10,6 @@ import { globalState$ } from "./web/state";
 app.setName("Vision");
 
 process.env.db_url = path.join(app.getPath("appData"), "vision", "vision.db");
-process.env.data_dir = path.join(
-  app.getPath("appData"),
-  "vision",
-  "vision_data",
-);
 process.env.cache_dir = path.join(
   app.getPath("appData"),
   "vision",
@@ -114,17 +108,6 @@ app.whenReady().then(() => {
   );
 
   createWindow();
-
-  sourceDirWatcherWorker({
-    name: "source-dir-watcher",
-  })
-    .on("message", (message) => {
-      console.log({ message });
-    })
-    .postMessage({
-      sourceDirectory: [path.join(app.getPath("downloads"), "comics")],
-      cacheDirectory: path.join(app.getPath("appData"), "Vision", "cache_data"),
-    } satisfies SourceDirSchema);
 });
 
 app.once("window-all-closed", () => {

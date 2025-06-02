@@ -1,8 +1,15 @@
 import chokidar from "chokidar";
 import { app } from "electron";
 import { writeFileSync } from "node:fs";
+import { parentPort } from "node:worker_threads";
+import { z } from "zod";
+import { parseWorkerMessageWithSchema } from "../utils";
 import watcherIndex from "./indexer";
 import parseWorker from "./workers/parser?nodeWorker";
+
+const port = parentPort;
+
+if (!port) throw new Error("Parse Process Port is Missing");
 
 export default function watchFS(path: string | null) {
   try {
@@ -41,3 +48,15 @@ setInterval(() => {
     writeFileSync,
   );
 }, 10_000);
+
+port.on("message", (message) =>
+  parseWorkerMessageWithSchema(z.object({}), message).match(
+    () =>
+      chokidar
+        .watch(process.env.source_dir!, {
+          awaitWriteFinish: true,
+        })
+        .on("add", addFile),
+    (error) => console.error({ error }),
+  ),
+);

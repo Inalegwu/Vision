@@ -28,8 +28,3 @@ export const MetadataSchema = Schema.Struct({
   Year: Schema.Int.pipe(Schema.optional),
   Summary: Schema.String.pipe(Schema.optional),
 });
-
-export const sourceDirSchema = z.object({
-  sourceDirectory: z.array(z.string()),
-  cacheDirectory: z.string(),
-});

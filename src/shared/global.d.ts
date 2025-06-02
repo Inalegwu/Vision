@@ -2,7 +2,6 @@ import type {
   MetadataSchema,
   deletionWorkerSchema,
   parserSchema,
-  sourceDirSchema,
   workerResponseSchema,
 } from "@shared/core/validations";
 import type * as Schema from "effect/Schema";
@@ -92,5 +91,4 @@ declare global {
   export type WorkerResponse = z.infer<typeof workerResponseSchema>;
   export type DeletionSchema = z.infer<typeof deletionWorkerSchema>;
   export type Metadata = Schema.Schema.Type<typeof MetadataSchema>;
-  export type SourceDirSchema = z.infer<typeof sourceDirSchema>;
 }
