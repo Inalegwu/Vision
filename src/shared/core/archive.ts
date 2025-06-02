@@ -59,7 +59,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
 
       yield* Fs.makeDirectory(savePath);
 
-      yield* Effect.forEach(files, (file) =>
+      yield* Effect.forEach(_files, (file) =>
         Fs.writeFileSync(
           path.join(savePath, file.name),
           Buffer.from(file.data!).toString("base64"),
