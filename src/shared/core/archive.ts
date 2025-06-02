@@ -34,7 +34,9 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
      */
     const rar = Effect.fnUntraced(function* (filePath: string) {
       // has xml file
-      const _files = yield* createRarExtractor(filePath);
+      const _files = yield* createRarExtractor(filePath).pipe(
+        Effect.map((files) => files.filter((file) => !file.isDir)),
+      );
 
       // doesn't have xml file
       const files = _files.filter((file) => !file.name.includes(".xml"));
@@ -94,7 +96,8 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
           name: entry.name,
           data: entry.getData().buffer,
           isDir: entry.isDirectory,
-        }));
+        }))
+        .filter((file) => !file.isDir);
 
       // doesn't have .xml file
       const files = _files.filter((file) => !file.name.includes(".xml"));
