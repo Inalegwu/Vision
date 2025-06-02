@@ -40,6 +40,8 @@ function Component() {
     },
   );
 
+  console.log({ data });
+
   const contentLength = data?.pages.length || 0;
   const [itemIndex, setItemIndex] = useState(
     currentlyReading.get(issueId)?.currentPage || 0,
@@ -77,11 +79,11 @@ function Component() {
     }
   }, 3_000);
 
-  useTimeout(() => isEnabled.set(true), 3_000);
+  useTimeout(() => isEnabled.set(true), 2_000);
 
-  const goRight = useDebounce(() => setItemIndex((index) => index - 1), 1500);
+  const goRight = () => setItemIndex((index) => index - 1);
 
-  const goLeft = useDebounce(() => setItemIndex((index) => index - 1), 1500);
+  const goLeft = () => setItemIndex((index) => index - 1);
 
   const debounceKeyPress = useDebounce((e: KeyboardEvent) => {
     if (e.keyCode === 93 && itemIndex < contentLength - 1) {
@@ -144,18 +146,18 @@ function Component() {
               }}
               className="flex cursor-grab active:cursor-grabbing items-center"
             >
-              {/* {data?.pages.map((v) => (
+              {data?.pages.map((v, idx) => (
                 <div
                   className="w-full h-screen flex items-center justify-center shrink-0"
-                  key={v.issueId}
+                  key={idx}
                 >
                   <img
-                    src={v.pageContent}
+                    src={v.data}
                     alt="page"
                     className="h-full w-[50%] object-contain"
                   />
                 </div>
-              ))} */}
+              ))}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -178,13 +180,15 @@ function Component() {
               >
                 <Flex align="center" justify="start">
                   <button
-                    onClick={() => setItemIndex((index) => index - 1)}
+                    // onClick={() => setItemIndex((index) => index - 1)}
+                    onClick={goLeft}
                     className="text-neutral-700 px-5 py-5 cursor-pointer hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 dark:text-neutral-300"
                   >
                     <ChevronLeft size={18} />
                   </button>
                   <button
-                    onClick={() => setItemIndex((index) => index + 1)}
+                    // onClick={() => setItemIndex((index) => index + 1)}
+                    onClick={goRight}
                     className="text-neutral-700 px-5 cursor-pointer py-5 hover:bg-neutral-400/8 dark:hover:bg-neutral-200/3 dark:text-neutral-300"
                   >
                     <ChevronRight size={18} />

@@ -1,11 +1,15 @@
-import * as fs from "node:fs";
 import deletionWorker from "@core/workers/deletion?nodeWorker";
 import parseWorker from "@core/workers/parser?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
+import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
+import { Array, pipe } from "effect";
 import { dialog } from "electron";
+import * as fs from "node:fs";
+import path from "node:path";
 import z from "zod";
 import { issues } from "../schema";
+import { convertToImageUrl } from "../utils";
 
 const issueRouter = router({
   addIssue: publicProcedure.mutation(async ({ ctx }) => {
@@ -63,12 +67,23 @@ const issueRouter = router({
         where: (issue, { eq }) => eq(issue.id, input.issueId),
       });
 
-      const pages = fs.readdirSync(issue?.path!, {
-        recursive: true,
-        encoding: "utf-8",
-      });
+      if (!issue)
+        throw new TRPCError({
+          message: "Issue doesn't exist",
+          code: "NOT_FOUND",
+        });
 
-      console.log({ pages });
+      const pages = pipe(
+        fs.readdirSync(issue.path, {
+          encoding: "utf-8",
+        }),
+        (paths) =>
+          Array.map(paths, (directory) => ({
+            data: convertToImageUrl(
+              fs.readFileSync(path.join(issue.path, directory)).buffer,
+            ),
+          })),
+      );
 
       const merged = {
         ...issue,
