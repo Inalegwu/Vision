@@ -6,6 +6,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { AnimatePresence, motion } from "motion/react";
 import React, { memo, Suspense, useRef } from "react";
+import { toast } from "../components/toast";
 import { useTimeout } from "../hooks";
 import { globalState$ } from "../state";
 
@@ -23,6 +24,7 @@ function Component() {
 
   const { data } = t.library.getLibrary.useQuery(undefined, {
     enabled: isEnabled.get(),
+    onError: (error) => toast.error(error.message),
   });
 
   useTimeout(() => isEnabled.set(true), 500);
@@ -76,6 +78,7 @@ function Component() {
           <Switch value={view}>
             {{
               issues: () => <RenderIssues issues={data?.issues || []} />,
+              collections:()=><RenderCollections collections={data?.collections||[]}/>
               default: () => null,
               undefined: () => null,
             }}

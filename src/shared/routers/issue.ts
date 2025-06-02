@@ -7,6 +7,7 @@ import { Array, pipe } from "effect";
 import { dialog } from "electron";
 import * as fs from "node:fs";
 import path from "node:path";
+import { v4 } from "uuid";
 import z from "zod";
 import { issues } from "../schema";
 import { convertToImageUrl } from "../utils";
@@ -77,8 +78,12 @@ const issueRouter = router({
         fs.readdirSync(issue.path, {
           encoding: "utf-8",
         }),
+        // exclude .xml file from the data list
+        (files) => Array.filter(files, (path) => !path.includes(".xml")),
+        // convert all loaded files into loadable data urls;
         (paths) =>
           Array.map(paths, (directory) => ({
+            id: v4(),
             data: convertToImageUrl(
               fs.readFileSync(path.join(issue.path, directory)).buffer,
             ),

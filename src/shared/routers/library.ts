@@ -14,8 +14,17 @@ const libraryRouter = router({
       orderBy: (fields, { asc }) => asc(fields.issueTitle),
     });
 
+    const collections = await ctx.db.query.collections.findMany({
+      with: {
+        issues: true,
+      },
+    });
+
+    // const issues=Array.differenceWith<Issue>((issue))
+
     return {
       issues,
+      collections,
     };
   }),
   additions: publicProcedure.subscription(() =>

@@ -6,7 +6,6 @@ import { BroadcastChannel } from "broadcast-channel";
 import { eq } from "drizzle-orm";
 import { Effect } from "effect";
 import { parentPort } from "node:worker_threads";
-import { DeletionError } from "../errors";
 
 const port = parentPort;
 
@@ -16,28 +15,44 @@ const deletionChannel = new BroadcastChannel<DeletionChannel>(
 
 if (!port) throw new Error("Illegal State");
 
-const deleteIssue = ({ issueId }: DeletionSchema) =>
-  Effect.tryPromise({
-    try: async () => {
-      await db.delete(issues).where(eq(issues.id, issueId)).returning();
-      deletionChannel.postMessage({
-        isDone: true,
-      });
-      return;
-    },
-    catch: (cause) => new DeletionError({ cause }),
-  }).pipe(
-    Effect.orDie,
-    Effect.withLogSpan("deletion.duration"),
-    Effect.annotateLogs({
-      worker: "deletion",
-    }),
-    Effect.runPromise,
+const deleteIssue = Effect.fnUntraced(function* ({ issueId }: DeletionSchema) {
+  // const issue = yield* Effect.tryPromise(
+  //   async () =>
+  //     await db.query.issues.findFirst({
+  //       where: (fields, { eq }) => eq(fields.id, issueId),
+  //     }),
+  // );
+
+  // if (!issue) {
+  //   deletionChannel.postMessage({
+  //     isDone: false,
+  //   });
+  //   return;
+  // }
+
+  // yield* Fs.removeDirectory(issue.path);
+
+  yield* Effect.tryPromise(
+    async () =>
+      await db.delete(issues).where(eq(issues.id, issueId)).returning(),
   );
+
+  deletionChannel.postMessage({
+    isDone: true,
+  });
+});
 
 port.on("message", (message) =>
   parseWorkerMessageWithSchema(deletionWorkerSchema, message).match(
-    (data) => deleteIssue(data),
+    (data) =>
+      deleteIssue(data).pipe(
+        Effect.orDie,
+        Effect.withLogSpan("deletion.duration"),
+        Effect.annotateLogs({
+          worker: "deletion",
+        }),
+        Effect.runPromise,
+      ),
     (message) => {
       console.error({ message });
     },

@@ -1,6 +1,7 @@
 import { useObservable } from "@legendapp/state/react";
 import { Flex } from "@radix-ui/themes";
 import t from "@shared/config";
+import { toast } from "@src/web/components/toast";
 import { createFileRoute } from "@tanstack/react-router";
 import { Bookmark, ChevronLeft, ChevronRight, Expand } from "lucide-react";
 import { AnimatePresence, motion, useMotionValue } from "motion/react";
@@ -37,6 +38,7 @@ function Component() {
     },
     {
       enabled: isEnabled.get(),
+      onError: (error) => toast.error(error.message),
     },
   );
 
@@ -149,7 +151,7 @@ function Component() {
               {data?.pages.map((v, idx) => (
                 <div
                   className="w-full h-screen flex items-center justify-center shrink-0"
-                  key={idx}
+                  key={v.id}
                 >
                   <img
                     src={v.data}

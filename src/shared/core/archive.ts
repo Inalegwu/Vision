@@ -34,7 +34,11 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
      *
      */
     const rar = Effect.fnUntraced(function* (filePath: string) {
+      // has xml file
       const _files = yield* createRarExtractor(filePath);
+
+      // doesn't have xml file
+      const files = _files.filter((file) => !file.name.includes(".xml"));
 
       const issueTitle = yield* Effect.sync(() =>
         parseFileNameFromPath(filePath),
@@ -43,7 +47,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
       const savePath = path.join(process.env.cache_dir!, issueTitle);
 
       const thumbnailUrl = yield* Effect.sync(() =>
-        convertToImageUrl(_files[0].data || _files[1].data || _files[1].data!),
+        convertToImageUrl(files[0].data || files[1].data || files[1].data!),
       );
 
       const newIssue = yield* saveIssue(issueTitle, thumbnailUrl, savePath);
@@ -55,7 +59,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
 
       yield* Fs.makeDirectory(savePath);
 
-      yield* Effect.forEach(_files, (file) =>
+      yield* Effect.forEach(files, (file) =>
         Fs.writeFileSync(
           path.join(savePath, file.name),
           Buffer.from(file.data!).toString("base64"),
@@ -83,6 +87,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
 
       const savePath = path.join(process.env.cache_dir!, issueTitle);
 
+      // still has .xml file
       const _files = zip
         .getEntries()
         .sort((a, b) => sortPages(a.name, b.name))
@@ -90,11 +95,13 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
           name: entry.name,
           data: entry.getData().buffer,
           isDir: entry.isDirectory,
-        }))
-        .filter((file) => !file.isDir);
+        }));
+
+      // doesn't have .xml file
+      const files = _files.filter((file) => !file.name.includes(".xml"));
 
       const thumbnailUrl = yield* Effect.sync(() =>
-        convertToImageUrl(_files[0].data || _files[1].data || _files[2].data),
+        convertToImageUrl(files[0].data || files[1].data || files[2].data),
       );
 
       const newIssue = yield* saveIssue(issueTitle, thumbnailUrl, savePath);
