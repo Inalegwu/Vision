@@ -39,7 +39,7 @@ export default function Issue({ issue }: Props) {
       },
     });
 
-  const { data, isLoading } = t.library.getCollections.useQuery();
+  const { data } = t.library.getCollections.useQuery();
 
   const go = () =>
     navigation.navigate({

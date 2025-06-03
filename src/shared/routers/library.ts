@@ -1,5 +1,4 @@
 import { publicProcedure, router } from "@src/trpc";
-import { TRPCError } from "@trpc/server";
 import { observable } from "@trpc/server/observable";
 import { BroadcastChannel } from "broadcast-channel";
 import { eq } from "drizzle-orm";
@@ -141,7 +140,7 @@ const libraryRouter = router({
       });
     }),
   emptyCache: publicProcedure.mutation(async ({ ctx }) => {
-    NodeFS.rmdirSync(process.env.library_cache!, {
+    NodeFS.rmdirSync(process.env.cache_dir!, {
       recursive: true,
     });
 
@@ -150,22 +149,6 @@ const libraryRouter = router({
 
     return {
       success: true,
-    };
-  }),
-  chooseSourceDirectory: publicProcedure.mutation(async () => {
-    const { canceled, filePaths } = await dialog.showOpenDialog({
-      properties: ["openDirectory"],
-    });
-
-    if (canceled) {
-      throw new TRPCError({
-        message: "Didn't choose a source directory",
-        code: "BAD_REQUEST",
-      });
-    }
-
-    return {
-      path: filePaths[0],
     };
   }),
   additions: publicProcedure.subscription(() =>

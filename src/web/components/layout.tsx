@@ -188,7 +188,7 @@ export default function Layout({ children }: LayoutProps) {
               </Flex>
               <Flex align="center" justify="end">
                 <button
-                  className="p-3 hover:bg-neutral-400/10 dark:text-moonlightText dark:hover:bg-neutral-400/5"
+                  className="p-3 hover:bg-neutral-400/10 cursor-pointer dark:text-moonlightText dark:hover:bg-neutral-400/5"
                   onClick={goToSettings}
                   type="button"
                 >
@@ -244,11 +244,12 @@ export default function Layout({ children }: LayoutProps) {
 }
 
 function AddButton() {
-  const utils=t.useUtils();
-  const { mutate: addIssueToLibrary, isLoading } =
-    t.issue.addIssue.useMutation({
-      onSuccess:()=>utils.library.getLibrary.invalidate()
-    });
+  const utils = t.useUtils();
+  const { mutate: addIssueToLibrary, isLoading } = t.issue.addIssue.useMutation(
+    {
+      onSuccess: () => utils.library.getLibrary.invalidate(),
+    },
+  );
 
   return (
     <button
@@ -263,6 +264,12 @@ function AddButton() {
 
 function BrowserButton() {
   const overlay$ = useObservable(false);
+
+  const searchTerm = useObservable("");
+
+  const doSearch = () => {
+    console.log(searchTerm.get());
+  };
 
   return (
     <>
@@ -286,26 +293,41 @@ function BrowserButton() {
               display: "flex",
             }}
             exit={{ opacity: 0, scale: 0, display: "none" }}
-            className="absolute z-20 top-0 left-0 w-full h-[100vh] bg-black/10 flex items-center justify-center"
+            className="absolute z-20 top-0 left-0 w-full h-[100vh] bg-black/4 flex items-center justify-center"
           >
             <Flex
               direction="column"
-              className="dark:bg-moonlightFocusLow w-4/6 h-4/6 border-1 border-solid border-neutral-100 rounded-md dark:border-neutral-400/10"
+              className="bg-white dark:bg-moonlightFocusLow w-4/6 h-4/6 border-1 border-solid border-neutral-200/40 rounded-md dark:border-neutral-400/10"
             >
-              <Flex align="center" justify="between" className="py-1 px-1">
-                <Flex
-                  align="center"
-                  justify="center"
-                  grow="1"
-                  className="p-1.4 rounded-md w-4/6 bg-neutral-100/50 dark:bg-neutral-100/4 border-1 border-solid border-neutral-100 dark:border-neutral-100/5"
-                >
-                  <Text size="2" className="text-moonlightSlight">
-                    search bar
-                  </Text>
-                </Flex>
+              <Flex
+                align="center"
+                justify="between"
+                className="bg-neutral-200/10 dark:bg-neutral-700/10 rounded-tr-md rounded-tl-md"
+              >
+                <input
+                  placeholder="Find a Comic"
+                  onChange={(value) =>
+                    searchTerm.set(value.currentTarget.value)
+                  }
+                  onSubmit={doSearch}
+                  onBlur={doSearch}
+                  className="bg-transparent border-none font-medium dark:text-neutral-300 py-3 px-3 flex-1 outline-none"
+                />
                 <button
                   onClick={() => overlay$.set(false)}
-                  className="p-2.7 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/8 dark:hover:bg-neutral-400/5"
+                  className="px-3 py-3 text-neutral-500 cursor-pointer"
+                >
+                  <Icon name="ChevronLeft" size={13} />
+                </button>
+                <button
+                  onClick={() => overlay$.set(false)}
+                  className="px-3 py-3 text-neutral-500 cursor-pointer"
+                >
+                  <Icon name="ChevronRight" size={13} />
+                </button>
+                <button
+                  onClick={() => overlay$.set(false)}
+                  className="px-3 py-3 text-red-500 cursor-pointer"
                 >
                   <Icon name="X" size={13} />
                 </button>

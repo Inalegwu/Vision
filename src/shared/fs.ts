@@ -49,20 +49,14 @@ export namespace Fs {
   export const writeFile = (
     path: string,
     data: string | DataView<ArrayBufferLike>,
+    opts: NodeFS.WriteFileOptions,
   ) =>
     Effect.async<void, FSError>((resume) =>
-      NodeFS.writeFile(
-        path,
-        data,
-        {
-          encoding: "utf-8",
-        },
-        (error) => {
-          if (error) resume(Effect.fail(new FSError({ cause: error })));
+      NodeFS.writeFile(path, data, opts, (error) => {
+        if (error) resume(Effect.fail(new FSError({ cause: error })));
 
-          resume(Effect.void);
-        },
-      ),
+        resume(Effect.void);
+      }),
     );
 
   export const writeFileSync = (
