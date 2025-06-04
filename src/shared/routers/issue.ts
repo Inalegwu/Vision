@@ -79,15 +79,14 @@ const issueRouter = router({
           encoding: "utf-8",
         }),
         // exclude .xml file from the data list
-        (files) => Array.filter(files, (path) => !path.includes(".xml")),
+        Array.filter((path) => !path.includes(".xml")),
         // convert all loaded files into loadable data urls;
-        (paths) =>
-          Array.map(paths, (directory) => ({
-            id: v4(),
-            data: convertToImageUrl(
-              fs.readFileSync(path.join(issue.path, directory)).buffer,
-            ),
-          })),
+        Array.map((directory) => ({
+          id: v4(),
+          data: convertToImageUrl(
+            fs.readFileSync(path.join(issue.path, directory)).buffer,
+          ),
+        })),
       );
 
       const merged = {

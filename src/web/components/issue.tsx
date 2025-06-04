@@ -11,6 +11,7 @@ import t from "@shared/config";
 import { useRouter } from "@tanstack/react-router";
 import { useRef } from "react";
 import FlatList from "./flatlist";
+import { toast } from "./toast";
 
 type Props = {
   issue: Issue;
@@ -27,16 +28,13 @@ export default function Issue({ issue }: Props) {
 
   const { mutate: addToCollection, isLoading: adding } =
     t.library.addIssueToCollection.useMutation({
-      onSuccess: () => {
-        utils.library.getLibrary.invalidate();
-      },
+      onSuccess: () => utils.library.getLibrary.invalidate(),
+      onError: (error) => toast.error(error.message),
     });
 
   const { mutate: removeFromCollection } =
     t.library.removeFromCollection.useMutation({
-      onSuccess: () => {
-        utils.library.invalidate();
-      },
+      onSuccess: () => utils.library.invalidate(),
     });
 
   const { data } = t.library.getCollections.useQuery();

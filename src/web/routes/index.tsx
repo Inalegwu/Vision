@@ -10,9 +10,8 @@ import {
 } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
-import { useVirtualizer } from "@tanstack/react-virtual";
 import { AnimatePresence, motion } from "motion/react";
-import React, { memo, Suspense, useRef } from "react";
+import React, { memo, Suspense } from "react";
 import { toast } from "../components/toast";
 import { useTimeout } from "../hooks";
 import { globalState$ } from "../state";
@@ -112,14 +111,6 @@ function Component() {
 }
 
 const RenderIssues = memo(({ issues }: { issues: Issue[] }) => {
-  const parentView = useRef<HTMLDivElement>(null);
-
-  const virtualizer = useVirtualizer({
-    count: issues.length,
-    estimateSize: () => 50,
-    getScrollElement: () => parentView.current,
-  });
-
   if (issues.length === 0) {
     // return (
     //   <Flex
@@ -160,8 +151,6 @@ const RenderCollections = memo(
       }
     >;
   }) => {
-    const parentView = useRef<HTMLDivElement>(null);
-
     if (collections.length === 0) {
       // return (
       //   <Flex
@@ -197,9 +186,8 @@ const CreateCollection = React.memo(() => {
   const utils = t.useUtils();
   const { mutate: createCollection, isLoading } =
     t.library.createCollection.useMutation({
-      onSuccess: () => {
-        utils.library.getLibrary.invalidate();
-      },
+      onSuccess: () => utils.library.invalidate(),
+      onError: (error) => toast.error(error.message),
     });
 
   const collectionName = useObservable("");
