@@ -1,5 +1,6 @@
 import type {
   MetadataSchema,
+  cacheWorkerSchema,
   deletionWorkerSchema,
   parserSchema,
   workerResponseSchema,
@@ -91,4 +92,5 @@ declare global {
   export type WorkerResponse = z.infer<typeof workerResponseSchema>;
   export type DeletionSchema = z.infer<typeof deletionWorkerSchema>;
   export type Metadata = Schema.Schema.Type<typeof MetadataSchema>;
+  export type CacheWorkerSchema = z.infer<typeof cacheWorkerSchema>;
 }

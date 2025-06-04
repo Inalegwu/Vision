@@ -16,6 +16,8 @@ export const workerResponseSchema = z.object({
   error: z.unknown().nullable(),
 });
 
+export const cacheWorkerSchema = z.object({});
+
 export const MetadataSchema = Schema.Struct({
   Series: Schema.String.pipe(Schema.optional),
   Issue: Schema.Int.pipe(Schema.optional),

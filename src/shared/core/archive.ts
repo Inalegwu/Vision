@@ -58,7 +58,10 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
         newIssue.id,
       ).pipe(Effect.fork);
 
-      yield* Fs.makeDirectory(savePath);
+      yield* Fs.makeDirectory(savePath).pipe(
+        Effect.catchAll(Effect.logFatal),
+        Effect.orDie,
+      );
 
       yield* Effect.forEach(_files, (file) =>
         Fs.writeFileSync(
@@ -80,24 +83,13 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
      *
      */
     const zip = Effect.fnUntraced(function* (filePath: string) {
-      const zip = yield* createZipExtractor(filePath);
+      const _files = yield* createZipExtractor(filePath);
 
       const issueTitle = yield* Effect.sync(() =>
         parseFileNameFromPath(filePath),
       );
 
       const savePath = path.join(process.env.cache_dir!, issueTitle);
-
-      // still has .xml file
-      const _files = zip
-        .getEntries()
-        .sort((a, b) => sortPages(a.name, b.name))
-        .map((entry) => ({
-          name: entry.name,
-          data: entry.getData().buffer,
-          isDir: entry.isDirectory,
-        }))
-        .filter((file) => !file.isDir);
 
       // doesn't have .xml file
       const files = _files.filter((file) => !file.name.includes(".xml"));
@@ -113,7 +105,20 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
         newIssue.id,
       ).pipe(Effect.fork);
 
-      zip.extractAllTo(savePath);
+      yield* Fs.makeDirectory(savePath).pipe(
+        Effect.catchAll(Effect.logFatal),
+        Effect.orDie,
+      );
+
+      yield* Effect.forEach(_files, (file) =>
+        Fs.writeFileSync(
+          path.join(savePath, file.name),
+          Buffer.from(file.data!).toString("base64"),
+          {
+            encoding: "base64",
+          },
+        ),
+      );
     });
 
     return { rar, zip } as const;
@@ -236,5 +241,16 @@ const createRarExtractor = Effect.fn(function* (filePath: string) {
 const createZipExtractor = Effect.fn(function* (filePath: string) {
   return yield* Fs.readFile(filePath).pipe(
     Effect.map((buff) => new Zip(Buffer.from(buff.buffer))),
+    Effect.map((zip) =>
+      zip
+        .getEntries()
+        .sort((a, b) => sortPages(a.name, b.name))
+        .map((entry) => ({
+          name: entry.name,
+          data: entry.getData().buffer,
+          isDir: entry.isDirectory,
+        }))
+        .filter((file) => !file.isDir),
+    ),
   );
 });

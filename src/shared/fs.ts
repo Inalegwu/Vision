@@ -26,26 +26,6 @@ export namespace Fs {
       }),
     );
 
-  export const removeDirectory = (filePath: string) =>
-    Effect.async<void, FSError>((resume) => {
-      const paths = NodeFS.readdirSync(filePath, {
-        recursive: true,
-        encoding: "utf-8",
-      });
-
-      for (const path of paths) {
-        NodeFS.rm(path, (error) => {
-          if (error) resume(Effect.fail(new FSError({ cause: error })));
-        });
-      }
-
-      NodeFS.rmdir(filePath, (error) => {
-        if (error) resume(Effect.fail(new FSError({ cause: error })));
-
-        resume(Effect.void);
-      });
-    });
-
   export const writeFile = (
     path: string,
     data: string | DataView<ArrayBufferLike>,
@@ -68,6 +48,28 @@ export namespace Fs {
       try: () => NodeFS.writeFileSync(path, data, options),
       catch: (cause) => new FSError({ cause }),
     });
+
+  /**
+   *
+   * @param filePath: string
+   * @returns Effect.Effect<void, FSError, never>
+   *
+   * Recursively removes contents of a specified directory
+   */
+  export const removeDirectory = (filePath: string) =>
+    Effect.async<void, FSError>((resume) =>
+      NodeFS.rmdir(
+        filePath,
+        {
+          recursive: true,
+        },
+        (error) => {
+          if (error) resume(Effect.fail(new FSError({ cause: error })));
+
+          resume(Effect.void);
+        },
+      ),
+    );
 
   export const writeStream = (filePath: string, data: ArrayBufferLike) =>
     Effect.async<void, FSError>((resume) => {
