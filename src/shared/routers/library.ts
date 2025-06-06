@@ -84,7 +84,9 @@ const libraryRouter = router({
 
       console.log(deleted);
 
-      return deleted;
+      return {
+        deleted: deleted[0],
+      };
     }),
   addIssueToCollection: publicProcedure
     .input(

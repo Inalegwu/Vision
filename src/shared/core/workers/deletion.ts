@@ -1,6 +1,7 @@
 import { deletionWorkerSchema } from "@shared/core/validations";
 import { issues } from "@shared/schema";
 import db from "@shared/storage";
+import { Fs } from "@src/shared/fs";
 import { parseWorkerMessageWithSchema } from "@src/shared/utils";
 import { BroadcastChannel } from "broadcast-channel";
 import { eq } from "drizzle-orm";
@@ -16,25 +17,25 @@ const deletionChannel = new BroadcastChannel<DeletionChannel>(
 if (!port) throw new Error("Illegal State");
 
 const deleteIssue = Effect.fnUntraced(function* ({ issueId }: DeletionSchema) {
-  // const issue = yield* Effect.tryPromise(
-  //   async () =>
-  //     await db.query.issues.findFirst({
-  //       where: (fields, { eq }) => eq(fields.id, issueId),
-  //     }),
-  // );
+  const issue = yield* Effect.tryPromise(
+    async () =>
+      await db.query.issues.findFirst({
+        where: (fields, { eq }) => eq(fields.id, issueId),
+      }),
+  );
 
-  // if (!issue) {
-  //   deletionChannel.postMessage({
-  //     isDone: false,
-  //   });
-  //   return;
-  // }
+  if (!issue) {
+    deletionChannel.postMessage({
+      isDone: false,
+    });
+    return;
+  }
 
-  // yield* Fs.removeDirectory(issue.path);
+  yield* Fs.removeDirectory(issue.path);
 
   yield* Effect.tryPromise(
     async () =>
-      await db.delete(issues).where(eq(issues.id, issueId)).returning(),
+      await db.delete(issues).where(eq(issues.id, issue.id)).returning(),
   );
 
   deletionChannel.postMessage({

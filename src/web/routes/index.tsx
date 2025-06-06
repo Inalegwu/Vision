@@ -92,7 +92,7 @@ function Component() {
           )}
         </Flex>
       </Flex>
-      <Flex grow="1" className="px-3">
+      <Flex grow="1" className="px-3 overflow-y-scroll pb-20">
         <AnimatePresence>
           <Switch value={view}>
             {{
@@ -131,7 +131,7 @@ const RenderIssues = memo(({ issues }: { issues: Issue[] }) => {
   }
 
   return (
-    <Flex width="100%" wrap="wrap" gap="1" className="overflow-y-scroll pb-17">
+    <Flex width="100%" wrap="wrap" gap="2">
       <Suspense fallback={<LoadingSkeleton />}>
         {issues.map((issue) => (
           <Issue issue={issue} key={issue.id} />

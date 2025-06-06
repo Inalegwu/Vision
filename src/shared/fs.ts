@@ -58,7 +58,7 @@ export namespace Fs {
    */
   export const removeDirectory = (filePath: string) =>
     Effect.async<void, FSError>((resume) =>
-      NodeFS.rmdir(
+      NodeFS.rm(
         filePath,
         {
           recursive: true,
