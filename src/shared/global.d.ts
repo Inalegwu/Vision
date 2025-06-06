@@ -7,7 +7,7 @@ import type {
 } from "@shared/core/validations";
 import type * as Schema from "effect/Schema";
 import type z from "zod";
-import type { collections, issues } from "./schema";
+import type { collections, issues } from "./alt/schema.pg";
 
 declare global {
   export type GlobalState = {

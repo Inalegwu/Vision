@@ -13,7 +13,7 @@ process.env.db_url = path.join(app.getPath("appData"), "vision", "vision.db");
 process.env.cache_dir = path.join(
   app.getPath("appData"),
   "vision",
-  "library_cache",
+  "LibraryCache",
 );
 process.env.source_dir = path.join(app.getPath("downloads"), "Vision");
 

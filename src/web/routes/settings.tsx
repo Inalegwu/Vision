@@ -20,14 +20,27 @@ function Component() {
           <Tabs.Trigger className="cursor-pointer" value="storage">
             <Text size="2">Storage</Text>
           </Tabs.Trigger>
-          <Tabs.Trigger value="reader">
+          <Tabs.Trigger className="cursor-pointer" value="reader">
             <Text size="2">Reader</Text>
+          </Tabs.Trigger>
+          <Tabs.Trigger className="cursor-pointer" value="notifications">
+            <Text size="2">Notifications</Text>
           </Tabs.Trigger>
         </Tabs.List>
         <Tabs.Content value="storage" className="w-full h-screen">
           <StorageView />
         </Tabs.Content>
         <Tabs.Content value="reader" className="w-full h-screen">
+          <Flex
+            align="center"
+            grow="1"
+            className="w-full h-full"
+            justify="center"
+          >
+            <Heading>Coming Soon</Heading>
+          </Flex>
+        </Tabs.Content>
+        <Tabs.Content value="notifications" className="w-full h-screen">
           <Flex
             align="center"
             grow="1"

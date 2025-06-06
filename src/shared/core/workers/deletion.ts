@@ -31,12 +31,12 @@ const deleteIssue = Effect.fnUntraced(function* ({ issueId }: DeletionSchema) {
     return;
   }
 
-  yield* Fs.removeDirectory(issue.path);
-
   yield* Effect.tryPromise(
     async () =>
       await db.delete(issues).where(eq(issues.id, issue.id)).returning(),
   );
+
+  yield* Fs.removeDirectory(issue.path);
 
   deletionChannel.postMessage({
     isDone: true,

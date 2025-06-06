@@ -58,10 +58,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
         newIssue.id,
       ).pipe(Effect.fork);
 
-      yield* Fs.makeDirectory(savePath).pipe(
-        Effect.catchAll(Effect.logFatal),
-        Effect.orDie,
-      );
+      yield* Fs.makeDirectory(savePath).pipe(Effect.catchAll(Effect.logFatal));
 
       yield* Effect.forEach(_files, (file) =>
         Fs.writeFileSync(
@@ -105,10 +102,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
         newIssue.id,
       ).pipe(Effect.fork);
 
-      yield* Fs.makeDirectory(savePath).pipe(
-        Effect.catchAll(Effect.logFatal),
-        Effect.orDie,
-      );
+      yield* Fs.makeDirectory(savePath).pipe(Effect.catchAll(Effect.logFatal));
 
       yield* Effect.forEach(_files, (file) =>
         Fs.writeFileSync(
