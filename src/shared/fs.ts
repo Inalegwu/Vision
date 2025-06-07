@@ -6,6 +6,13 @@ class FSError extends Data.TaggedError("FSError")<{
 }> {}
 
 export namespace Fs {
+  /**
+   *
+   * @param filePath: string
+   * @returns Effect.Effect<void, FSError, never>
+   *
+   * read contents of a path
+   */
   export const readFile = (path: string) =>
     Effect.async<Uint8Array<ArrayBuffer>, FSError>((resume) =>
       NodeFS.readFile(path, undefined, (cause, data) => {
@@ -17,6 +24,13 @@ export namespace Fs {
       }),
     );
 
+  /**
+   *
+   * @param filePath: string
+   * @returns Effect.Effect<void, FSError, never>
+   *
+   * Creates a new directory
+   */
   export const makeDirectory = (filePath: string) =>
     Effect.async<void, FSError>((resume) =>
       NodeFS.mkdir(filePath, undefined, (error) => {
@@ -26,6 +40,15 @@ export namespace Fs {
       }),
     );
 
+  /**
+   *
+   * @param path: string
+   * @param data: string | DataView<ArrayBufferLike>
+   * @param opts: NodeFS.WriteFileOptions
+   * @returns Effect.Effect<void, FSError, never>
+   *
+   * write data to a path
+   */
   export const writeFile = (
     path: string,
     data: string | DataView<ArrayBufferLike>,
@@ -38,16 +61,6 @@ export namespace Fs {
         resume(Effect.void);
       }),
     );
-
-  export const writeFileSync = (
-    path: string,
-    data: string | DataView<ArrayBufferLike>,
-    options?: NodeFS.WriteFileOptions,
-  ) =>
-    Effect.try({
-      try: () => NodeFS.writeFileSync(path, data, options),
-      catch: (cause) => new FSError({ cause }),
-    });
 
   /**
    *
@@ -71,6 +84,14 @@ export namespace Fs {
       ),
     );
 
+  /**
+   *
+   * @param filePath: string
+   * @param data: ArrayBufferLike
+   * @returns Effect.Effect<void, FSError, never>
+   *
+   * creates a writeable stream to output data
+   */
   export const writeStream = (filePath: string, data: ArrayBufferLike) =>
     Effect.async<void, FSError>((resume) => {
       const stream = NodeFS.createWriteStream(filePath);

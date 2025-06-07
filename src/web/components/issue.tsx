@@ -52,7 +52,7 @@ export default function Issue({ issue }: Props) {
       <ContextMenu.Root>
         <ContextMenu.Trigger>
           <Flex
-            className="w-[200px] h-[300px] mb-12 cursor-pointer"
+            className="w-[200px] h-[300px] mb-16 cursor-pointer"
             gap="1"
             direction="column"
             onClick={go}

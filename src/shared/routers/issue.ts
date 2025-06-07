@@ -78,9 +78,7 @@ const issueRouter = router({
         fs.readdirSync(issue.path, {
           encoding: "utf-8",
         }),
-        // exclude .xml file from the data list
         Array.filter((path) => !path.includes(".xml")),
-        // convert all loaded files into loadable data urls;
         Array.map((directory) => ({
           id: v4(),
           data: convertToImageUrl(

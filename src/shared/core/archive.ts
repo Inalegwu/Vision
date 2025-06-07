@@ -56,12 +56,12 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
       yield* parseXML(
         _files.find((file) => file.name.includes(".xml"))?.data,
         newIssue.id,
-      ).pipe(Effect.fork);
+      ).pipe(Effect.fork, Effect.catchAll(Effect.logError));
 
       yield* Fs.makeDirectory(savePath).pipe(Effect.catchAll(Effect.logFatal));
 
       yield* Effect.forEach(_files, (file) =>
-        Fs.writeFileSync(
+        Fs.writeFile(
           path.join(savePath, file.name),
           Buffer.from(file.data!).toString("base64"),
           {
@@ -100,12 +100,12 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
       yield* parseXML(
         _files.find((file) => file.name.includes(".xml"))?.data,
         newIssue.id,
-      ).pipe(Effect.fork);
+      ).pipe(Effect.fork, Effect.catchAll(Effect.logError));
 
       yield* Fs.makeDirectory(savePath).pipe(Effect.catchAll(Effect.logFatal));
 
       yield* Effect.forEach(_files, (file) =>
-        Fs.writeFileSync(
+        Fs.writeFile(
           path.join(savePath, file.name),
           Buffer.from(file.data!).toString("base64"),
           {
@@ -133,7 +133,7 @@ const parseXML = Effect.fn(function* (
 
   if (!buffer) return;
 
-  const { metadata: parsedMeta, metaId } = yield* Effect.sync(() =>
+  const { metadata: extracted, metaId } = yield* Effect.sync(() =>
     xmlParser.parse(Buffer.from(buffer).toString()),
   ).pipe(
     Effect.andThen((file) =>
@@ -144,7 +144,7 @@ const parseXML = Effect.fn(function* (
     ),
     Effect.map((metadata) => ({
       metadata,
-      metaId: extractMetaID(metadata.Notes).pipe(Option.getOrNull),
+      metaId: extractMetaID(metadata.Notes).pipe(Option.getOrUndefined),
     })),
   );
 
@@ -155,7 +155,7 @@ const parseXML = Effect.fn(function* (
       await db.insert(metadata).values({
         id: v4(),
         issueId,
-        ...parsedMeta,
+        ...extracted,
       }),
   );
 });

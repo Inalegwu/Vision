@@ -1,5 +1,35 @@
-import { Array } from "effect";
+import { Array, Effect, HashSet } from "effect";
 import type * as fs from "node:fs";
+
+export class WatcherIndex extends Effect.Service<WatcherIndex>()(
+  "WatcherIndex",
+  {
+    effect: Effect.gen(function* () {
+      const store = HashSet.empty<string>();
+
+      const write = (value: string) => {
+        store.pipe(HashSet.add(value));
+      };
+
+      const clear = () => {};
+
+      const check = (value: string) => store.pipe(HashSet.has(value));
+
+      const remove = (value: string) => {
+        store.pipe(HashSet.remove(value));
+      };
+
+      // TODO:saving index
+
+      return {
+        write,
+        clear,
+        check,
+        remove,
+      };
+    }),
+  },
+) {}
 
 export const watcherIndex = (() => {
   const store = new Set<string>();

@@ -15,7 +15,7 @@ if (!port) throw new Error("Parse Process Port is Missing");
 
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 
-const handleMessage = Effect.fn(function* ({
+const handleMessage = Effect.fnUntraced(function* ({
   action,
   parsePath,
 }: ParserSchema) {
@@ -69,6 +69,15 @@ const handleMessage = Effect.fn(function* ({
     Match.when({ action: "UNLINK" }, () => Effect.void),
   );
 });
+
+// const _ = Effect.functionWithSpan({
+//   body: handleMessage,
+//   options: (opts) => ({
+//     name: "archive-parser",
+//     attributes: opts,
+//     kind: "internal",
+//   }),
+// });
 
 port.on("message", (message) =>
   parseWorkerMessageWithSchema(parserSchema, message).match(

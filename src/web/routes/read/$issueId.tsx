@@ -1,5 +1,5 @@
 import { useObservable } from "@legendapp/state/react";
-import { Flex, Text } from "@radix-ui/themes";
+import { Flex } from "@radix-ui/themes";
 import t from "@shared/config";
 import { toast } from "@src/web/components/toast";
 import { createFileRoute } from "@tanstack/react-router";
@@ -41,8 +41,6 @@ function Component() {
       onError: (error) => toast.error(error.message),
     },
   );
-
-  console.log({ data });
 
   const contentLength = data?.pages.length || 0;
   const [itemIndex, setItemIndex] = useState(
@@ -190,17 +188,12 @@ function Component() {
                     <ChevronRight size={18} />
                   </button>
                 </Flex>
-                <Flex direction="column" gap="1" className="flex-1">
-                  <Text size="2" color="orange">
-                    {itemIndex}/{contentLength}
-                  </Text>
-                  <motion.div className="rounded-full bg-gray-100/40 dark:bg-gray-100/8 flex-1">
-                    <motion.div
-                      animate={{ width: `${width}%` }}
-                      className="p-1.2 bg-neutral-900 rounded-full dark:bg-neutral-100"
-                    />
-                  </motion.div>
-                </Flex>
+                <motion.div className="rounded-full bg-gray-100/40 dark:bg-gray-100/8 flex-1">
+                  <motion.div
+                    animate={{ width: `${width}%` }}
+                    className="p-1.2 bg-neutral-900 rounded-full dark:bg-neutral-100"
+                  />
+                </motion.div>
                 <Flex align="center" justify="end">
                   <button
                     onClick={() => globalState$.isFullscreen.set(!isFullScreen)}
