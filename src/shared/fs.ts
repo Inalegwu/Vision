@@ -5,6 +5,8 @@ class FSError extends Data.TaggedError("FSError")<{
   cause: unknown;
 }> {}
 
+type File = Uint8Array<ArrayBuffer>;
+
 export namespace Fs {
   /**
    *
@@ -14,7 +16,7 @@ export namespace Fs {
    * read contents of a path
    */
   export const readFile = (path: string) =>
-    Effect.async<Uint8Array<ArrayBuffer>, FSError>((resume) =>
+    Effect.async<File, FSError>((resume) =>
       NodeFS.readFile(path, undefined, (cause, data) => {
         if (cause) {
           resume(Effect.fail(new FSError({ cause })));
@@ -38,6 +40,28 @@ export namespace Fs {
 
         resume(Effect.void);
       }),
+    );
+
+  /**
+   *
+   * @param filePath: string
+   * @returns Effect.Effect<Array<string>, FSError, never>
+   *
+   * Read contents of a directory
+   */
+  export const readDirectory = (filePath: string) =>
+    Effect.async<Array<string>, FSError>((resume) =>
+      NodeFS.readdir(
+        filePath,
+        {
+          encoding: "utf-8",
+        },
+        (error, files) => {
+          if (error) resume(Effect.fail(new FSError({ cause: error })));
+
+          resume(Effect.succeed(files));
+        },
+      ),
     );
 
   /**
@@ -83,30 +107,4 @@ export namespace Fs {
         },
       ),
     );
-
-  /**
-   *
-   * @param filePath: string
-   * @param data: ArrayBufferLike
-   * @returns Effect.Effect<void, FSError, never>
-   *
-   * creates a writeable stream to output data
-   */
-  export const writeStream = (filePath: string, data: ArrayBufferLike) =>
-    Effect.async<void, FSError>((resume) => {
-      const stream = NodeFS.createWriteStream(filePath);
-
-      stream.write(data);
-
-      stream.on("finish", () => resume(Effect.succeed("Write Successful")));
-
-      stream.on("error", (cause) =>
-        resume(Effect.fail(new FSError({ cause }))),
-      );
-
-      return Effect.sync(() => {
-        console.log(`Cleaning up ${filePath}`);
-        NodeFS.unlinkSync(filePath);
-      });
-    });
 }

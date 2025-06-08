@@ -70,15 +70,6 @@ const handleMessage = Effect.fnUntraced(function* ({
   );
 });
 
-// const _ = Effect.functionWithSpan({
-//   body: handleMessage,
-//   options: (opts) => ({
-//     name: "archive-parser",
-//     attributes: opts,
-//     kind: "internal",
-//   }),
-// });
-
 port.on("message", (message) =>
   parseWorkerMessageWithSchema(parserSchema, message).match(
     (data) =>

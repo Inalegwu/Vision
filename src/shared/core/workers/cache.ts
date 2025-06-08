@@ -12,7 +12,7 @@ if (!port) throw new Error("Illegal State");
 
 port.on("message", (message) =>
   parseWorkerMessageWithSchema(cacheWorkerSchema, message).match(
-    (data) =>
+    () =>
       Fs.removeDirectory(process.env.cache_dir!).pipe(
         Effect.andThen(() =>
           Effect.tryPromise(async () => {

@@ -130,7 +130,7 @@ const issueRouter = router({
         .returning();
 
       return {
-        result,
+        result: result[0],
       };
     }),
 });

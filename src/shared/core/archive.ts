@@ -33,13 +33,13 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
      *
      */
     const rar = Effect.fnUntraced(function* (filePath: string) {
-      // has xml file
-      const _files = yield* createRarExtractor(filePath).pipe(
-        Effect.map((files) => files.filter((file) => !file.isDir)),
+      const { files, meta } = yield* createRarExtractor(filePath).pipe(
+        Effect.map(Array.filter((file) => !file.isDir)),
+        Effect.map((files) => ({
+          meta: files.find((file) => file.name.includes(".xml")),
+          files: files.filter((file) => !file.name.includes(".xml")),
+        })),
       );
-
-      // doesn't have xml file
-      const files = _files.filter((file) => !file.name.includes(".xml"));
 
       const issueTitle = yield* Effect.sync(() =>
         parseFileNameFromPath(filePath),
@@ -53,14 +53,14 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
 
       const newIssue = yield* saveIssue(issueTitle, thumbnailUrl, savePath);
 
-      yield* parseXML(
-        _files.find((file) => file.name.includes(".xml"))?.data,
-        newIssue.id,
-      ).pipe(Effect.fork, Effect.catchAll(Effect.logError));
+      yield* parseXML(meta?.data, newIssue.id).pipe(
+        Effect.fork,
+        Effect.catchAll(Effect.logError),
+      );
 
       yield* Fs.makeDirectory(savePath).pipe(Effect.catchAll(Effect.logFatal));
 
-      yield* Effect.forEach(_files, (file) =>
+      yield* Effect.forEach(files, (file) =>
         Fs.writeFile(
           path.join(savePath, file.name),
           Buffer.from(file.data!).toString("base64"),
@@ -80,7 +80,13 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
      *
      */
     const zip = Effect.fnUntraced(function* (filePath: string) {
-      const _files = yield* createZipExtractor(filePath);
+      const { files, meta } = yield* createZipExtractor(filePath).pipe(
+        Effect.map(Array.filter((file) => !file.isDir)),
+        Effect.map((files) => ({
+          meta: files.find((file) => file.name.includes(".xml")),
+          files: files.filter((file) => !file.name.includes(".xml")),
+        })),
+      );
 
       const issueTitle = yield* Effect.sync(() =>
         parseFileNameFromPath(filePath),
@@ -88,23 +94,20 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
 
       const savePath = path.join(process.env.cache_dir!, issueTitle);
 
-      // doesn't have .xml file
-      const files = _files.filter((file) => !file.name.includes(".xml"));
-
       const thumbnailUrl = yield* Effect.sync(() =>
         convertToImageUrl(files[0].data || files[1].data || files[2].data),
       );
 
       const newIssue = yield* saveIssue(issueTitle, thumbnailUrl, savePath);
 
-      yield* parseXML(
-        _files.find((file) => file.name.includes(".xml"))?.data,
-        newIssue.id,
-      ).pipe(Effect.fork, Effect.catchAll(Effect.logError));
+      yield* parseXML(meta?.data, newIssue.id).pipe(
+        Effect.fork,
+        Effect.catchAll(Effect.logError),
+      );
 
       yield* Fs.makeDirectory(savePath).pipe(Effect.catchAll(Effect.logFatal));
 
-      yield* Effect.forEach(_files, (file) =>
+      yield* Effect.forEach(files, (file) =>
         Fs.writeFile(
           path.join(savePath, file.name),
           Buffer.from(file.data!).toString("base64"),
@@ -217,7 +220,7 @@ const createRarExtractor = Effect.fn(function* (filePath: string) {
         }),
       ),
     ),
-    Effect.andThen((extracted) =>
+    Effect.map((extracted) =>
       Array.fromIterable(extracted.files)
         .sort((a, b) => sortPages(a.fileHeader.name, b.fileHeader.name))
         .filter((file) => !file.fileHeader.flags.directory),
