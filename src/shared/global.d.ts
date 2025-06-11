@@ -88,6 +88,12 @@ declare global {
     ext: "cbr" | "cbz" | "none";
   }>;
 
+  export type Extractor = {
+    name: string;
+    isDir: boolean;
+    data: ArrayBufferLike | undefined;
+  };
+
   export type ParserSchema = z.infer<typeof parserSchema>;
   export type WorkerResponse = z.infer<typeof workerResponseSchema>;
   export type DeletionSchema = z.infer<typeof deletionWorkerSchema>;

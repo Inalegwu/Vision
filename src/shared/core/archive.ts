@@ -33,13 +33,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
      *
      */
     const rar = Effect.fnUntraced(function* (filePath: string) {
-      const { files, meta } = yield* createRarExtractor(filePath).pipe(
-        Effect.map(Array.filter((file) => !file.isDir)),
-        Effect.map((files) => ({
-          meta: files.find((file) => file.name.includes(".xml")),
-          files: files.filter((file) => !file.name.includes(".xml")),
-        })),
-      );
+      const { files, meta } = yield* createRarExtractor(filePath);
 
       const issueTitle = yield* Effect.sync(() =>
         parseFileNameFromPath(filePath),
@@ -53,21 +47,62 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
 
       const newIssue = yield* saveIssue(issueTitle, thumbnailUrl, savePath);
 
-      yield* parseXML(meta?.data, newIssue.id).pipe(
+      yield* parseXML(meta, newIssue.id).pipe(
         Effect.fork,
         Effect.catchAll(Effect.logError),
       );
 
-      yield* Fs.makeDirectory(savePath).pipe(Effect.catchAll(Effect.logFatal));
-
-      yield* Effect.forEach(files, (file) =>
-        Fs.writeFile(
-          path.join(savePath, file.name),
-          Buffer.from(file.data!).toString("base64"),
-          {
-            encoding: "base64",
-          },
+      yield* Fs.makeDirectory(savePath).pipe(
+        Effect.catchAll((e) =>
+          Effect.sync(() => {
+            console.log({ e });
+            parserChannel.postMessage({
+              error: `${e.message}::${e.cause}`,
+              state: "ERROR",
+              isCompleted: false,
+            });
+          }),
         ),
+      );
+
+      yield* Effect.forEach(files, (file, idx) =>
+        Effect.gen(function* () {
+          yield* Fs.writeFile(
+            path.join(savePath, file.name),
+            Buffer.from(file.data!).toString("base64"),
+            {
+              encoding: "base64",
+            },
+          ).pipe(
+            Effect.catchAll((e) =>
+              Effect.sync(() => {
+                console.log({ e });
+                parserChannel.postMessage({
+                  error: `${e.message}::${e.cause}`,
+                  state: "ERROR",
+                  isCompleted: false,
+                });
+              }),
+            ),
+          );
+
+          yield* Effect.sync(() =>
+            parserChannel.postMessage({
+              error: null,
+              state: "SUCCESS",
+              completed: idx,
+              total: files.length,
+            }),
+          );
+        }),
+      );
+
+      yield* Effect.sync(() =>
+        parserChannel.postMessage({
+          state: "SUCCESS",
+          isCompleted: true,
+          error: null,
+        }),
       );
     });
 
@@ -80,13 +115,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
      *
      */
     const zip = Effect.fnUntraced(function* (filePath: string) {
-      const { files, meta } = yield* createZipExtractor(filePath).pipe(
-        Effect.map(Array.filter((file) => !file.isDir)),
-        Effect.map((files) => ({
-          meta: files.find((file) => file.name.includes(".xml")),
-          files: files.filter((file) => !file.name.includes(".xml")),
-        })),
-      );
+      const { files, meta } = yield* createZipExtractor(filePath);
 
       const issueTitle = yield* Effect.sync(() =>
         parseFileNameFromPath(filePath),
@@ -100,21 +129,62 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
 
       const newIssue = yield* saveIssue(issueTitle, thumbnailUrl, savePath);
 
-      yield* parseXML(meta?.data, newIssue.id).pipe(
+      yield* parseXML(meta, newIssue.id).pipe(
         Effect.fork,
         Effect.catchAll(Effect.logError),
       );
 
-      yield* Fs.makeDirectory(savePath).pipe(Effect.catchAll(Effect.logFatal));
-
-      yield* Effect.forEach(files, (file) =>
-        Fs.writeFile(
-          path.join(savePath, file.name),
-          Buffer.from(file.data!).toString("base64"),
-          {
-            encoding: "base64",
-          },
+      yield* Fs.makeDirectory(savePath).pipe(
+        Effect.catchAll((e) =>
+          Effect.sync(() => {
+            console.log({ e });
+            parserChannel.postMessage({
+              error: `${e.message}::${e.cause}`,
+              state: "ERROR",
+              isCompleted: false,
+            });
+          }),
         ),
+      );
+
+      yield* Effect.forEach(files, (file, idx) =>
+        Effect.gen(function* () {
+          yield* Fs.writeFile(
+            path.join(savePath, file.name),
+            Buffer.from(file.data!).toString("base64"),
+            {
+              encoding: "base64",
+            },
+          ).pipe(
+            Effect.catchAll((e) =>
+              Effect.sync(() => {
+                console.log({ e });
+                parserChannel.postMessage({
+                  error: `${e.message}::${e.cause}`,
+                  state: "ERROR",
+                  isCompleted: false,
+                });
+              }),
+            ),
+          );
+
+          yield* Effect.sync(() =>
+            parserChannel.postMessage({
+              error: null,
+              state: "SUCCESS",
+              completed: idx,
+              total: files.length,
+            }),
+          );
+        }),
+      );
+
+      yield* Effect.sync(() =>
+        parserChannel.postMessage({
+          state: "SUCCESS",
+          isCompleted: true,
+          error: null,
+        }),
       );
     });
 
@@ -129,20 +199,21 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
 }) {}
 
 const parseXML = Effect.fn(function* (
-  buffer: ArrayBufferLike | undefined,
+  file: Option.Option<Extractor>,
   issueId: string,
 ) {
   const xmlParser = new XMLParser();
 
-  if (!buffer) return;
+  const data = Option.getOrUndefined(file);
+
+  if (!data) return;
 
   const { metadata: extracted, metaId } = yield* Effect.sync(() =>
-    xmlParser.parse(Buffer.from(buffer).toString()),
+    xmlParser.parse(Buffer.from(data.data!).toString()),
   ).pipe(
     Effect.andThen((file) =>
       Schema.decodeUnknown(MetadataSchema)(file.comicInfo, {
         exact: false,
-        onExcessProperty: "ignore",
       }),
     ),
     Effect.map((metadata) => ({
@@ -226,12 +297,23 @@ const createRarExtractor = Effect.fn(function* (filePath: string) {
         .filter((file) => !file.fileHeader.flags.directory),
     ),
     Effect.andThen((extracted) =>
-      extracted.map((file) => ({
-        name: file.fileHeader.name,
-        isDir: file.fileHeader.flags.directory,
-        data: file.extraction?.buffer,
-      })),
+      extracted.map(
+        (file) =>
+          ({
+            name: file.fileHeader.name,
+            isDir: file.fileHeader.flags.directory,
+            data: file.extraction?.buffer,
+          }) satisfies Extractor,
+      ),
     ),
+    Effect.map((files) => ({
+      meta: Option.fromNullable(
+        files.find((file) => file.name.includes(".xml")),
+      ),
+      files: files
+        .filter((file) => !file.name.includes(".xml"))
+        .filter((file) => !file.isDir),
+    })),
   );
 });
 
@@ -242,12 +324,23 @@ const createZipExtractor = Effect.fn(function* (filePath: string) {
       zip
         .getEntries()
         .sort((a, b) => sortPages(a.name, b.name))
-        .map((entry) => ({
-          name: entry.name,
-          data: entry.getData().buffer,
-          isDir: entry.isDirectory,
-        }))
+        .map(
+          (entry) =>
+            ({
+              name: entry.name,
+              data: entry.getData().buffer,
+              isDir: entry.isDirectory,
+            }) satisfies Extractor,
+        )
         .filter((file) => !file.isDir),
     ),
+    Effect.map((files) => ({
+      meta: Option.fromNullable(
+        files.find((file) => file.name.includes(".xml")),
+      ),
+      files: files
+        .filter((file) => !file.name.includes(".xml"))
+        .filter((file) => !file.isDir),
+    })),
   );
 });

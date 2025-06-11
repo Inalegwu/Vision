@@ -23,6 +23,7 @@ function Component() {
         <Text size="8" weight="bold">
           {data?.collection?.collectionName}
         </Text>
+        {/* TODO: add issues in bulk to a collection */}
       </Flex>
       <Flex wrap="wrap" gap="2" className="px-3 pb-20 overflow-y-scroll">
         <Suspense fallback={<LoadingSkeleton />}>

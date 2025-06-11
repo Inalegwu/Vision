@@ -5,7 +5,7 @@ import { BrowserWindow, app, screen } from "electron";
 import { createIPCHandler } from "electron-trpc/main";
 import * as fs from "node:fs";
 import path from "node:path";
-import { globalState$ } from "./web/state";
+import { globalState$, readingState$ } from "./web/state";
 
 app.setName("Vision");
 
@@ -78,6 +78,7 @@ const createWindow = () => {
     });
   }
 
+  // load app settings
   Fn.pipe(
     path.join(app.getPath("appData"), "Vision", "config.json"),
     (_) => fs.readFileSync(_, { encoding: "utf-8" }),
@@ -88,31 +89,13 @@ const createWindow = () => {
   // mainWindow.webContents.openDevTools({ mode: "detach" });
 };
 
-app.whenReady().then(() => {
-  Fn.pipe(
-    globalState$.get(),
-    // (config) =>
-    //   ({
-    //     ...config,
-    //     sourceDirectory: path.join(app.getPath("downloads"), "comics"),
-    //   }) satisfies GlobalState,
-    JSON.stringify,
-    (config) => ({
-      config,
-      path: path.join(app.getPath("appData"), "Vision", "config.json"),
-    }),
-    (_) =>
-      fs.writeFileSync(_.path, _.config, {
-        encoding: "utf-8",
-      }),
-  );
-
-  createWindow();
-});
+app.whenReady().then(() => createWindow());
 
 app.once("window-all-closed", () => {
   const config = globalState$.get();
+  const history = readingState$.get();
 
+  // save app settings to disk
   Fn.pipe(
     path.join(app.getPath("appData"), "Vision", "config.json"),
     (path) => ({
