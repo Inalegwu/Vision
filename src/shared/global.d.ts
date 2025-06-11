@@ -7,7 +7,7 @@ import type {
 } from "@shared/core/validations";
 import type * as Schema from "effect/Schema";
 import type z from "zod";
-import type { collections, issues } from "./alt/schema.pg";
+import type { collections, issues } from "./schema";
 
 declare global {
   export type GlobalState = {
@@ -15,6 +15,7 @@ declare global {
     firstLaunch: boolean;
     isFullscreen: boolean;
     libraryView: "issues" | "collections";
+    appId: string | null;
   };
 
   export type Issue = Omit<
@@ -71,6 +72,7 @@ declare global {
 
   export type DeletionChannel = {
     isDone: boolean;
+    title?: string;
   };
 
   export type Index = {

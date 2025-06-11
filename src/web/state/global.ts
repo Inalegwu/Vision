@@ -14,6 +14,7 @@ const globalState = observable<GlobalState>({
   firstLaunch: true,
   isFullscreen: false,
   libraryView: "issues",
+  appId: null,
 });
 
 export const fullScreenState$ = observable<{ isFullscreen: boolean }>({

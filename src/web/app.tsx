@@ -52,7 +52,7 @@ if (!rootElement?.innerHTML) {
           >
             <ToastProvider
               context={{
-                duration: 3000,
+                duration: 2000,
                 position: "bottom-right",
               }}
             >

@@ -50,7 +50,7 @@ function Index() {
       >
         <Heading size="7">Currently Reading</Heading>
         <Flex grow="1" className="py-2 overflow-x-scroll pr-14" gap="3">
-          <Suspense fallback={<LoadingSkeleton estimatedLength={6} />}>
+          <Suspense fallback={<LoadingSkeleton estimatedLength={3} />}>
             {currentlyReading.map((v) => (
               <CurrentlyReading key={v.id} issue={v} />
             ))}

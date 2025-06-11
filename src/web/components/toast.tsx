@@ -131,7 +131,7 @@ const Toast = React.memo(() => {
             gap="2"
           >
             {mode === "loading" ? (
-              <Spinner size={13} />
+              <Spinner size={12} />
             ) : (
               <Icon
                 size={16}
@@ -148,7 +148,7 @@ const Toast = React.memo(() => {
               />
             )}
             <Text
-              size="2"
+              size="1"
               color={
                 mode === "success"
                   ? "green"

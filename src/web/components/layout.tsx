@@ -7,6 +7,7 @@ import { capitalize } from "effect/String";
 import { AnimatePresence, motion } from "motion/react";
 import type React from "react";
 import { useEffect } from "react";
+import { v4 } from "uuid";
 import { useInterval } from "../hooks";
 import { globalState$ } from "../state";
 import Icon from "./icon";
@@ -29,12 +30,9 @@ export default function Layout({ children }: LayoutProps) {
 
   const isNotHome = computed(() => routerState.location.pathname !== "/").get();
   const isFullscreen = globalState$.isFullscreen.get();
-  const isUpdating = useObservable(false);
 
   t.library.additions.useSubscription(undefined, {
     onData: (data) => {
-      console.log(data);
-
       if (!data.isCompleted && data.state === "SUCCESS") {
         toast.loading("Adding Issue To Library");
       }
@@ -42,13 +40,11 @@ export default function Layout({ children }: LayoutProps) {
       if (data.isCompleted && data.state === "SUCCESS") {
         toast.dismiss();
         utils.library.getLibrary.invalidate();
-        return;
       }
 
       if (data.isCompleted && data.state === "ERROR") {
         toast.error(data.error || "Something went wrong");
         console.log(data.error);
-        return;
       }
 
       return;
@@ -57,8 +53,14 @@ export default function Layout({ children }: LayoutProps) {
 
   t.library.deletions.useSubscription(undefined, {
     onData: (data) => {
+      if (!data.isDone) {
+        toast.info(`Removing ${data.title} from Library`);
+      }
+
       if (data.isDone) {
+        toast.success(`Successfully Removed ${data.title}`);
         utils.library.invalidate();
+        toast.dismiss();
       }
     },
   });
@@ -66,8 +68,6 @@ export default function Layout({ children }: LayoutProps) {
   useInterval(() => {
     if (toast.showing) toast.dismiss();
   }, 2_500);
-
-  // useInterval(() => utils.library.getLibrary.invalidate(), 1500);
 
   useObserveEffect(() => {
     if (globalState$.colorMode.get() === "dark") {
@@ -91,6 +91,9 @@ export default function Layout({ children }: LayoutProps) {
         to: "/first-launch",
       });
     }
+    if (globalState$.appId.get() === null) {
+      globalState$.appId.set(v4());
+    }
   }, [navigation]);
 
   return (
@@ -99,6 +102,7 @@ export default function Layout({ children }: LayoutProps) {
       grow="1"
       className="transition bg-white dark:bg-moonlightBase relative"
     >
+      {/* title bar */}
       <AnimatePresence mode="wait" initial={false}>
         {!isFullscreen && (
           <motion.div
@@ -178,7 +182,9 @@ export default function Layout({ children }: LayoutProps) {
                             ? "Collection"
                             : routerState.location.pathname.includes("read")
                               ? "Reading"
-                              : "Exploring",
+                              : routerState.location.pathname === "/settings"
+                                ? "Settings"
+                                : "Exploring",
                     )}
                   </Text>
                 </Flex>
@@ -220,24 +226,11 @@ export default function Layout({ children }: LayoutProps) {
           </motion.div>
         )}
       </AnimatePresence>
+      {/* actual page */}
       <Flex width="100%" height="100%">
         {children}
       </Flex>
-      <AnimatePresence>
-        {isUpdating.get() && (
-          <motion.div
-            initial={{
-              transform: "translateY(50px)",
-            }}
-            animate={{ transform: "translateY(0px)" }}
-            exit={{ transform: "translateY(50px)" }}
-            className="p-2 flex items-center justify-center space-x-2 rounded-full bg-moonlightOrange/5 text-moonlightOrange absolute z-10 bottom-4 left-[46%] border-1 border-solid border-moonlightOrange/10"
-          >
-            <Spinner className="border-moonlightOrange" size={13} />
-            <Text size="1">Adding Issue To Library</Text>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* toast notifications */}
       <Toast />
     </Flex>
   );
