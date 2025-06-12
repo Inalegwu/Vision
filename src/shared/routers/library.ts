@@ -1,20 +1,20 @@
-import prefetchWorker from "@core/workers/prefetch?nodeWorker";
+import cacheWorker from "@src/shared/core/workers/cache?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import { observable } from "@trpc/server/observable";
 import { BroadcastChannel } from "broadcast-channel";
+import { eq } from "drizzle-orm";
 import * as Array from "effect/Array";
 import { dialog } from "electron";
 import { v4 } from "uuid";
-import z from "zod";
-import { view } from "../core/validations";
-import { collections, type issues as issueSchema } from "../schema";
+import { z } from "zod";
+import {
+  collections as collectionsSchema,
+  issues as issueSchema,
+} from "../schema";
 
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 const deletionChannel = new BroadcastChannel<DeletionChannel>(
   "deletion-channel",
-);
-const prefetchChannel = new BroadcastChannel<PrefetchChannel>(
-  "prefetch-channel",
 );
 
 const libraryRouter = router({
@@ -43,26 +43,91 @@ const libraryRouter = router({
       collections,
     };
   }),
-  prefetchLibrary: publicProcedure
+  getCollectionById: publicProcedure
     .input(
       z.object({
-        view,
-        issueId: z.optional(z.string()),
+        collectionId: z.string(),
       }),
     )
-    .mutation(async ({ input }) =>
-      prefetchWorker({
-        name: "prefetch-worker",
-      })
-        .on("message", (m) => {
-          console.log({ m });
-          return m;
+    .query(async ({ ctx, input }) => {
+      const collection = await ctx.db.query.collections.findFirst({
+        where: (collections, { eq }) => eq(collections.id, input.collectionId),
+        with: {
+          issues: true,
+        },
+      });
+
+      return {
+        collection,
+      };
+    }),
+  getCollections: publicProcedure.query(async ({ ctx }) => {
+    const collections = await ctx.db.query.collections.findMany({});
+
+    return {
+      collections,
+    };
+  }),
+  deleteCollection: publicProcedure
+    .input(
+      z.object({
+        collectionId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log({ input });
+
+      const deleted = await ctx.db
+        .delete(collectionsSchema)
+        .where(eq(collectionsSchema.id, input.collectionId))
+        .returning();
+
+      console.log(deleted);
+
+      return {
+        deleted: deleted[0],
+      };
+    }),
+  addIssueToCollection: publicProcedure
+    .input(
+      z.object({
+        collectionId: z.string(),
+        issueId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log(input);
+
+      const returns = await ctx.db
+        .update(issueSchema)
+        .set({
+          collectionId: input.collectionId,
         })
-        .postMessage({
-          view: input.view,
-          issueId: input.issueId,
-        } satisfies PrefetchSchema),
-    ),
+        .where(eq(issueSchema.id, input.issueId))
+        .returning();
+
+      return {
+        data: returns,
+      };
+    }),
+  removeFromCollection: publicProcedure
+    .input(
+      z.object({
+        issueId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const changes = await ctx.db
+        .update(issueSchema)
+        .set({
+          collectionId: null,
+        })
+        .where(eq(issueSchema.id, input.issueId));
+
+      return {
+        changes,
+      };
+    }),
   createCollection: publicProcedure
     .input(
       z.object({
@@ -71,11 +136,32 @@ const libraryRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       console.log({ input });
-      await ctx.db.insert(collections).values({
+      await ctx.db.insert(collectionsSchema).values({
         id: v4(),
         collectionName: input.collectionName,
       });
     }),
+  emptyCache: publicProcedure.mutation(async ({ ctx }) => {
+    // NodeFS.rmdirSync(process.env.cache_dir!, {
+    //   recursive: true,
+    // });
+
+    // await ctx.db.delete(issueSchema);
+    // await ctx.db.delete(collectionsSchema);
+
+    // return {
+    //   success: true,
+    // };
+    cacheWorker({
+      name: "cache-worker",
+    })
+      .on("message", console.log)
+      .postMessage({});
+
+    return {
+      success: true,
+    };
+  }),
   additions: publicProcedure.subscription(() =>
     observable<ParserChannel>((emit) => {
       const listener = (evt: ParserChannel) => {
@@ -99,19 +185,6 @@ const libraryRouter = router({
 
       return () => {
         deletionChannel.removeEventListener("message", listener);
-      };
-    }),
-  ),
-  prefetch: publicProcedure.subscription(() =>
-    observable<PrefetchChannel>((emit) => {
-      const listener = (event: PrefetchChannel) => {
-        emit.next(event);
-      };
-
-      prefetchChannel.addEventListener("message", listener);
-
-      return () => {
-        prefetchChannel.removeEventListener("message", listener);
       };
     }),
   ),

@@ -21,9 +21,9 @@ export const queryClient = new QueryClient({
 });
 
 export const persister = createSyncStoragePersister({
-  storage: window.sessionStorage,
+  storage: window.localStorage,
   throttleTime: 2_000,
-  key: "VISION_APP_CACHE",
+  key: "app_cache",
 });
 
 export const trpcClient = t.createClient({

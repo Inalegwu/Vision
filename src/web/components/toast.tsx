@@ -1,6 +1,6 @@
 import { observable } from "@legendapp/state";
 import { Flex, Text } from "@radix-ui/themes";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import React from "react";
 import { useTimeout } from "../hooks";
 import Icon from "./icon";
@@ -39,6 +39,7 @@ export function ToastProvider({ children, context }: ProviderProps) {
 }
 
 export const toast = {
+  showing: toastState$.show.get(),
   success: (message: string) => {
     toastState$.set({
       show: true,
@@ -130,7 +131,7 @@ const Toast = React.memo(() => {
             gap="2"
           >
             {mode === "loading" ? (
-              <Spinner size={13} />
+              <Spinner size={12} />
             ) : (
               <Icon
                 size={16}
@@ -147,7 +148,7 @@ const Toast = React.memo(() => {
               />
             )}
             <Text
-              size="2"
+              size="1"
               color={
                 mode === "success"
                   ? "green"

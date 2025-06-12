@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import * as Schema from "effect/Schema";
 import { z } from "zod";
 
 export const parserSchema = z.object({
@@ -16,12 +16,7 @@ export const workerResponseSchema = z.object({
   error: z.unknown().nullable(),
 });
 
-export const view = z.enum(["library", "reader"]);
-
-export const prefetchWorkerSchema = z.object({
-  view,
-  issueId: z.optional(z.string()),
-});
+export const cacheWorkerSchema = z.object({});
 
 export const MetadataSchema = Schema.Struct({
   Series: Schema.String.pipe(Schema.optional),
@@ -34,9 +29,4 @@ export const MetadataSchema = Schema.Struct({
   Month: Schema.Int.pipe(Schema.optional),
   Year: Schema.Int.pipe(Schema.optional),
   Summary: Schema.String.pipe(Schema.optional),
-});
-
-export const sourceDirSchema = z.object({
-  sourceDirectory: z.array(z.string()),
-  cacheDirectory: z.string(),
 });

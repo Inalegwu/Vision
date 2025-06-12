@@ -1,11 +1,10 @@
 import { ContextMenu, Flex, Text } from "@radix-ui/themes";
-import type { CurrentlyReading as CurrentlyReadingType } from "@src/shared/types";
 import { useRouter } from "@tanstack/react-router";
 import { Check } from "lucide-react";
 import { memo, useMemo } from "react";
 
 type Props = {
-  issue: CurrentlyReadingType;
+  issue: CurrentlyReading;
 };
 
 const CurrentlyReading = ({ issue }: Props) => {
@@ -22,7 +21,7 @@ const CurrentlyReading = ({ issue }: Props) => {
         <Flex
           onClick={() =>
             navigation.navigate({
-              to: "/$issueId",
+              to: "/read/$issueId",
               params: {
                 issueId: issue.id,
               },

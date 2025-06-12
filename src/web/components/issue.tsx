@@ -11,6 +11,7 @@ import t from "@shared/config";
 import { useRouter } from "@tanstack/react-router";
 import { useRef } from "react";
 import FlatList from "./flatlist";
+import { toast } from "./toast";
 
 type Props = {
   issue: Issue;
@@ -26,25 +27,21 @@ export default function Issue({ issue }: Props) {
   });
 
   const { mutate: addToCollection, isLoading: adding } =
-    t.collection.addIssueToCollection.useMutation({
-      onSuccess: () => {
-        utils.library.getLibrary.invalidate();
-      },
+    t.library.addIssueToCollection.useMutation({
+      onSuccess: () => utils.library.getLibrary.invalidate(),
+      onError: (error) => toast.error(error.message),
     });
 
   const { mutate: removeFromCollection } =
-    t.collection.removeFromCollection.useMutation({
-      onSuccess: () => {
-        utils.library.invalidate();
-        utils.collection.invalidate();
-      },
+    t.library.removeFromCollection.useMutation({
+      onSuccess: () => utils.library.invalidate(),
     });
 
-  const { data, isLoading } = t.collection.getCollections.useQuery();
+  const { data } = t.library.getCollections.useQuery();
 
   const go = () =>
     navigation.navigate({
-      to: "/$issueId",
+      to: "/read/$issueId",
       params: {
         issueId: issue.id,
       },
@@ -55,7 +52,7 @@ export default function Issue({ issue }: Props) {
       <ContextMenu.Root>
         <ContextMenu.Trigger>
           <Flex
-            className="w-[200px] h-[300px] mb-5 mt-6 cursor-pointer"
+            className="w-[200px] h-[300px] mb-16 cursor-pointer"
             gap="1"
             direction="column"
             onClick={go}
@@ -69,14 +66,20 @@ export default function Issue({ issue }: Props) {
               <Text
                 size="1"
                 weight="medium"
-                className="text-black dark:text-white"
+                className="text-black dark:text-neutral-400"
+                // className="text-neutral-400"
               >
                 {issue.issueTitle}
               </Text>
             </Flex>
           </Flex>
         </ContextMenu.Trigger>
-        <ContextMenu.Content size="1" variant="soft" color="orange">
+        <ContextMenu.Content
+          size="1"
+          variant="soft"
+          className="dark:bg-moonlightFocusLow"
+          color="orange"
+        >
           <Flex align="center" justify="start" gap="1" width="100%">
             {issue.collectionId !== null ? (
               <Tooltip
@@ -170,7 +173,10 @@ export default function Issue({ issue }: Props) {
         <Dialog.Trigger>
           <button ref={dialogRef} />
         </Dialog.Trigger>
-        <Dialog.Content className="space-y-2 max-h-90" size="1">
+        <Dialog.Content
+          className="space-y-2 max-h-90 dark:bg-moonlightFocusLow"
+          size="1"
+        >
           <FlatList
             data={data?.collections || []}
             className="h-70"

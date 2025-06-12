@@ -3,7 +3,7 @@ import { ContextMenu, Flex, Text, Tooltip } from "@radix-ui/themes";
 import t from "@shared/config";
 import { useRouter } from "@tanstack/react-router";
 import * as A from "effect/Array";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import React from "react";
 
 type Props = {
@@ -16,10 +16,9 @@ const Collection = React.memo(({ collection }: Props) => {
   const utils = t.useUtils();
   const navigation = useRouter();
 
-  const { mutate: deleteCollection } =
-    t.collection.deleteCollection.useMutation({
-      onSuccess: () => utils.library.invalidate(),
-    });
+  const { mutate: deleteCollection } = t.library.deleteCollection.useMutation({
+    onSuccess: () => utils.library.invalidate(),
+  });
 
   const go = () =>
     navigation.navigate({

@@ -1,14 +1,13 @@
 import type {
   MetadataSchema,
+  cacheWorkerSchema,
   deletionWorkerSchema,
   parserSchema,
-  prefetchWorkerSchema,
-  sourceDirSchema,
   workerResponseSchema,
 } from "@shared/core/validations";
 import type * as Schema from "effect/Schema";
 import type z from "zod";
-import type { collections, issues, pages } from "./schema";
+import type { collections, issues } from "./schema";
 
 declare global {
   export type GlobalState = {
@@ -16,6 +15,7 @@ declare global {
     firstLaunch: boolean;
     isFullscreen: boolean;
     libraryView: "issues" | "collections";
+    appId: string | null;
   };
 
   export type Issue = Omit<
@@ -33,8 +33,6 @@ declare global {
     dateCreated: string | null;
     dateUpdated: string | null;
   };
-
-  export type Page = typeof pages.$inferSelect;
 
   export type ParserResponse = {
     completed: boolean;
@@ -74,11 +72,7 @@ declare global {
 
   export type DeletionChannel = {
     isDone: boolean;
-  };
-
-  export type PrefetchChannel = {
-    view: Pick<PrefetchSchema, "view">["view"];
-    data: Record<string, unknown>;
+    title?: string;
   };
 
   export type Index = {
@@ -93,14 +87,18 @@ declare global {
 
   export type Task = Readonly<{
     path: string;
-    fileName: string;
     ext: "cbr" | "cbz" | "none";
   }>;
+
+  export type Extractor = {
+    name: string;
+    isDir: boolean;
+    data: ArrayBufferLike | undefined;
+  };
 
   export type ParserSchema = z.infer<typeof parserSchema>;
   export type WorkerResponse = z.infer<typeof workerResponseSchema>;
   export type DeletionSchema = z.infer<typeof deletionWorkerSchema>;
-  export type PrefetchSchema = z.infer<typeof prefetchWorkerSchema>;
   export type Metadata = Schema.Schema.Type<typeof MetadataSchema>;
-  export type SourceDirSchema = z.infer<typeof sourceDirSchema>;
+  export type CacheWorkerSchema = z.infer<typeof cacheWorkerSchema>;
 }

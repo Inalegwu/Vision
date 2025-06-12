@@ -1,14 +1,21 @@
-import sourceDirWatcherWorker from "@core/workers/source-dir?nodeWorker";
 import { createContext } from "@shared/context";
 import { appRouter } from "@shared/routers/_app";
-import { pipe } from "effect";
+import * as Fn from "effect/Function";
 import { BrowserWindow, app, screen } from "electron";
 import { createIPCHandler } from "electron-trpc/main";
 import * as fs from "node:fs";
-import path, { join } from "node:path";
-import { globalState$ } from "./web/state";
+import path from "node:path";
+import { globalState$, readingState$ } from "./web/state";
 
 app.setName("Vision");
+
+process.env.db_url = path.join(app.getPath("appData"), "vision", "vision.db");
+process.env.cache_dir = path.join(
+  app.getPath("appData"),
+  "vision",
+  "LibraryCache",
+);
+process.env.source_dir = path.join(app.getPath("downloads"), "Vision");
 
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
@@ -34,7 +41,7 @@ const createWindow = () => {
     minHeight: height - 25,
     webPreferences: {
       sandbox: false,
-      preload: join(__dirname, "../preload/preload.js"),
+      preload: path.join(__dirname, "../preload/preload.js"),
     },
   });
 
@@ -51,13 +58,14 @@ const createWindow = () => {
   if (import.meta.env.DEV) {
     mainWindow.loadURL("http://localhost:5173");
   } else {
-    mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
+    mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
   }
 
   if (!instanceLock) {
     app.quit();
   } else {
     app.on("second-instance", (_, command, __) => {
+      _.preventDefault();
       if (mainWindow) {
         if (mainWindow.isMaximized()) mainWindow.restore();
         mainWindow.focus();
@@ -70,54 +78,31 @@ const createWindow = () => {
     });
   }
 
-  pipe(
+  // load app settings
+  Fn.pipe(
     path.join(app.getPath("appData"), "Vision", "config.json"),
     (_) => fs.readFileSync(_, { encoding: "utf-8" }),
     (_) => JSON.parse(_) as GlobalState,
     globalState$.set,
-    (_) => console.log({ loadedConfig: _.get() }),
   );
 
   // mainWindow.webContents.openDevTools({ mode: "detach" });
 };
 
-app.whenReady().then(() => {
-  // load saved config
-  pipe(
-    globalState$.get(),
-    JSON.stringify,
-    (config) => ({
-      config,
-      path: path.join(app.getPath("appData"), "Vision", "config.json"),
-    }),
-    (_) =>
-      fs.writeFileSync(_.path, _.config, {
-        encoding: "utf-8",
-      }),
-  );
-
-  createWindow();
-  sourceDirWatcherWorker({
-    name: "source-dir-watcher",
-  })
-    .on("message", (message) => {
-      console.log({ message });
-    })
-    .postMessage({
-      sourceDirectory: [path.join(app.getPath("downloads"), "comics")],
-      cacheDirectory: path.join(app.getPath("appData"), "Vision", "cache_data"),
-    } satisfies SourceDirSchema);
-});
+app.whenReady().then(() => createWindow());
 
 app.once("window-all-closed", () => {
   const config = globalState$.get();
+  const history = readingState$.get();
 
-  fs.writeFileSync(
+  // save app settings to disk
+  Fn.pipe(
     path.join(app.getPath("appData"), "Vision", "config.json"),
-    JSON.stringify(config),
-    {
-      encoding: "utf-8",
-    },
+    (path) => ({
+      path,
+      config: JSON.stringify(config),
+    }),
+    (_) => fs.writeFileSync(_.path, _.config, { encoding: "utf-8" }),
   );
 
   app.quit();

@@ -4,10 +4,11 @@ import { Flex, Text, Tooltip } from "@radix-ui/themes";
 import t from "@shared/config";
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { capitalize } from "effect/String";
-import { AnimatePresence, motion } from "framer-motion";
-import { Home, Sidebar } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import type React from "react";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
+import { v4 } from "uuid";
+import { useInterval } from "../hooks";
 import { globalState$ } from "../state";
 import Icon from "./icon";
 import Spinner from "./spinner";
@@ -29,36 +30,44 @@ export default function Layout({ children }: LayoutProps) {
 
   const isNotHome = computed(() => routerState.location.pathname !== "/").get();
   const isFullscreen = globalState$.isFullscreen.get();
-  const isUpdating = useObservable(false);
-  const sidebar = useObservable(false);
-
-  const refreshLibrary = useCallback(() => {}, []);
 
   t.library.additions.useSubscription(undefined, {
     onData: (data) => {
-      // isUpdating.set(true);
-      toast.loading("Adding Issue To Library");
+      if (!data.isCompleted && data.state === "SUCCESS") {
+        toast.loading("Adding Issue To Library");
+      }
+
       if (data.isCompleted && data.state === "SUCCESS") {
-        // isUpdating.set(false);
         toast.dismiss();
         utils.library.getLibrary.invalidate();
       }
+
       if (data.isCompleted && data.state === "ERROR") {
         toast.error(data.error || "Something went wrong");
-        // isUpdating.set(false);
         console.log(data.error);
       }
+
+      return;
     },
   });
 
   t.library.deletions.useSubscription(undefined, {
     onData: (data) => {
+      if (!data.isDone) {
+        toast.info(`Removing ${data.title} from Library`);
+      }
+
       if (data.isDone) {
-        toast.success("Deletion Complete");
+        toast.success(`Successfully Removed ${data.title}`);
         utils.library.invalidate();
+        toast.dismiss();
       }
     },
   });
+
+  useInterval(() => {
+    if (toast.showing) toast.dismiss();
+  }, 2_500);
 
   useObserveEffect(() => {
     if (globalState$.colorMode.get() === "dark") {
@@ -70,11 +79,20 @@ export default function Layout({ children }: LayoutProps) {
     }
   });
 
+  const goToSettings = () =>
+    navigation.navigate({
+      to: "/settings",
+    });
+
   useEffect(() => {
+    if (globalState$.isFullscreen.get()) globalState$.isFullscreen.set(false);
     if (globalState$.firstLaunch.get()) {
       navigation.navigate({
         to: "/first-launch",
       });
+    }
+    if (globalState$.appId.get() === null) {
+      globalState$.appId.set(v4());
     }
   }, [navigation]);
 
@@ -84,6 +102,7 @@ export default function Layout({ children }: LayoutProps) {
       grow="1"
       className="transition bg-white dark:bg-moonlightBase relative"
     >
+      {/* title bar */}
       <AnimatePresence mode="wait" initial={false}>
         {!isFullscreen && (
           <motion.div
@@ -95,6 +114,9 @@ export default function Layout({ children }: LayoutProps) {
             }}
             exit={{
               transform: "translateY(-50px)",
+            }}
+            transition={{
+              ease: "easeInOut",
             }}
             className="w-full absolute top-0 shadow-sm shadow-black/5 dark:shadow-none left-0 z-10"
           >
@@ -111,14 +133,16 @@ export default function Layout({ children }: LayoutProps) {
                   Vision
                 </Text>
                 <Flex gap="1">
-                  <button
-                    onClick={() => sidebar.set(!sidebar.get())}
-                    className="px-2 py-1 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
-                  >
-                    <Sidebar size={12} />
-                  </button>
                   <Tooltip content="Add Issue To Library">
                     <AddButton />
+                  </Tooltip>
+                  <Tooltip content="View Reading History">
+                    <Link
+                      to="/history"
+                      className="px-2 py-1 flex items-center justify-center rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+                    >
+                      <Icon name="History" size={12} />
+                    </Link>
                   </Tooltip>
                 </Flex>
               </Flex>
@@ -150,9 +174,17 @@ export default function Layout({ children }: LayoutProps) {
                     {capitalize(
                       routerState.location.pathname === "/"
                         ? "Home"
-                        : routerState.location.pathname === "/library"
-                          ? "Library"
-                          : "Exploring",
+                        : routerState.location.pathname === "/history"
+                          ? "History"
+                          : routerState.location.pathname.includes(
+                                "/collection/",
+                              )
+                            ? "Collection"
+                            : routerState.location.pathname.includes("read")
+                              ? "Reading"
+                              : routerState.location.pathname === "/settings"
+                                ? "Settings"
+                                : "Exploring",
                     )}
                   </Text>
                 </Flex>
@@ -161,6 +193,13 @@ export default function Layout({ children }: LayoutProps) {
                 <Flex grow="1" id="drag-region" p="2" />
               </Flex>
               <Flex align="center" justify="end">
+                <button
+                  className="p-3 hover:bg-neutral-400/10 cursor-pointer dark:text-moonlightText dark:hover:bg-neutral-400/5"
+                  onClick={goToSettings}
+                  type="button"
+                >
+                  <Icon name="Settings2" size={12} />
+                </button>
                 <button
                   className="p-3 hover:bg-neutral-400/10 dark:text-moonlightText dark:hover:bg-neutral-400/5"
                   onClick={() => minimizeWindow()}
@@ -187,89 +226,23 @@ export default function Layout({ children }: LayoutProps) {
           </motion.div>
         )}
       </AnimatePresence>
-      <AnimatePresence initial={false}>
-        <Flex width="100%" height="100%">
-          <AnimatePresence>
-            {sidebar.get() && (
-              <motion.div
-                className="bg-light-1 dark:bg-moonlightFocusLow flex flex-col space-y-1"
-                initial={{ width: 0, display: "none", opacity: 0 }}
-                animate={{ width: "20%", display: "flex", opacity: 1 }}
-                exit={{ width: 0, display: "none", opacity: 0 }}
-              >
-                <Flex
-                  grow="1"
-                  gap="2"
-                  direction="column"
-                  className="px-3 pt-13"
-                >
-                  <Link
-                    className="text-black space-x-2 hover:bg-neutral-400/6 px-2 py-2 rounded-md text-moonlightSlight"
-                    to="/"
-                  >
-                    <Flex align="center" justify="start" gap="2">
-                      <Home size={14} />
-                      <Text weight="medium" size="2">
-                        Home
-                      </Text>
-                    </Flex>
-                  </Link>
-                  <Link
-                    className="text-black space-x-2 hover:bg-neutral-400/6 px-2 py-2 rounded-md text-moonlightSlight"
-                    to="/library"
-                  >
-                    <Flex align="center" justify="start" gap="2">
-                      <Icon name="Library" size={14} />
-                      <Text weight="medium" size="2">
-                        Library
-                      </Text>
-                    </Flex>
-                  </Link>
-                </Flex>
-                <Flex
-                  align="center"
-                  justify="start"
-                  gap="2"
-                  className="h-14 bg-white dark:bg-moonlightOverlay border-t-solid border-t-1 border-t-neutral-100 dark:border-t-moonlightSlight/10 px-3"
-                >
-                  <button
-                    onClick={() => refreshLibrary()}
-                    className="px-2 py-2 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
-                  >
-                    <Icon name="RefreshCw" size={12} />
-                  </button>
-                </Flex>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <motion.div animate={{ width: sidebar.get() ? "80%" : "100%" }}>
-            {children}
-          </motion.div>
-        </Flex>
-      </AnimatePresence>
-      <AnimatePresence>
-        {isUpdating.get() && (
-          <motion.div
-            initial={{
-              transform: "translateY(50px)",
-            }}
-            animate={{ transform: "translateY(0px)" }}
-            exit={{ transform: "translateY(50px)" }}
-            className="p-2 flex items-center justify-center space-x-2 rounded-full bg-moonlightOrange/5 text-moonlightOrange absolute z-10 bottom-4 left-[46%] border-1 border-solid border-moonlightOrange/10"
-          >
-            <Spinner className="border-moonlightOrange" size={13} />
-            <Text size="1">Adding Issue To Library</Text>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* actual page */}
+      <Flex width="100%" height="100%">
+        {children}
+      </Flex>
+      {/* toast notifications */}
       <Toast />
     </Flex>
   );
 }
 
 function AddButton() {
-  const { mutate: addIssueToLibrary, isLoading } =
-    t.issue.addIssue.useMutation();
+  const utils = t.useUtils();
+  const { mutate: addIssueToLibrary, isLoading } = t.issue.addIssue.useMutation(
+    {
+      onSuccess: () => utils.library.getLibrary.invalidate(),
+    },
+  );
 
   return (
     <button
@@ -277,13 +250,19 @@ function AddButton() {
       disabled={isLoading}
       onClick={() => addIssueToLibrary()}
     >
-      {isLoading ? <Spinner /> : <Icon name="Plus" size={13} />}
+      {isLoading ? <Spinner /> : <Icon name="Plus" size={12} />}
     </button>
   );
 }
 
 function BrowserButton() {
   const overlay$ = useObservable(false);
+
+  const searchTerm = useObservable("");
+
+  const doSearch = () => {
+    console.log(searchTerm.get());
+  };
 
   return (
     <>
@@ -307,26 +286,41 @@ function BrowserButton() {
               display: "flex",
             }}
             exit={{ opacity: 0, scale: 0, display: "none" }}
-            className="absolute z-20 top-0 left-0 w-full h-[100vh] bg-black/10 flex items-center justify-center"
+            className="absolute z-20 top-0 left-0 w-full h-[100vh] bg-black/4 flex items-center justify-center"
           >
             <Flex
               direction="column"
-              className="dark:bg-moonlightFocusLow w-4/6 h-4/6 border-1 border-solid border-neutral-100 rounded-md dark:border-neutral-400/10"
+              className="bg-white dark:bg-moonlightFocusLow w-4/6 h-4/6 border-1 border-solid border-neutral-200/40 rounded-md dark:border-neutral-400/10"
             >
-              <Flex align="center" justify="between" className="py-1 px-1">
-                <Flex
-                  align="center"
-                  justify="center"
-                  grow="1"
-                  className="p-1.4 rounded-md w-4/6 bg-neutral-100/50 dark:bg-neutral-100/4 border-1 border-solid border-neutral-100 dark:border-neutral-100/5"
-                >
-                  <Text size="2" className="text-moonlightSlight">
-                    search bar
-                  </Text>
-                </Flex>
+              <Flex
+                align="center"
+                justify="between"
+                className="bg-neutral-200/10 dark:bg-neutral-700/10 rounded-tr-md rounded-tl-md"
+              >
+                <input
+                  placeholder="Find a Comic"
+                  onChange={(value) =>
+                    searchTerm.set(value.currentTarget.value)
+                  }
+                  onSubmit={doSearch}
+                  onBlur={doSearch}
+                  className="bg-transparent border-none font-medium dark:text-neutral-300 py-3 px-3 flex-1 outline-none"
+                />
                 <button
                   onClick={() => overlay$.set(false)}
-                  className="p-2.7 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/8 dark:hover:bg-neutral-400/5"
+                  className="px-3 py-3 text-neutral-500 cursor-pointer"
+                >
+                  <Icon name="ChevronLeft" size={13} />
+                </button>
+                <button
+                  onClick={() => overlay$.set(false)}
+                  className="px-3 py-3 text-neutral-500 cursor-pointer"
+                >
+                  <Icon name="ChevronRight" size={13} />
+                </button>
+                <button
+                  onClick={() => overlay$.set(false)}
+                  className="px-3 py-3 text-red-500 cursor-pointer"
                 >
                   <Icon name="X" size={13} />
                 </button>

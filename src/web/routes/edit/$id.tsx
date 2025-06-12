@@ -4,6 +4,7 @@ import { Flex, Text, TextField } from "@radix-ui/themes";
 import t from "@shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { Check, Pencil } from "lucide-react";
+import { motion } from "motion/react";
 import { useCallback } from "react";
 
 export const Route = createFileRoute("/edit/$id")({
@@ -100,9 +101,7 @@ function Component() {
             </Text>
             {data?.metadata?.PageCount && (
               <Text size="3" className="dark:text-moonlightText">
-                <span className="text-moonlightOrange" weight="medium">
-                  Page Count:
-                </span>
+                <span className="text-moonlightOrange">Page Count:</span>
                 {"  "}
                 {data?.metadata?.PageCount}
               </Text>
@@ -117,13 +116,18 @@ function Component() {
         </Flex>
       </Flex>
       <Flex direction="column" justify="center" align="center">
-        <Flex className="w-[400px] h-[600px] cursor-pointer overflow-hidden rounded-md border-1 border-solid border-zinc-200 dark:border-zinc-800 shadow-md">
+        <motion.div
+          animate={{
+            transform: "rotateZ(1deg)",
+          }}
+          className="w-[400px] h-[600px] shadow-[50px] dark:shadow-neutral-800/50 cursor-pointer overflow-hidden rounded-md border-1 border-solid border-zinc-200 dark:border-zinc-800 shadow-md"
+        >
           <img
             src={data?.issue?.thumbnailUrl}
             alt={data?.issue?.issueTitle}
             className="w-full h-full "
           />
-        </Flex>
+        </motion.div>
       </Flex>
     </Flex>
   );

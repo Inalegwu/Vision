@@ -15,7 +15,7 @@ if (!port) throw new Error("Parse Process Port is Missing");
 
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 
-const handleMessage = Effect.fn(function* ({
+const handleMessage = Effect.fnUntraced(function* ({
   action,
   parsePath,
 }: ParserSchema) {
@@ -29,11 +29,11 @@ const handleMessage = Effect.fn(function* ({
       ? "cbz"
       : "none";
 
-  // parserChannel.postMessage({
-  //   isCompleted: false,
-  //   state: "SUCCESS",
-  //   error: null,
-  // });
+  parserChannel.postMessage({
+    isCompleted: false,
+    state: "SUCCESS",
+    error: null,
+  });
 
   const exists = yield* Effect.tryPromise(
     async () =>
@@ -75,6 +75,7 @@ port.on("message", (message) =>
     (data) =>
       handleMessage(data).pipe(
         Effect.orDie,
+        Effect.withLogSpan("parser.duration"),
         Effect.annotateLogs({
           worker: "parser-worker",
         }),

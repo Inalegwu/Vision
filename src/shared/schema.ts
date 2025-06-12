@@ -4,7 +4,7 @@ import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 export const collections = sqliteTable(
   "collections",
   {
-    id: text("id").notNull().primaryKey(),
+    id: text("id").notNull().primaryKey().unique(),
     collectionName: text("collection_name").notNull().unique(),
     dateCreated: integer("date_created", {
       mode: "timestamp",
@@ -21,10 +21,12 @@ export const collections = sqliteTable(
 export const issues = sqliteTable(
   "issues",
   {
-    id: text("id").notNull().primaryKey(),
-    issueTitle: text("issue_title").notNull(),
+    id: text("id").notNull().primaryKey().unique(),
+    issueTitle: text("issue_title").notNull().unique(),
     thumbnailUrl: text("thumbnail_url").notNull(),
     collectionId: text("collection_id").references(() => collections.id),
+    historyId: text("history_id"),
+    path: text("path").notNull(),
     dateCreated: integer("date_created", {
       mode: "timestamp",
     }).default(new Date()),
@@ -36,6 +38,13 @@ export const issues = sqliteTable(
     idIndex: index("issue_id_index").on(table.id),
   }),
 );
+
+export const readingHistory = sqliteTable("reading_history", {
+  id: text("id").notNull().unique().primaryKey(),
+  issueId: text("issue_id").references(() => issues.id),
+  currentPage: integer("currentPage").notNull().default(0),
+  state: text("state").notNull().default("done_reading"),
+});
 
 export const metadata = sqliteTable("metadata", {
   id: text("id").notNull().primaryKey(),
@@ -54,26 +63,16 @@ export const metadata = sqliteTable("metadata", {
   Summary: text("summary"),
 });
 
-export const pages = sqliteTable(
-  "pages",
-  {
-    id: text("id").notNull().primaryKey(),
-    pageContent: text("page_content").notNull(),
-    issueId: text("issue_id")
-      .notNull()
-      .references(() => issues.id, { onDelete: "cascade" }),
-    dateCreated: integer("date_created", {
-      mode: "timestamp",
-    }).default(new Date()),
-    dateUpdated: integer("date_udpdated", {
-      mode: "timestamp",
-    }).default(new Date()),
-  },
-  (table) => ({
-    pageIdIndex: index("page_id_index").on(table.id),
-    issueIdIndex: index("page_issue_id_index").on(table.issueId),
+export const historyToIssue = relations(readingHistory, ({ one }) => ({
+  issue: one(issues, {
+    fields: [readingHistory.issueId],
+    references: [issues.id],
   }),
-);
+}));
+
+export const issueToHistory = relations(issues, ({ one }) => ({
+  history: one(readingHistory),
+}));
 
 export const collectionToIssue = relations(collections, ({ many }) => ({
   issues: many(issues),
@@ -94,16 +93,5 @@ export const issueToCollection = relations(issues, ({ one }) => ({
   collection: one(collections, {
     fields: [issues.collectionId],
     references: [collections.id],
-  }),
-}));
-
-export const issueToPage = relations(issues, ({ many }) => ({
-  pages: many(pages),
-}));
-
-export const pageToIssue = relations(pages, ({ one }) => ({
-  issue: one(issues, {
-    fields: [pages.issueId],
-    references: [issues.id],
   }),
 }));

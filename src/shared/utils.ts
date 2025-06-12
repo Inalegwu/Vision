@@ -1,3 +1,4 @@
+import { Option } from "effect";
 import { err, ok } from "neverthrow";
 import type { z } from "zod";
 
@@ -32,8 +33,8 @@ export const parseFileNameFromPath = (filePath: string) =>
 
 // "Scraped metadata from Comixology [CMXDB852248], [RELDATE:2020-03-31]\"
 // TODO: find a way to extract       ^ this value from this string
-export const extractMetaID = (noteString: string) =>
-  noteString.replace(/^/, "");
+export const extractMetaID = (noteString?: string) =>
+  Option.fromNullable(noteString?.replace(/^/, ""));
 
 export const parseWorkerMessageWithSchema = <T extends z.ZodRawShape>(
   s: z.ZodObject<T>,
@@ -70,10 +71,4 @@ export function debounce<A = unknown[], R = void>(
   const tearDown = () => clearTimeout(t);
 
   return [debounceFn, tearDown];
-}
-
-// TODO construct a path from this info that can be interpreted
-// later on to locate a file
-export function makePath(issueId: string, issueTitle: string): string {
-  return "";
 }
