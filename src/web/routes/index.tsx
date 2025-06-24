@@ -38,7 +38,7 @@ function Component() {
   return (
     <Flex direction="column" className="w-full h-screen pt-8">
       <Flex align="center" justify="between" className="w-full px-3 py-4">
-        <Flex grow="1" align="center" justify="start">
+        <Flex grow="1" align="center" justify="start" className="relative">
           <Flex
             gap="1"
             className="bg-neutral-100 rounded-lg p-0.6 relative dark:bg-moonlightFocusMedium"

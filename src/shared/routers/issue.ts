@@ -9,7 +9,7 @@ import * as fs from "node:fs";
 import path from "node:path";
 import { v4 } from "uuid";
 import z from "zod";
-import { issues } from "../schema";
+import { issues as issuesSchema } from "../schema";
 import { convertToImageUrl } from "../utils";
 
 const issueRouter = router({
@@ -122,17 +122,31 @@ const issueRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const result = await ctx.db
-        .update(issues)
+        .update(issuesSchema)
         .set({
           issueTitle: input.issueTitle,
         })
-        .where(eq(issues.id, input.issueId))
+        .where(eq(issuesSchema.id, input.issueId))
         .returning();
 
       return {
         result: result[0],
       };
     }),
+  getAllIssues: publicProcedure.query(async ({ ctx }) => {
+    const allIssues = await ctx.db
+      .select({
+        id: issuesSchema.id,
+        thumbnail: issuesSchema.thumbnailUrl,
+        title: issuesSchema.issueTitle,
+        dateCreated: issuesSchema.dateCreated,
+      })
+      .from(issuesSchema);
+
+    return {
+      issues: allIssues,
+    };
+  }),
 });
 
 export default issueRouter;

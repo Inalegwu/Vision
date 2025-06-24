@@ -58,7 +58,7 @@ export default function Issue({ issue }: Props) {
             onClick={go}
           >
             <img
-              className="w-full h-full bg-zinc-200/5 rounded-md border-1 border-solid border-neutral-200 dark:border-zinc-600"
+              className="w-full h-full bg-zinc-200/5 dark:opacity-[0.8] rounded-md border-1 border-solid border-neutral-200 dark:border-zinc-600"
               alt="issue_thumbnail"
               src={issue.thumbnailUrl}
             />
@@ -174,7 +174,7 @@ export default function Issue({ issue }: Props) {
           <button ref={dialogRef} />
         </Dialog.Trigger>
         <Dialog.Content
-          className="space-y-2 max-h-90 dark:bg-moonlightFocusLow"
+          className="space-y-2 max-h-90 dark:bg-moonlightBase"
           size="1"
         >
           <FlatList

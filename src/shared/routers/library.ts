@@ -141,6 +141,33 @@ const libraryRouter = router({
         collectionName: input.collectionName,
       });
     }),
+  addToCollectionInBulk: publicProcedure
+    .input(
+      z.object({
+        collectionId: z.string(),
+        issues: z.array(z.string()),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const added = [];
+
+      for (const issueId of input.issues) {
+        const returns = await ctx.db
+          .update(issueSchema)
+          .set({
+            collectionId: input.collectionId,
+          })
+          .where(eq(issueSchema.id, issueId))
+          .returning()
+          .then((v) => v.at(0));
+
+        added.push(returns?.id);
+      }
+
+      return {
+        added,
+      };
+    }),
   emptyCache: publicProcedure.mutation(async ({ ctx }) => {
     // NodeFS.rmdirSync(process.env.cache_dir!, {
     //   recursive: true,

@@ -66,35 +66,24 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
       );
 
       yield* Effect.forEach(files, (file, idx) =>
-        Effect.gen(function* () {
-          yield* Fs.writeFile(
-            path.join(savePath, file.name),
-            Buffer.from(file.data!).toString("base64"),
-            {
-              encoding: "base64",
-            },
-          ).pipe(
-            Effect.catchAll((e) =>
-              Effect.sync(() => {
-                console.log({ e });
-                parserChannel.postMessage({
-                  error: `${e.message}::${e.cause}`,
-                  state: "ERROR",
-                  isCompleted: false,
-                });
-              }),
-            ),
-          );
-
-          yield* Effect.sync(() =>
-            parserChannel.postMessage({
-              error: null,
-              state: "SUCCESS",
-              completed: idx,
-              total: files.length,
+        Fs.writeFile(
+          path.join(savePath, file.name),
+          Buffer.from(file.data!).toString("base64"),
+          {
+            encoding: "base64",
+          },
+        ).pipe(
+          Effect.catchAll((e) =>
+            Effect.sync(() => {
+              console.log({ e });
+              parserChannel.postMessage({
+                error: `${e.message}::${e.cause}`,
+                state: "ERROR",
+                isCompleted: false,
+              });
             }),
-          );
-        }),
+          ),
+        ),
       );
 
       yield* Effect.sync(() =>
@@ -139,7 +128,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
           Effect.sync(() => {
             console.log({ e });
             parserChannel.postMessage({
-              error: `${e.message}::${e.cause}`,
+              error: e.message,
               state: "ERROR",
               isCompleted: false,
             });
@@ -148,35 +137,24 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
       );
 
       yield* Effect.forEach(files, (file, idx) =>
-        Effect.gen(function* () {
-          yield* Fs.writeFile(
-            path.join(savePath, file.name),
-            Buffer.from(file.data!).toString("base64"),
-            {
-              encoding: "base64",
-            },
-          ).pipe(
-            Effect.catchAll((e) =>
-              Effect.sync(() => {
-                console.log({ e });
-                parserChannel.postMessage({
-                  error: `${e.message}::${e.cause}`,
-                  state: "ERROR",
-                  isCompleted: false,
-                });
-              }),
-            ),
-          );
-
-          yield* Effect.sync(() =>
-            parserChannel.postMessage({
-              error: null,
-              state: "SUCCESS",
-              completed: idx,
-              total: files.length,
+        Fs.writeFile(
+          path.join(savePath, file.name),
+          Buffer.from(file.data!).toString("base64"),
+          {
+            encoding: "base64",
+          },
+        ).pipe(
+          Effect.catchAll((e) =>
+            Effect.sync(() => {
+              console.log({ e });
+              parserChannel.postMessage({
+                error: e.message,
+                state: "ERROR",
+                isCompleted: false,
+              });
             }),
-          );
-        }),
+          ),
+        ),
       );
 
       yield* Effect.sync(() =>
@@ -208,7 +186,7 @@ const parseXML = Effect.fn(function* (
 
   if (!data) return;
 
-  const { metadata: extracted, metaId } = yield* Effect.sync(() =>
+  const { metadata: meta, metaId } = yield* Effect.sync(() =>
     xmlParser.parse(Buffer.from(data.data!).toString()),
   ).pipe(
     Effect.andThen((file) =>
@@ -229,7 +207,7 @@ const parseXML = Effect.fn(function* (
       await db.insert(metadata).values({
         id: v4(),
         issueId,
-        ...extracted,
+        ...meta,
       }),
   );
 });

@@ -43,8 +43,13 @@ export default function Layout({ children }: LayoutProps) {
       }
 
       if (data.isCompleted && data.state === "ERROR") {
-        toast.error(data.error || "Something went wrong");
         console.log(data.error);
+        toast.error(data.error || "Something went wrong");
+      }
+
+      if (!data.isCompleted && data.state === "ERROR") {
+        console.log(data.error);
+        toast.error(data.error || "Unknown Error Occurred");
       }
 
       return;
@@ -252,6 +257,17 @@ function AddButton() {
     >
       {isLoading ? <Spinner /> : <Icon name="Plus" size={12} />}
     </button>
+  );
+}
+
+function NotificationButton() {
+  return (
+    <Link
+      to="/notifications"
+      className="p-2 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+    >
+      <Icon name="Bell" size={12} />
+    </Link>
   );
 }
 

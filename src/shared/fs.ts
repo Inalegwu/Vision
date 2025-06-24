@@ -1,8 +1,10 @@
 import { Data, Effect } from "effect";
 import * as NodeFS from "node:fs";
+import { parseFileNameFromPath } from "./utils";
 
 class FSError extends Data.TaggedError("FSError")<{
   cause: unknown;
+  message: string;
 }> {}
 
 type File = Uint8Array<ArrayBuffer>;
@@ -19,7 +21,16 @@ export namespace Fs {
     Effect.async<File, FSError>((resume) =>
       NodeFS.readFile(path, undefined, (cause, data) => {
         if (cause) {
-          resume(Effect.fail(new FSError({ cause })));
+          resume(
+            Effect.fail(
+              new FSError({
+                cause,
+                message: `Error occurred when reading file ${parseFileNameFromPath(
+                  path,
+                )}`,
+              }),
+            ),
+          );
         } else {
           resume(Effect.succeed(new Uint8Array(data)));
         }
@@ -36,7 +47,15 @@ export namespace Fs {
   export const makeDirectory = (filePath: string) =>
     Effect.async<void, FSError>((resume) =>
       NodeFS.mkdir(filePath, undefined, (error) => {
-        if (error) resume(Effect.fail(new FSError({ cause: error })));
+        if (error)
+          resume(
+            Effect.fail(
+              new FSError({
+                cause: error,
+                message: `Unable to make directory at path ${filePath}`,
+              }),
+            ),
+          );
 
         resume(Effect.void);
       }),
@@ -57,7 +76,15 @@ export namespace Fs {
           encoding: "utf-8",
         },
         (error, files) => {
-          if (error) resume(Effect.fail(new FSError({ cause: error })));
+          if (error)
+            resume(
+              Effect.fail(
+                new FSError({
+                  cause: error,
+                  message: `Error when reading directory ${filePath}`,
+                }),
+              ),
+            );
 
           resume(Effect.succeed(files));
         },
@@ -80,7 +107,15 @@ export namespace Fs {
   ) =>
     Effect.async<void, FSError>((resume) =>
       NodeFS.writeFile(path, data, opts, (error) => {
-        if (error) resume(Effect.fail(new FSError({ cause: error })));
+        if (error)
+          resume(
+            Effect.fail(
+              new FSError({
+                cause: error,
+                message: `Error when writing file to ${path}`,
+              }),
+            ),
+          );
 
         resume(Effect.void);
       }),
@@ -101,7 +136,15 @@ export namespace Fs {
           recursive: true,
         },
         (error) => {
-          if (error) resume(Effect.fail(new FSError({ cause: error })));
+          if (error)
+            resume(
+              Effect.fail(
+                new FSError({
+                  cause: error,
+                  message: `Error occurred while removing ${filePath}`,
+                }),
+              ),
+            );
 
           resume(Effect.void);
         },
