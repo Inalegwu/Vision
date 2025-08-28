@@ -11,15 +11,11 @@ if (!port) throw new Error("Parse Process Port is Missing");
 
 const watchFS = Effect.fn(function* (directory: string | null) {
   const mailbox = yield* Mailbox.make<string>({
-    strategy: "dropping",
+    strategy: "sliding",
     capacity: 200,
   });
 
   if (!directory) return;
-
-  console.log(`Launching watcher at directory ${directory}`);
-
-  yield* Effect.logInfo(`Launching watcher @ directory ${directory}`);
 
   const files = yield* Fs.readDirectory(directory).pipe(
     Effect.map((files) => files.filter((file) => !file.isDirectory)),
@@ -28,7 +24,7 @@ const watchFS = Effect.fn(function* (directory: string | null) {
     ),
   );
 
-  const issues = yield* Effect.tryPromise(
+  const unsavedIssues = yield* Effect.tryPromise(
     async () =>
       await db.query.issues.findMany({
         columns: {
@@ -40,15 +36,12 @@ const watchFS = Effect.fn(function* (directory: string | null) {
     Effect.map((issues) =>
       issues.map((issue) => parseFileNameFromPath(issue.path)),
     ),
+    Effect.map((issues) =>
+      files.filter((file) => !issues.find((issue) => issue === file)),
+    ),
   );
 
-  const unsaved = files.filter((file) => {
-    if (issues.find((issue) => issue === file)) return false;
-
-    return true;
-  });
-
-  yield* mailbox.offerAll(unsaved);
+  yield* mailbox.offerAll(unsavedIssues);
 });
 
 port.on("message", (message) =>

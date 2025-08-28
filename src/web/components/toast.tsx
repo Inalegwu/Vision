@@ -126,7 +126,7 @@ const Toast = React.memo(() => {
           <Flex
             align="center"
             justify="start"
-            className={`absolute z-20 cursor-pointer ${className[mode]} ${_posClass[position]} px-3 py-2 rounded-md border-1 border-solid backdrop-blur-2xl max-w-60`}
+            className={`absolute z-20 cursor-pointer ${className[mode]} ${_posClass[position]} px-3 py-2 rounded-md border-1 border-solid backdrop-blur-2xl`}
             gap="2"
           >
             <motion.div

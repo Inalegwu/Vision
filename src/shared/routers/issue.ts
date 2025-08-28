@@ -1,3 +1,5 @@
+import * as fs from "node:fs";
+import path from "node:path";
 import deletionWorker from "@core/workers/deletion?nodeWorker";
 import parseWorker from "@core/workers/parser?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
@@ -5,8 +7,6 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { Array, pipe } from "effect";
 import { dialog } from "electron";
-import * as fs from "node:fs";
-import path from "node:path";
 import { v4 } from "uuid";
 import z from "zod";
 import { issues as issuesSchema } from "../schema";
@@ -27,13 +27,10 @@ const issueRouter = router({
     }
 
     for (const parsePath of filePaths) {
-      console.log(parsePath);
       parseWorker({
         name: `parse-worker-${parsePath}`,
       })
-        .on("message", (m) => {
-          console.log(m);
-        })
+        .on("message", console.log)
         .postMessage({
           parsePath,
           action: "LINK",

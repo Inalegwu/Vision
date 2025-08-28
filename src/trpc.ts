@@ -20,7 +20,7 @@ export const publicProcedure = t.procedure.use(async (opts) => {
     durationMS,
   };
 
-  result.ok ? console.log(meta) : console.error(meta);
+  // result.ok ? console.log(meta) : console.error(meta);
 
   return result;
 });

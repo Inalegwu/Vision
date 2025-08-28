@@ -52,17 +52,18 @@ export const parseWorkerMessageWithSchema = <T extends z.ZodRawShape>(
   return ok(result.data);
 };
 
-export const transformMessage = Effect.fnUntraced(function* <
-  T extends z.ZodRawShape,
->(schema: z.ZodObject<T>, message: unknown) {
-  const result = yield* Effect.sync(() => schema.safeParse(message));
-
-  if (!result.success) {
-    return yield* Effect.fail(result.error.flatten());
-  }
-
-  return result.data;
-});
+export const transformMessage = <T extends z.ZodRawShape>(
+  schema: z.ZodObject<T>,
+  message: unknown,
+) =>
+  Effect.Do.pipe(
+    Effect.bind("message", () => Effect.succeed(schema.safeParse(message))),
+    Effect.flatMap(({ message }) =>
+      !message.success
+        ? Effect.fail(message.error.flatten())
+        : Effect.succeed(message.data),
+    ),
+  );
 
 export function debounce<A = unknown[], R = void>(
   fn: (args: A) => R,

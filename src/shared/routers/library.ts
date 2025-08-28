@@ -4,6 +4,7 @@ import { publicProcedure, router } from "@src/trpc";
 import { observable } from "@trpc/server/observable";
 import { BroadcastChannel } from "broadcast-channel";
 import { eq } from "drizzle-orm";
+import { Effect } from "effect";
 import * as Array from "effect/Array";
 import { dialog } from "electron";
 import { v4 } from "uuid";
@@ -171,26 +172,24 @@ const libraryRouter = router({
         issues: z.array(z.string()),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      const added = [];
-
-      for (const issueId of input.issues) {
-        const returns = await ctx.db
-          .update(issueSchema)
-          .set({
-            collectionId: input.collectionId,
-          })
-          .where(eq(issueSchema.id, issueId))
-          .returning()
-          .then((v) => v.at(0));
-
-        added.push(returns?.id);
-      }
-
-      return {
-        added,
-      };
-    }),
+    .mutation(
+      async ({ ctx, input }) =>
+        await Effect.forEach(input.issues, (issueId) =>
+          Effect.tryPromise(
+            async () =>
+              await ctx.db
+                .update(issueSchema)
+                .set({
+                  collectionId: input.collectionId,
+                })
+                .where(eq(issueSchema.id, issueId)),
+          ),
+        ).pipe(
+          Effect.catchTag("UnknownException", Effect.logFatal),
+          Effect.orDie,
+          Effect.runPromise,
+        ),
+    ),
   emptyCache: publicProcedure.mutation(async ({ ctx }) => {
     cacheWorker({
       name: "cache-worker",
@@ -248,5 +247,26 @@ const libraryRouter = router({
     }),
   ),
 });
+
+// {
+//   const added = [];
+
+//   for (const issueId of input.issues) {
+//     const returns = await ctx.db
+//       .update(issueSchema)
+//       .set({
+//         collectionId: input.collectionId,
+//       })
+//       .where(eq(issueSchema.id, issueId))
+//       .returning()
+//       .then((v) => v.at(0));
+
+//     added.push(returns?.id);
+//   }
+
+//   return {
+//         added,
+//       };
+// }
 
 export default libraryRouter;

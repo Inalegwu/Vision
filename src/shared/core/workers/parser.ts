@@ -18,8 +18,6 @@ const handleMessage = Effect.fnUntraced(function* ({
 }: ParserSchema) {
   const archive = yield* Archive;
 
-  yield* Effect.logInfo({ action, parsePath });
-
   const ext = parsePath.includes("cbr")
     ? "cbr"
     : parsePath.includes("cbz")
