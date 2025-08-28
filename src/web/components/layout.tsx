@@ -27,6 +27,7 @@ export default function Layout({ children }: LayoutProps) {
   const { mutate: minimizeWindow } = t.window.minimize.useMutation();
   const { mutate: maximizeWindow } = t.window.maximize.useMutation();
   const { mutate: closeWindow } = t.window.closeWindow.useMutation();
+  const { mutate: launchWatcher } = t.library.launchWatcher.useMutation();
 
   const isNotHome = computed(() => routerState.location.pathname !== "/").get();
   const isFullscreen = globalState$.isFullscreen.get();
@@ -38,7 +39,7 @@ export default function Layout({ children }: LayoutProps) {
       }
 
       if (data.isCompleted && data.state === "SUCCESS") {
-        toast.dismiss();
+        toast.success("Added issue to library");
         utils.library.getLibrary.invalidate();
       }
 
@@ -48,7 +49,6 @@ export default function Layout({ children }: LayoutProps) {
       }
 
       if (!data.isCompleted && data.state === "ERROR") {
-        console.log(data.error);
         toast.error(data.error || "Unknown Error Occurred");
       }
 
@@ -60,6 +60,10 @@ export default function Layout({ children }: LayoutProps) {
     onData: (data) => {
       if (!data.isDone) {
         toast.info(`Removing ${data.title} from Library`);
+      }
+
+      if (!data.isDone && data.error) {
+        toast.error(data.error);
       }
 
       if (data.isDone) {
@@ -90,6 +94,7 @@ export default function Layout({ children }: LayoutProps) {
     });
 
   useEffect(() => {
+    launchWatcher();
     if (globalState$.isFullscreen.get()) globalState$.isFullscreen.set(false);
     if (globalState$.firstLaunch.get()) {
       navigation.navigate({
@@ -99,7 +104,7 @@ export default function Layout({ children }: LayoutProps) {
     if (globalState$.appId.get() === null) {
       globalState$.appId.set(v4());
     }
-  }, [navigation]);
+  }, [navigation, launchWatcher]);
 
   return (
     <Flex

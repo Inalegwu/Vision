@@ -1,8 +1,5 @@
 import { parserSchema } from "@shared/core/validations";
-import {
-  parseFileNameFromPath,
-  parseWorkerMessageWithSchema,
-} from "@shared/utils";
+import { parseFileNameFromPath, transformMessage } from "@shared/utils";
 import db from "@src/shared/storage";
 import { BroadcastChannel } from "broadcast-channel";
 import { Effect, Match } from "effect";
@@ -71,17 +68,16 @@ const handleMessage = Effect.fnUntraced(function* ({
 });
 
 port.on("message", (message) =>
-  parseWorkerMessageWithSchema(parserSchema, message).match(
-    (data) =>
-      handleMessage(data).pipe(
-        Effect.orDie,
-        Effect.withLogSpan("parser.duration"),
-        Effect.annotateLogs({
-          worker: "parser-worker",
-        }),
-        Effect.provide(Archive.Default),
-        Effect.runPromise,
-      ),
-    (message) => console.error({ message }),
+  transformMessage(parserSchema, message).pipe(
+    Effect.matchEffect({
+      onSuccess: (message) => handleMessage(message),
+      onFailure: Effect.logFatal,
+    }),
+    Effect.annotateLogs({
+      worker: "parser-worker",
+    }),
+    Effect.provide(Archive.Default),
+    Effect.orDie,
+    Effect.runPromise,
   ),
 );

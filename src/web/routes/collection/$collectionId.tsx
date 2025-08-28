@@ -117,7 +117,7 @@ function Component() {
       </Flex>
       <Flex wrap="wrap" gap="2" className="px-3 pb-20 overflow-y-scroll">
         <Suspense fallback={<LoadingSkeleton />}>
-          {data?.collection?.issues.map((issue) => (
+          {data?.issues?.map((issue) => (
             <Issue key={issue.id} issue={issue} />
           ))}
         </Suspense>

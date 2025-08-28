@@ -1,6 +1,7 @@
-import { Flex, Heading, Tabs, Text } from "@radix-ui/themes";
+import { Flex, Tabs, Text, Tooltip } from "@radix-ui/themes";
 import t from "@src/shared/config";
 import { createFileRoute } from "@tanstack/react-router";
+import { motion } from "motion/react";
 import React, { memo } from "react";
 import { Icon } from "../components";
 import { toast } from "../components/toast";
@@ -23,32 +24,12 @@ function Component() {
           <Tabs.Trigger className="cursor-pointer" value="reader">
             <Text size="2">Reader</Text>
           </Tabs.Trigger>
-          <Tabs.Trigger className="cursor-pointer" value="notifications">
-            <Text size="2">Notifications</Text>
-          </Tabs.Trigger>
         </Tabs.List>
         <Tabs.Content value="storage" className="w-full h-screen">
           <StorageView />
         </Tabs.Content>
         <Tabs.Content value="reader" className="w-full h-screen">
-          <Flex
-            align="center"
-            grow="1"
-            className="w-full h-full"
-            justify="center"
-          >
-            <Heading>Coming Soon</Heading>
-          </Flex>
-        </Tabs.Content>
-        <Tabs.Content value="notifications" className="w-full h-screen">
-          <Flex
-            align="center"
-            grow="1"
-            className="w-full h-full"
-            justify="center"
-          >
-            <Heading>Coming Soon</Heading>
-          </Flex>
+          <ReaderView />
         </Tabs.Content>
       </Tabs.Root>
     </Flex>
@@ -80,6 +61,63 @@ const StorageView = React.memo(() => {
         >
           <Icon name="Recycle" size={14} />
         </button>
+      </Flex>
+    </Flex>
+  );
+});
+
+const ReaderView = React.memo(() => {
+  const direction = globalState$.reader.direction.get();
+
+  return (
+    <Flex className="w-full h-full px-2 py-2" direction="column" gap="3">
+      <Flex width="100%" align="center" justify="between">
+        <Flex direction="column">
+          <Text weight="medium" size="2">
+            Reader Direction
+          </Text>
+          <Text size="1" color="gray">
+            change scroll direction of the reader view
+          </Text>
+        </Flex>
+        <Flex
+          gap="1"
+          className="bg-neutral-100 rounded-lg p-0.6 relative dark:bg-moonlightFocusMedium"
+        >
+          <motion.div
+            animate={{
+              transform:
+                direction === "horizontal"
+                  ? "translateX(0px)"
+                  : "translateX(28px)",
+            }}
+            className="absolute z-0 w-[45%] h-[89%] rounded-lg bg-white dark:bg-moonlightFocusLow"
+          />
+          <Tooltip content="Vertical">
+            <button
+              onClick={() => globalState$.reader.direction.set("vertical")}
+              className={`p-1.6 cursor-pointer ${
+                direction === "vertical"
+                  ? " text-moonlightOrange"
+                  : "text-neutral-600"
+              }`}
+            >
+              <Icon name="MoveVertical" size={13} />
+            </button>
+          </Tooltip>
+          <Tooltip content="Horizontal">
+            <button
+              onClick={() => globalState$.reader.direction.set("horizontal")}
+              className={`p-1.6 cursor-pointer ${
+                direction === "vertical"
+                  ? " text-moonlightOrange"
+                  : "text-neutral-600"
+              }`}
+            >
+              <Icon name="MoveHorizontal" size={13} />
+            </button>
+          </Tooltip>
+        </Flex>
       </Flex>
     </Flex>
   );

@@ -15,6 +15,9 @@ const globalState = observable<GlobalState>({
   isFullscreen: false,
   libraryView: "issues",
   appId: null,
+  reader: {
+    direction: "horizontal",
+  },
 });
 
 export const fullScreenState$ = observable<{ isFullscreen: boolean }>({

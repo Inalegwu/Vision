@@ -27,6 +27,7 @@ const issueRouter = router({
     }
 
     for (const parsePath of filePaths) {
+      console.log(parsePath);
       parseWorker({
         name: `parse-worker-${parsePath}`,
       })
@@ -78,7 +79,7 @@ const issueRouter = router({
         fs.readdirSync(issue.path, {
           encoding: "utf-8",
         }),
-        Array.filter((path) => !path.includes(".xml")),
+        // Array.filter((path) => !path.includes(".xml")),
         Array.map((directory) => ({
           id: v4(),
           data: convertToImageUrl(

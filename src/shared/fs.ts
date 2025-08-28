@@ -1,5 +1,6 @@
 import { Data, Effect } from "effect";
 import * as NodeFS from "node:fs";
+import { join } from "node:path";
 import { parseFileNameFromPath } from "./utils";
 
 class FSError extends Data.TaggedError("FSError")<{
@@ -10,6 +11,23 @@ class FSError extends Data.TaggedError("FSError")<{
 type File = Uint8Array<ArrayBuffer>;
 
 export namespace Fs {
+  export const isDirectory = (path: string) =>
+    Effect.async<boolean, FSError>((resume) =>
+      NodeFS.stat(path, (cause, stats) => {
+        if (cause)
+          resume(
+            Effect.fail(
+              new FSError({
+                cause,
+                message: `Error checking ${path} was a directory`,
+              }),
+            ),
+          );
+
+        resume(Effect.succeed(stats.isDirectory()));
+      }),
+    );
+
   /**
    *
    * @param filePath: string
@@ -20,7 +38,7 @@ export namespace Fs {
   export const readFile = (path: string) =>
     Effect.async<File, FSError>((resume) =>
       NodeFS.readFile(path, undefined, (cause, data) => {
-        if (cause) {
+        if (cause)
           resume(
             Effect.fail(
               new FSError({
@@ -31,9 +49,8 @@ export namespace Fs {
               }),
             ),
           );
-        } else {
-          resume(Effect.succeed(new Uint8Array(data)));
-        }
+
+        resume(Effect.succeed(new Uint8Array(data)));
       }),
     );
 
@@ -51,7 +68,7 @@ export namespace Fs {
           resume(
             Effect.fail(
               new FSError({
-                cause: error,
+                cause: error.cause,
                 message: `Unable to make directory at path ${filePath}`,
               }),
             ),
@@ -69,24 +86,40 @@ export namespace Fs {
    * Read contents of a directory
    */
   export const readDirectory = (filePath: string) =>
-    Effect.async<Array<string>, FSError>((resume) =>
+    Effect.async<
+      Array<{
+        file: string;
+        isDirectory: boolean;
+      }>,
+      FSError
+    >((resume) =>
       NodeFS.readdir(
         filePath,
         {
           encoding: "utf-8",
+          recursive: true,
         },
         (error, files) => {
           if (error)
             resume(
               Effect.fail(
                 new FSError({
-                  cause: error,
+                  cause: error.cause,
                   message: `Error when reading directory ${filePath}`,
                 }),
               ),
             );
 
-          resume(Effect.succeed(files));
+          resume(
+            Effect.succeed(
+              files.map((file) => ({
+                file,
+                isDirectory: NodeFS.statSync(
+                  join(filePath, file),
+                ).isDirectory(),
+              })),
+            ),
+          );
         },
       ),
     );
@@ -134,6 +167,7 @@ export namespace Fs {
         filePath,
         {
           recursive: true,
+          maxRetries: 2,
         },
         (error) => {
           if (error)

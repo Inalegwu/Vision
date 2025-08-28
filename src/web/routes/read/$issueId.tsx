@@ -3,9 +3,10 @@ import { Flex } from "@radix-ui/themes";
 import t from "@shared/config";
 import { toast } from "@src/web/components/toast";
 import { createFileRoute } from "@tanstack/react-router";
+import { useGesture } from "@use-gesture/react";
 import { Bookmark, ChevronLeft, ChevronRight, Expand } from "lucide-react";
 import { AnimatePresence, motion, useMotionValue } from "motion/react";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Spinner } from "../../components";
 import {
   useDebounce,
@@ -27,6 +28,29 @@ function Component() {
 
   const isEnabled = useObservable(false);
   const isVisible = useObservable(true);
+
+  const [crop, setCrop] = useState({
+    scale: 1,
+    x: 0,
+    y: 0,
+  });
+
+  const targetRef = useRef<HTMLImageElement>(null);
+
+  useGesture(
+    {
+      onPinch: ({ offset: [d] }) =>
+        setCrop((crop) => ({ ...crop, scale: 1 + d / 50 })),
+      onDrag: ({ offset: [dx, dy] }) =>
+        setCrop((crop) => ({ ...crop, x: dx, y: dy })),
+    },
+    {
+      target: targetRef,
+      eventOptions: {
+        passive: false,
+      },
+    },
+  );
 
   const doneReading = readingState$.doneReading.get();
   const currentlyReading = readingState$.currentlyReading.get();
@@ -147,7 +171,16 @@ function Component() {
                   className="w-full h-screen flex items-center justify-center shrink-0"
                   key={v.id}
                 >
-                  <img
+                  <motion.img
+                    animate={{
+                      x: crop.x,
+                      y: crop.y,
+                      transform: `scale(${crop.scale})`,
+                    }}
+                    style={{
+                      touchAction: "none",
+                    }}
+                    ref={targetRef}
                     src={v.data}
                     alt="page"
                     className="h-full w-[50%] object-contain"

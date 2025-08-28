@@ -53,7 +53,7 @@ if (!rootElement?.innerHTML) {
             <ToastProvider
               context={{
                 duration: 2000,
-                position: "bottom-right",
+                position: "bottom-center",
               }}
             >
               <RouterProvider defaultViewTransition router={router} />

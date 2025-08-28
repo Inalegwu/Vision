@@ -1,4 +1,5 @@
 import cacheWorker from "@src/shared/core/workers/cache?nodeWorker";
+import fileSystemWatchWorker from "@src/shared/core/workers/watcher?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import { observable } from "@trpc/server/observable";
 import { BroadcastChannel } from "broadcast-channel";
@@ -11,6 +12,7 @@ import {
   collections as collectionsSchema,
   issues as issueSchema,
 } from "../schema";
+import { sortPages } from "../utils";
 
 const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 const deletionChannel = new BroadcastChannel<DeletionChannel>(
@@ -18,6 +20,20 @@ const deletionChannel = new BroadcastChannel<DeletionChannel>(
 );
 
 const libraryRouter = router({
+  launchWatcher: publicProcedure.mutation(async () => {
+    console.log("launching watcher worker");
+    fileSystemWatchWorker({
+      name: "fs-watcher-worker",
+    })
+      .on("message", console.log)
+      .postMessage({
+        activate: true,
+      });
+
+    return {
+      success: true,
+    };
+  }),
   getLibrary: publicProcedure.query(async ({ ctx }) => {
     const collections = await ctx.db.query.collections.findMany({
       with: {
@@ -31,7 +47,8 @@ const libraryRouter = router({
       })
       .then((result) =>
         Array.differenceWith<typeof issueSchema.$inferSelect>(
-          (a, b) => a.issueTitle === b.issueTitle,
+          (issue, issueInCollection) =>
+            issue.issueTitle === issueInCollection.issueTitle,
         )(
           result,
           collections.flatMap((c) => c.issues),
@@ -58,7 +75,13 @@ const libraryRouter = router({
       });
 
       return {
-        collection,
+        issues: collection?.issues.sort((issueI, issueK) =>
+          sortPages(issueI.issueTitle, issueK.issueTitle),
+        ),
+        collection: {
+          collectionName: collection?.collectionName,
+          id: collection?.id,
+        },
       };
     }),
   getCollections: publicProcedure.query(async ({ ctx }) => {
@@ -169,16 +192,6 @@ const libraryRouter = router({
       };
     }),
   emptyCache: publicProcedure.mutation(async ({ ctx }) => {
-    // NodeFS.rmdirSync(process.env.cache_dir!, {
-    //   recursive: true,
-    // });
-
-    // await ctx.db.delete(issueSchema);
-    // await ctx.db.delete(collectionsSchema);
-
-    // return {
-    //   success: true,
-    // };
     cacheWorker({
       name: "cache-worker",
     })
@@ -189,6 +202,25 @@ const libraryRouter = router({
       success: true,
     };
   }),
+  addSourceDirectory: publicProcedure.mutation(async ({ ctx }) => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      buttonLabel: "Select Folder",
+      properties: ["openDirectory", "dontAddToRecent"],
+    });
+
+    if (canceled) {
+      return {
+        complete: false,
+        filePaths: null,
+      };
+    }
+
+    return {
+      complete: true,
+      filePaths,
+    };
+  }),
+  // subscriptions
   additions: publicProcedure.subscription(() =>
     observable<ParserChannel>((emit) => {
       const listener = (evt: ParserChannel) => {
@@ -215,24 +247,6 @@ const libraryRouter = router({
       };
     }),
   ),
-  addSourceDirectory: publicProcedure.mutation(async ({ ctx }) => {
-    const { canceled, filePaths } = await dialog.showOpenDialog({
-      buttonLabel: "Select Folder",
-      properties: ["openDirectory", "dontAddToRecent"],
-    });
-
-    if (canceled) {
-      return {
-        complete: false,
-        filePaths: null,
-      };
-    }
-
-    return {
-      complete: true,
-      filePaths,
-    };
-  }),
 });
 
 export default libraryRouter;

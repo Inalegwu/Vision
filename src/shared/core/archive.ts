@@ -49,7 +49,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
 
       yield* parseXML(meta, newIssue.id).pipe(
         Effect.fork,
-        Effect.catchAll(Effect.logError),
+        Effect.catchAll(Effect.logFatal),
       );
 
       yield* Fs.makeDirectory(savePath).pipe(
@@ -57,15 +57,15 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
           Effect.sync(() => {
             console.log({ e });
             parserChannel.postMessage({
-              error: `${e.message}::${e.cause}`,
+              error: e.message,
               state: "ERROR",
-              isCompleted: false,
+              isCompleted: true,
             });
           }),
         ),
       );
 
-      yield* Effect.forEach(files, (file, idx) =>
+      yield* Effect.forEach(files, (file) =>
         Fs.writeFile(
           path.join(savePath, file.name),
           Buffer.from(file.data!).toString("base64"),
@@ -77,9 +77,9 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
             Effect.sync(() => {
               console.log({ e });
               parserChannel.postMessage({
-                error: `${e.message}::${e.cause}`,
+                error: e.message,
                 state: "ERROR",
-                isCompleted: false,
+                isCompleted: true,
               });
             }),
           ),
@@ -120,7 +120,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
 
       yield* parseXML(meta, newIssue.id).pipe(
         Effect.fork,
-        Effect.catchAll(Effect.logError),
+        Effect.catchAll(Effect.logFatal),
       );
 
       yield* Fs.makeDirectory(savePath).pipe(
@@ -130,7 +130,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
             parserChannel.postMessage({
               error: e.message,
               state: "ERROR",
-              isCompleted: false,
+              isCompleted: true,
             });
           }),
         ),
@@ -150,7 +150,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
               parserChannel.postMessage({
                 error: e.message,
                 state: "ERROR",
-                isCompleted: false,
+                isCompleted: true,
               });
             }),
           ),
@@ -232,7 +232,7 @@ const saveIssue = Effect.fn(function* (
 
   if (!newIssue) {
     parserChannel.postMessage({
-      isCompleted: false,
+      isCompleted: true,
       error: "Couldn't save Issue",
       state: "ERROR",
     });

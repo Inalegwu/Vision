@@ -16,6 +16,19 @@ export const workerResponseSchema = z.object({
   error: z.unknown().nullable(),
 });
 
+export const fetchPagesWorkerSchema = z.object({
+  issueId: z.string(),
+});
+
+export const fetchPagesResponseSchema = z.object({
+  pages: z.array(
+    z.object({
+      id: z.string(),
+      data: z.string(),
+    }),
+  ),
+});
+
 export const cacheWorkerSchema = z.object({});
 
 export const MetadataSchema = Schema.Struct({

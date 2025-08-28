@@ -2,6 +2,8 @@ import type {
   MetadataSchema,
   cacheWorkerSchema,
   deletionWorkerSchema,
+  fetchPagesResponseSchema,
+  fetchPagesWorkerSchema,
   parserSchema,
   workerResponseSchema,
 } from "@shared/core/validations";
@@ -16,6 +18,9 @@ declare global {
     isFullscreen: boolean;
     libraryView: "issues" | "collections";
     appId: string | null;
+    reader: {
+      direction: "horizontal" | "vertical";
+    };
   };
 
   export type Issue = Omit<
@@ -73,6 +78,7 @@ declare global {
   export type DeletionChannel = {
     isDone: boolean;
     title?: string;
+    error?: string | null;
   };
 
   export type Index = {
@@ -90,6 +96,10 @@ declare global {
     ext: "cbr" | "cbz" | "none";
   }>;
 
+  export type DeeplinkChannel = {
+    path: string;
+  };
+
   export type Extractor = {
     name: string;
     isDir: boolean;
@@ -101,4 +111,8 @@ declare global {
   export type DeletionSchema = z.infer<typeof deletionWorkerSchema>;
   export type Metadata = Schema.Schema.Type<typeof MetadataSchema>;
   export type CacheWorkerSchema = z.infer<typeof cacheWorkerSchema>;
+  export type FetchPagesWorkerSchema = z.infer<typeof fetchPagesWorkerSchema>;
+  export type FetchPagesResponseSchema = z.infer<
+    typeof fetchPagesResponseSchema
+  >;
 }

@@ -1,18 +1,14 @@
 import { deletionWorkerSchema } from "@shared/core/validations";
 import { issues } from "@shared/schema";
 import db from "@shared/storage";
+import { deletionChannel } from "@src/shared/channels";
 import { Fs } from "@src/shared/fs";
-import { parseWorkerMessageWithSchema } from "@src/shared/utils";
-import { BroadcastChannel } from "broadcast-channel";
+import { transformMessage } from "@src/shared/utils";
 import { eq } from "drizzle-orm";
 import { Effect } from "effect";
 import { parentPort } from "node:worker_threads";
 
 const port = parentPort;
-
-const deletionChannel = new BroadcastChannel<DeletionChannel>(
-  "deletion-channel",
-);
 
 if (!port) throw new Error("Illegal State");
 
@@ -36,7 +32,17 @@ const deleteIssue = Effect.fnUntraced(function* ({ issueId }: DeletionSchema) {
     title: issue.issueTitle,
   });
 
-  yield* Fs.removeDirectory(issue.path);
+  yield* Fs.removeDirectory(issue.path).pipe(
+    Effect.catchTag("FSError", (error) =>
+      Effect.succeed(
+        deletionChannel.postMessage({
+          isDone: false,
+          title: issue.issueTitle,
+          error: error.message,
+        }),
+      ),
+    ),
+  );
 
   yield* Effect.tryPromise(
     async () =>
@@ -50,18 +56,11 @@ const deleteIssue = Effect.fnUntraced(function* ({ issueId }: DeletionSchema) {
 });
 
 port.on("message", (message) =>
-  parseWorkerMessageWithSchema(deletionWorkerSchema, message).match(
-    (data) =>
-      deleteIssue(data).pipe(
-        Effect.orDie,
-        Effect.withLogSpan("deletion.duration"),
-        Effect.annotateLogs({
-          worker: "deletion",
-        }),
-        Effect.runPromise,
-      ),
-    (message) => {
-      console.error({ message });
-    },
+  transformMessage(deletionWorkerSchema, message).pipe(
+    Effect.matchEffect({
+      onSuccess: (data) => deleteIssue(data),
+      onFailure: Effect.logFatal,
+    }),
+    Effect.runPromise,
   ),
 );
