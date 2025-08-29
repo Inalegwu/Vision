@@ -208,7 +208,7 @@ export default function Layout({ children }: LayoutProps) {
                   onClick={goToSettings}
                   type="button"
                 >
-                  <Icon name="Settings2" size={12} />
+                  <Icon name="Settings" size={12} />
                 </button>
                 <button
                   className="p-3 hover:bg-neutral-400/10 dark:text-moonlightText dark:hover:bg-neutral-400/5"

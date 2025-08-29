@@ -1,7 +1,6 @@
-import { Flex, Tabs, Text, Tooltip } from "@radix-ui/themes";
+import { Flex, Switch, Tabs, Text } from "@radix-ui/themes";
 import t from "@src/shared/config";
 import { createFileRoute } from "@tanstack/react-router";
-import { motion } from "motion/react";
 import React, { memo } from "react";
 import { Icon } from "../components";
 import { toast } from "../components/toast";
@@ -70,7 +69,7 @@ const ReaderView = React.memo(() => {
   const direction = globalState$.reader.direction.get();
 
   return (
-    <Flex className="w-full h-full px-2 py-2" direction="column" gap="3">
+    <Flex className="h-full px-4 py-2" direction="column" gap="3">
       <Flex width="100%" align="center" justify="between">
         <Flex direction="column">
           <Text weight="medium" size="2">
@@ -80,44 +79,16 @@ const ReaderView = React.memo(() => {
             change scroll direction of the reader view
           </Text>
         </Flex>
-        <Flex
-          gap="1"
-          className="bg-neutral-100 rounded-lg p-0.6 relative dark:bg-moonlightFocusMedium"
-        >
-          <motion.div
-            animate={{
-              transform:
-                direction === "horizontal"
-                  ? "translateX(0px)"
-                  : "translateX(28px)",
-            }}
-            className="absolute z-0 w-[45%] h-[89%] rounded-lg bg-white dark:bg-moonlightFocusLow"
-          />
-          <Tooltip content="Vertical">
-            <button
-              onClick={() => globalState$.reader.direction.set("vertical")}
-              className={`p-1.6 cursor-pointer ${
-                direction === "vertical"
-                  ? " text-moonlightOrange"
-                  : "text-neutral-600"
-              }`}
-            >
-              <Icon name="MoveVertical" size={13} />
-            </button>
-          </Tooltip>
-          <Tooltip content="Horizontal">
-            <button
-              onClick={() => globalState$.reader.direction.set("horizontal")}
-              className={`p-1.6 cursor-pointer ${
-                direction === "vertical"
-                  ? " text-moonlightOrange"
-                  : "text-neutral-600"
-              }`}
-            >
-              <Icon name="MoveHorizontal" size={13} />
-            </button>
-          </Tooltip>
-        </Flex>
+        <Switch
+          value={globalState$.reader.direction.get()}
+          checked={globalState$.reader.direction.get() === "vertical"}
+          onCheckedChange={(checked) =>
+            globalState$.reader.direction.set(
+              checked ? "vertical" : "horizontal",
+            )
+          }
+          size="1"
+        />
       </Flex>
     </Flex>
   );

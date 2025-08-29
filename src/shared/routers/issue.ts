@@ -3,7 +3,7 @@ import parseWorker from "@core/workers/parser?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
-import { Array, pipe } from "effect";
+import { Array, Effect, pipe } from "effect";
 import { dialog } from "electron";
 import * as fs from "node:fs";
 import path from "node:path";
@@ -64,6 +64,10 @@ const issueRouter = router({
     .query(async ({ ctx, input }) => {
       const issue = await ctx.db.query.issues.findFirst({
         where: (issue, { eq }) => eq(issue.id, input.issueId),
+        columns: {
+          id: true,
+          path: true,
+        },
       });
 
       if (!issue)
@@ -90,7 +94,9 @@ const issueRouter = router({
         pages,
       };
 
-      return merged;
+      return {
+        pages,
+      };
     }),
   getIssue: publicProcedure
     .input(
@@ -102,8 +108,16 @@ const issueRouter = router({
       const issue = await ctx.db.query.issues.findFirst({
         where: (issues, { eq }) => eq(issues.id, input.issueId),
       });
+
+      if (!issue)
+        throw new TRPCError({
+          message: "Couldn't find issue",
+          code: "INTERNAL_SERVER_ERROR",
+          cause: "Invalid or missing issueId",
+        });
+
       const metadata = await ctx.db.query.metadata.findFirst({
-        where: (meta, { eq }) => eq(meta.issueId, input.issueId),
+        where: (meta, { eq }) => eq(meta.issueId, issue.id),
       });
 
       return {
@@ -118,33 +132,62 @@ const issueRouter = router({
         issueTitle: z.string(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      const result = await ctx.db
-        .update(issuesSchema)
-        .set({
-          issueTitle: input.issueTitle,
-        })
-        .where(eq(issuesSchema.id, input.issueId))
-        .returning();
+    .mutation(
+      async ({ ctx, input }) =>
+        await Effect.Do.pipe(
+          Effect.bind("result", () =>
+            Effect.tryPromise(
+              async () =>
+                await ctx.db
+                  .update(issuesSchema)
+                  .set({
+                    issueTitle: input.issueTitle,
+                  })
+                  .where(eq(issuesSchema.id, input.issueId))
+                  .returning(),
+            ),
+          ),
+          Effect.flatMap(({ result }) =>
+            Effect.succeed({
+              result: result.at(0),
+            }),
+          ),
+          Effect.runPromise,
+        ),
+    ),
+  getAllIssues: publicProcedure.query(
+    async ({ ctx }) =>
+      await Effect.Do.pipe(
+        Effect.bind("issues", () =>
+          Effect.tryPromise(
+            async () =>
+              await ctx.db.query.issues.findMany({
+                where: (fields, { eq }) => eq(fields.collectionId, ""),
+              }),
+          ),
+        ),
+        Effect.flatMap(({ issues }) =>
+          Effect.succeed({
+            issues,
+          }),
+        ),
+        Effect.runPromise,
+      ),
+  ),
+  // query(async ({ ctx }) => {
+  //   const allIssues = await ctx.db
+  //     .select({
+  //       id: issuesSchema.id,
+  //       thumbnail: issuesSchema.thumbnailUrl,
+  //       title: issuesSchema.issueTitle,
+  //       dateCreated: issuesSchema.dateCreated,
+  //     })
+  //     .from(issuesSchema);
 
-      return {
-        result: result[0],
-      };
-    }),
-  getAllIssues: publicProcedure.query(async ({ ctx }) => {
-    const allIssues = await ctx.db
-      .select({
-        id: issuesSchema.id,
-        thumbnail: issuesSchema.thumbnailUrl,
-        title: issuesSchema.issueTitle,
-        dateCreated: issuesSchema.dateCreated,
-      })
-      .from(issuesSchema);
-
-    return {
-      issues: allIssues,
-    };
-  }),
+  //   return {
+  //     issues: allIssues,
+  //   };
+  // }),
 });
 
 export default issueRouter;

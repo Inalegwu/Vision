@@ -1,4 +1,4 @@
-import { useObservable } from "@legendapp/state/react";
+import { Switch, useObservable } from "@legendapp/state/react";
 import { Flex } from "@radix-ui/themes";
 import t from "@shared/config";
 import { toast } from "@src/web/components/toast";
@@ -6,15 +6,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useGesture } from "@use-gesture/react";
 import { Bookmark, ChevronLeft, ChevronRight, Expand } from "lucide-react";
 import { AnimatePresence, motion, useMotionValue } from "motion/react";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import React, { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Spinner } from "../../components";
-import {
-  useDebounce,
-  useInterval,
-  useKeyPress,
-  useTimeout,
-  useWindow,
-} from "../../hooks";
+import { useDebounce, useKeyPress, useTimeout, useWindow } from "../../hooks";
 import { globalState$, readingState$ } from "../../state";
 
 const DRAG_BUFFER = 50;
@@ -71,37 +65,10 @@ function Component() {
     currentlyReading.get(issueId)?.currentPage || 0,
   );
 
-  const dragX = useMotionValue(0);
   const width = useMemo(
     () => Math.floor((itemIndex / contentLength) * 100),
     [contentLength, itemIndex],
   );
-
-  // save reading state to store every few seconds
-  // while reading
-  useInterval(() => {
-    if (itemIndex < contentLength - 1) {
-      currentlyReading.set(issueId, {
-        id: issueId,
-        title: data?.issueTitle || "",
-        thumbnailUrl: data?.thumbnailUrl || "",
-        currentPage: itemIndex,
-        totalPages: contentLength - 1,
-      });
-      return;
-    }
-
-    if (itemIndex === contentLength - 1) {
-      currentlyReading.delete(issueId);
-      doneReading.set(issueId, {
-        id: issueId,
-        title: data?.issueTitle || "",
-        thumbnailUrl: data?.thumbnailUrl || "",
-        dateFinished: new Date().toISOString(),
-      });
-      return;
-    }
-  }, 3_000);
 
   useTimeout(() => isEnabled.set(true), 2_000);
 
@@ -125,16 +92,6 @@ function Component() {
     globalState$.isFullscreen.set(false);
   }, []);
 
-  const onDragEnd = () => {
-    const x = dragX.get();
-
-    if (x <= DRAG_BUFFER && itemIndex < contentLength - 1) {
-      setItemIndex((index) => index + 1);
-    } else if (x >= DRAG_BUFFER && itemIndex > 0) {
-      setItemIndex((index) => index - 1);
-    }
-  };
-
   return (
     <Flex className="h-screen w-full overflow-hidden">
       <Flex className="w-full h-full relative">
@@ -150,7 +107,27 @@ function Component() {
           </Flex>
         )}
         <div className="absolute z-0 h-[10%]">
-          <AnimatePresence mode="wait">
+          <Switch value={globalState$.reader.direction.get()}>
+            {{
+              horizontal: () => (
+                <HorizontalReader
+                  pages={data?.pages || []}
+                  itemIndex={itemIndex}
+                  setItemIndex={setItemIndex}
+                  contentLength={contentLength}
+                />
+              ),
+              vertical: () => (
+                <VerticalReader
+                  pages={data?.pages || []}
+                  itemIndex={itemIndex}
+                  setItemIndex={setItemIndex}
+                  contentLength={contentLength}
+                />
+              ),
+            }}
+          </Switch>
+          {/* <AnimatePresence mode="wait">
             <motion.div
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
@@ -188,7 +165,7 @@ function Component() {
                 </div>
               ))}
             </motion.div>
-          </AnimatePresence>
+          </AnimatePresence> */}
         </div>
         {/* controls */}
         <AnimatePresence mode="wait">
@@ -246,3 +223,123 @@ function Component() {
     </Flex>
   );
 }
+
+const HorizontalReader = React.memo(
+  ({
+    pages,
+    contentLength,
+    itemIndex,
+    setItemIndex,
+  }: {
+    pages: Array<{ id: string; data: string }>;
+    contentLength: number;
+    itemIndex: number;
+    setItemIndex: React.Dispatch<React.SetStateAction<number>>;
+  }) => {
+    const dragX = useMotionValue(0);
+
+    const onDragEnd = () => {
+      const x = dragX.get();
+
+      if (x <= DRAG_BUFFER && itemIndex < contentLength - 1) {
+        setItemIndex((index) => index + 1);
+      } else if (x >= DRAG_BUFFER && itemIndex > 0) {
+        setItemIndex((index) => index - 1);
+      }
+    };
+
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          style={{ x: dragX }}
+          initial={{ translateX: 0 }}
+          animate={{
+            translateX: `-${itemIndex * 100}%`,
+          }}
+          exit={{ translateX: 0 }}
+          onDragEnd={onDragEnd}
+          transition={{
+            bounceDamping: 4,
+          }}
+          className="flex cursor-grab active:cursor-grabbing items-center"
+        >
+          {pages.map((v, idx) => (
+            <div
+              className="w-full h-screen flex items-center justify-center shrink-0"
+              key={v.id}
+            >
+              <motion.img
+                src={v.data}
+                alt="page"
+                className="h-full w-[50%] object-contain"
+              />
+            </div>
+          ))}
+        </motion.div>
+      </AnimatePresence>
+    );
+  },
+);
+
+const VerticalReader = React.memo(
+  ({
+    pages,
+    contentLength,
+    itemIndex,
+    setItemIndex,
+  }: {
+    pages: Array<{ id: string; data: string }>;
+    contentLength: number;
+    itemIndex: number;
+    setItemIndex: React.Dispatch<React.SetStateAction<number>>;
+  }) => {
+    const dragY = useMotionValue(0);
+
+    const onDragEnd = () => {
+      const x = dragY.get();
+
+      if (x <= DRAG_BUFFER && itemIndex < contentLength - 1) {
+        setItemIndex((index) => index + 1);
+      } else if (x >= DRAG_BUFFER && itemIndex > 0) {
+        setItemIndex((index) => index - 1);
+      }
+    };
+
+    console.log({ itemIndex });
+
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          style={{ y: dragY }}
+          initial={{ translateY: 0 }}
+          animate={{
+            translateY: `-${itemIndex * 100}%`,
+          }}
+          exit={{ translateX: 0 }}
+          onDragEnd={onDragEnd}
+          transition={{
+            bounceDamping: 4,
+          }}
+          className="flex cursor-grab active:cursor-grabbing items-center"
+        >
+          {pages.map((v, idx) => (
+            <div
+              className="w-full h-screen flex items-center justify-center shrink-0"
+              key={v.id}
+            >
+              <motion.img
+                src={v.data}
+                alt={`${v.id}_page`}
+                className="h-full w-[50%] object-contain"
+              />
+            </div>
+          ))}
+        </motion.div>
+      </AnimatePresence>
+    );
+  },
+);

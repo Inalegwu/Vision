@@ -39,15 +39,12 @@ function Component() {
 
   const [toAdd, setToAdd] = useState<Array<string>>([]);
 
-  console.log({ toAdd });
-
   return (
     <Flex className="h-screen pt-8 w-full" direction="column">
-      <Flex className="w-full px-3 py-3" align="center" justify="between">
-        <Text size="8" weight="bold">
+      <Flex className="w-full px-3 py-6" align="center" justify="between">
+        <Text size="8" className="font-[Title] tracking-wide" weight="bold">
           {data?.collection?.collectionName}
         </Text>
-        {/* TODO: add issues in bulk to a collection */}
         <Dialog.Root>
           <Dialog.Trigger>
             <button className="p-2 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5">
