@@ -9,3 +9,8 @@ export const deletionChannel = new BroadcastChannel<DeletionChannel>(
   "deletion-channel",
   {},
 );
+
+export const parserChannel = new BroadcastChannel<ParserChannel>(
+  "parser-channel",
+  {},
+);

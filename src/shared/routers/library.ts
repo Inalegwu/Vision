@@ -1,8 +1,8 @@
+import { deletionChannel, parserChannel } from "@shared/channels";
 import cacheWorker from "@src/shared/core/workers/cache?nodeWorker";
 import fileSystemWatchWorker from "@src/shared/core/workers/watcher?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import { observable } from "@trpc/server/observable";
-import { BroadcastChannel } from "broadcast-channel";
 import { eq } from "drizzle-orm";
 import { Effect } from "effect";
 import * as Array from "effect/Array";
@@ -14,11 +14,6 @@ import {
   issues as issueSchema,
 } from "../schema";
 import { sortPages } from "../utils";
-
-const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
-const deletionChannel = new BroadcastChannel<DeletionChannel>(
-  "deletion-channel",
-);
 
 const libraryRouter = router({
   launchWatcher: publicProcedure.mutation(async () => {
@@ -67,51 +62,65 @@ const libraryRouter = router({
         collectionId: z.string(),
       }),
     )
-    .query(async ({ ctx, input }) => {
-      const collection = await ctx.db.query.collections.findFirst({
-        where: (collections, { eq }) => eq(collections.id, input.collectionId),
-        with: {
-          issues: true,
-        },
-      });
-
-      return {
-        issues: collection?.issues.sort((issueI, issueK) =>
-          sortPages(issueI.issueTitle, issueK.issueTitle),
+    .query(
+      async ({ ctx, input }) =>
+        await Effect.Do.pipe(
+          Effect.bind("collection", () =>
+            Effect.tryPromise(
+              async () =>
+                await ctx.db.query.collections.findFirst({
+                  where: (collections, { eq }) =>
+                    eq(collections.id, input.collectionId),
+                  with: {
+                    issues: true,
+                  },
+                  columns: {
+                    collectionName: true,
+                    id: true,
+                  },
+                }),
+            ),
+          ),
+          Effect.flatMap(({ collection }) =>
+            Effect.succeed({
+              issues: collection?.issues.sort((issueI, issueK) =>
+                sortPages(issueI.issueTitle, issueK.issueTitle),
+              ),
+              collection,
+            }),
+          ),
+          Effect.runPromise,
         ),
-        collection: {
-          collectionName: collection?.collectionName,
-          id: collection?.id,
-        },
-      };
-    }),
-  getCollections: publicProcedure.query(async ({ ctx }) => {
-    const collections = await ctx.db.query.collections.findMany({});
-
-    return {
-      collections,
-    };
-  }),
+    ),
+  getCollections: publicProcedure.query(
+    async ({ ctx }) =>
+      await Effect.tryPromise(
+        async () => await ctx.db.query.collections.findMany(),
+      ).pipe(Effect.runPromise),
+  ),
   deleteCollection: publicProcedure
     .input(
       z.object({
         collectionId: z.string(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      console.log({ input });
-
-      const deleted = await ctx.db
-        .delete(collectionsSchema)
-        .where(eq(collectionsSchema.id, input.collectionId))
-        .returning();
-
-      console.log(deleted);
-
-      return {
-        deleted: deleted[0],
-      };
-    }),
+    .mutation(
+      async ({ ctx, input }) =>
+        await Effect.Do.pipe(
+          Effect.bind("deleted", () =>
+            Effect.tryPromise(
+              async () =>
+                await ctx.db
+                  .delete(collectionsSchema)
+                  .where(eq(collectionsSchema.id, input.collectionId))
+                  .returning(),
+            ),
+          ),
+          Effect.tap(Effect.logInfo),
+          Effect.flatMap(({ deleted }) => Effect.succeed(deleted)),
+          Effect.runPromise,
+        ),
+    ),
   addIssueToCollection: publicProcedure
     .input(
       z.object({
@@ -119,52 +128,77 @@ const libraryRouter = router({
         issueId: z.string(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      console.log(input);
-
-      const returns = await ctx.db
-        .update(issueSchema)
-        .set({
-          collectionId: input.collectionId,
-        })
-        .where(eq(issueSchema.id, input.issueId))
-        .returning();
-
-      return {
-        data: returns,
-      };
-    }),
+    .mutation(
+      async ({ ctx, input }) =>
+        await Effect.Do.pipe(
+          Effect.bind("added", () =>
+            Effect.tryPromise(
+              async () =>
+                await ctx.db
+                  .update(issueSchema)
+                  .set({
+                    collectionId: input.collectionId,
+                  })
+                  .where(eq(issueSchema.id, input.issueId))
+                  .returning(),
+            ),
+          ),
+          Effect.flatMap(({ added }) => Effect.succeed(added)),
+        ).pipe(Effect.runPromise),
+    ),
   removeFromCollection: publicProcedure
     .input(
       z.object({
         issueId: z.string(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      const changes = await ctx.db
-        .update(issueSchema)
-        .set({
-          collectionId: null,
-        })
-        .where(eq(issueSchema.id, input.issueId));
-
-      return {
-        changes,
-      };
-    }),
+    .mutation(
+      async ({ ctx, input }) =>
+        await Effect.Do.pipe(
+          Effect.bind("updated", () =>
+            Effect.tryPromise(
+              async () =>
+                await ctx.db
+                  .update(issueSchema)
+                  .set({
+                    collectionId: null,
+                  })
+                  .where(eq(issueSchema.id, input.issueId)),
+            ),
+          ),
+          Effect.flatMap(({ updated }) => Effect.succeed(updated)),
+          Effect.runPromise,
+        ),
+    ),
   createCollection: publicProcedure
     .input(
       z.object({
         collectionName: z.string(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      console.log({ input });
-      await ctx.db.insert(collectionsSchema).values({
-        id: v4(),
-        collectionName: input.collectionName,
-      });
-    }),
+    .mutation(
+      async ({ ctx, input }) =>
+        await Effect.Do.pipe(
+          Effect.bind("newCollection", () =>
+            Effect.tryPromise(
+              async () =>
+                await ctx.db
+                  .insert(collectionsSchema)
+                  .values({
+                    id: v4(),
+                    collectionName: input.collectionName,
+                  })
+                  .returning({
+                    name: collectionsSchema.collectionName,
+                  }),
+            ),
+          ),
+          Effect.flatMap(({ newCollection }) =>
+            Effect.succeed(newCollection.at(0)),
+          ),
+          Effect.runPromise,
+        ),
+    ),
   addToCollectionInBulk: publicProcedure
     .input(
       z.object({
@@ -249,23 +283,17 @@ const libraryRouter = router({
 });
 
 // {
-//   const added = [];
+//   console.log({ input });
 
-//   for (const issueId of input.issues) {
-//     const returns = await ctx.db
-//       .update(issueSchema)
-//       .set({
-//         collectionId: input.collectionId,
-//       })
-//       .where(eq(issueSchema.id, issueId))
-//       .returning()
-//       .then((v) => v.at(0));
+//   const deleted = await ctx.db
+//     .delete(collectionsSchema)
+//     .where(eq(collectionsSchema.id, input.collectionId))
+//     .returning();
 
-//     added.push(returns?.id);
-//   }
+//   console.log(deleted);
 
 //   return {
-//         added,
+//         deleted: deleted[0],
 //       };
 // }
 

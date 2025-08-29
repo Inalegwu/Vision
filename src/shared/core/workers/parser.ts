@@ -1,7 +1,7 @@
+import { parserChannel } from "@shared/channels";
 import { parserSchema } from "@shared/core/validations";
 import { parseFileNameFromPath, transformMessage } from "@shared/utils";
 import db from "@src/shared/storage";
-import { BroadcastChannel } from "broadcast-channel";
 import { Effect, Match } from "effect";
 import { parentPort } from "node:worker_threads";
 import { Archive } from "../archive";
@@ -9,8 +9,6 @@ import { Archive } from "../archive";
 const port = parentPort;
 
 if (!port) throw new Error("Parse Process Port is Missing");
-
-const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 
 const handleMessage = Effect.fnUntraced(function* ({
   action,

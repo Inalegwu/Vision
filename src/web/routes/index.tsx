@@ -186,7 +186,10 @@ const CreateCollection = React.memo(() => {
   const utils = t.useUtils();
   const { mutate: createCollection, isLoading } =
     t.library.createCollection.useMutation({
-      onSuccess: () => utils.library.invalidate(),
+      onSuccess: (data) => {
+        toast.success(`${data?.name} Created`);
+        utils.library.invalidate();
+      },
       onError: (error) => toast.error(error.message),
     });
 

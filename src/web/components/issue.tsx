@@ -178,7 +178,7 @@ export default function Issue({ issue }: Props) {
           size="1"
         >
           <FlatList
-            data={data?.collections || []}
+            data={data || []}
             className="h-70"
             scrollbars="vertical"
             scrollHideDelay={3000}
