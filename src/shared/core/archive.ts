@@ -8,7 +8,7 @@ import {
 } from "@shared/utils";
 import Zip from "adm-zip";
 import { BroadcastChannel } from "broadcast-channel";
-import { Option } from "effect";
+import { Encoding, Option } from "effect";
 import * as Array from "effect/Array";
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
@@ -17,6 +17,7 @@ import { createExtractorFromData } from "node-unrar-js";
 import path from "node:path";
 import { v4 } from "uuid";
 import { Fs } from "../fs";
+import { Dump } from "./dump";
 import { ArchiveError } from "./errors";
 import { MetadataSchema } from "./validations";
 
@@ -24,6 +25,8 @@ const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
 
 export class Archive extends Effect.Service<Archive>()("Archive", {
   effect: Effect.gen(function* () {
+    const dump = yield* Dump;
+
     /**
      *
      * Extracts .CBR files to a predefined cache directory
@@ -54,14 +57,24 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
 
       yield* Fs.makeDirectory(savePath).pipe(
         Effect.catchAll((e) =>
-          Effect.sync(() => {
-            console.log({ e });
-            parserChannel.postMessage({
-              error: e.message,
-              state: "ERROR",
-              isCompleted: true,
-            });
-          }),
+          dump
+            .writeToDump({
+              date: new Date(),
+              error: String(e),
+              id: Encoding.encodeBase64(`${e._tag}::${e.cause}`),
+            } satisfies DumpSchema)
+            .pipe(
+              Effect.andThen(
+                Effect.sync(() => {
+                  console.log({ e });
+                  parserChannel.postMessage({
+                    error: e.message,
+                    state: "ERROR",
+                    isCompleted: true,
+                  });
+                }),
+              ),
+            ),
         ),
       );
 
@@ -169,6 +182,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
     return { rar, zip } as const;
   }).pipe(
     Effect.orDie,
+    Effect.provide(Dump.Default),
     Effect.annotateLogs({
       service: "archive",
     }),

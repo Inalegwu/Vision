@@ -56,7 +56,10 @@ function Component() {
     },
     {
       enabled: isEnabled.get(),
-      onError: (error) => toast.error(error.message),
+      onError: (error) => {
+        console.error(error);
+        toast.error(error.message);
+      },
     },
   );
 
@@ -306,8 +309,6 @@ const VerticalReader = React.memo(
         setItemIndex((index) => index - 1);
       }
     };
-
-    console.log({ itemIndex });
 
     return (
       <AnimatePresence mode="wait">

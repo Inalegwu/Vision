@@ -18,6 +18,11 @@ process.env.cache_dir = path.join(
 );
 process.env.source_dir = path.join(app.getPath("downloads"), "comics");
 process.env.lib_dir = path.join(app.getPath("appData"), "Vision");
+process.env.error_dump = path.join(
+  app.getPath("appData"),
+  "Vision",
+  "ErrorDump.json",
+);
 
 if (process.defaultApp) {
   if (process.argv.length >= 2) {

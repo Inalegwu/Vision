@@ -17,7 +17,6 @@ import { sortPages } from "../utils";
 
 const libraryRouter = router({
   launchWatcher: publicProcedure.mutation(async () => {
-    console.log("launching watcher worker");
     fileSystemWatchWorker({
       name: "fs-watcher-worker",
     })

@@ -43,3 +43,13 @@ export const MetadataSchema = Schema.Struct({
   Year: Schema.Int.pipe(Schema.optional),
   Summary: Schema.String.pipe(Schema.optional),
 });
+
+export const dumpSchema = Schema.Struct({
+  id: Schema.String,
+  error: Schema.String,
+  date: Schema.Date,
+});
+
+export const dumpFileSchema = Schema.Struct({
+  data: Schema.Array(dumpSchema),
+});

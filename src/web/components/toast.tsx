@@ -137,7 +137,9 @@ const Toast = React.memo(() => {
             >
               <Switch value={mode}>
                 {{
-                  loading: () => <Spinner size={12} />,
+                  loading: () => (
+                    <Spinner className="border-moonlightSlight" size={11.5} />
+                  ),
                   error: () => <SwitchIcon name="X" />,
                   success: () => <SwitchIcon name="CircleCheck" />,
                   info: () => <SwitchIcon name="Info" />,

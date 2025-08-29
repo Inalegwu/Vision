@@ -3,12 +3,12 @@ import parseWorker from "@core/workers/parser?nodeWorker";
 import { publicProcedure, router } from "@src/trpc";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
-import { Array, Effect, pipe } from "effect";
+import { Effect } from "effect";
 import { dialog } from "electron";
-import * as fs from "node:fs";
 import path from "node:path";
 import { v4 } from "uuid";
 import z from "zod";
+import { Fs } from "../fs";
 import { issues as issuesSchema } from "../schema";
 import { convertToImageUrl } from "../utils";
 
@@ -76,23 +76,21 @@ const issueRouter = router({
           code: "NOT_FOUND",
         });
 
-      const pages = pipe(
-        fs.readdirSync(issue.path, {
-          encoding: "utf-8",
-        }),
-        // Array.filter((path) => !path.includes(".xml")),
-        Array.map((directory) => ({
-          id: v4(),
-          data: convertToImageUrl(
-            fs.readFileSync(path.join(issue.path, directory)).buffer,
+      const pages = await Fs.readDirectory(issue.path).pipe(
+        Effect.map((files) => files.filter((file) => !file.isDirectory)),
+        Effect.andThen((files) =>
+          Effect.forEach(files, (file) =>
+            Fs.readFile(path.join(issue.path, file.file)),
           ),
-        })),
+        ),
+        Effect.map((files) =>
+          files.map((file) => ({
+            id: v4(),
+            data: convertToImageUrl(file.buffer),
+          })),
+        ),
+        Effect.runPromise,
       );
-
-      const merged = {
-        ...issue,
-        pages,
-      };
 
       return {
         pages,
@@ -112,7 +110,7 @@ const issueRouter = router({
       if (!issue)
         throw new TRPCError({
           message: "Couldn't find issue",
-          code: "INTERNAL_SERVER_ERROR",
+          code: "NOT_FOUND",
           cause: "Invalid or missing issueId",
         });
 
@@ -155,39 +153,6 @@ const issueRouter = router({
           Effect.runPromise,
         ),
     ),
-  getAllIssues: publicProcedure.query(
-    async ({ ctx }) =>
-      await Effect.Do.pipe(
-        Effect.bind("issues", () =>
-          Effect.tryPromise(
-            async () =>
-              await ctx.db.query.issues.findMany({
-                where: (fields, { eq }) => eq(fields.collectionId, ""),
-              }),
-          ),
-        ),
-        Effect.flatMap(({ issues }) =>
-          Effect.succeed({
-            issues,
-          }),
-        ),
-        Effect.runPromise,
-      ),
-  ),
-  // query(async ({ ctx }) => {
-  //   const allIssues = await ctx.db
-  //     .select({
-  //       id: issuesSchema.id,
-  //       thumbnail: issuesSchema.thumbnailUrl,
-  //       title: issuesSchema.issueTitle,
-  //       dateCreated: issuesSchema.dateCreated,
-  //     })
-  //     .from(issuesSchema);
-
-  //   return {
-  //     issues: allIssues,
-  //   };
-  // }),
 });
 
 export default issueRouter;
