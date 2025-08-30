@@ -4,7 +4,7 @@ import { dumpFileSchema, dumpSchema } from "./validations";
 
 export class Dump extends Effect.Service<Dump>()("Dump", {
   effect: Effect.gen(function* () {
-    const writeToDump = (data: unknown) =>
+    const writeToDump = (data: DumpSchema) =>
       Effect.Do.pipe(
         Effect.bind("dumpData", () => Schema.decodeUnknown(dumpSchema)(data)),
         Effect.bind("previousDumpData", () =>

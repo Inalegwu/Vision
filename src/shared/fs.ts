@@ -1,12 +1,8 @@
-import { Data, Effect } from "effect";
+import { Effect } from "effect";
 import * as NodeFS from "node:fs";
 import { join } from "node:path";
+import { FSError } from "./core/errors";
 import { parseFileNameFromPath } from "./utils";
-
-class FSError extends Data.TaggedError("FSError")<{
-  cause: unknown;
-  message: string;
-}> {}
 
 type File = Uint8Array<ArrayBuffer>;
 
