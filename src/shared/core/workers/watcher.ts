@@ -28,7 +28,6 @@ const watchFS = Effect.fn(function* (directory: string | null) {
     async () =>
       await db.query.issues.findMany({
         columns: {
-          issueTitle: true,
           path: true,
         },
       }),
