@@ -44,10 +44,12 @@ const deleteIssue = Effect.fnUntraced(function* ({ issueId }: DeletionSchema) {
     ),
   );
 
-  yield* Effect.tryPromise(
+  const _ = yield* Effect.tryPromise(
     async () =>
       await db.delete(issues).where(eq(issues.id, issue.id)).returning(),
   );
+
+  yield* Effect.logInfo(_.at(0));
 
   deletionChannel.postMessage({
     isDone: true,

@@ -1,6 +1,5 @@
 import { Option } from "effect";
 import * as Effect from "effect/Effect";
-import { err, ok } from "neverthrow";
 import type { z } from "zod";
 
 export function sortPages(a: string, b: string) {
@@ -36,21 +35,6 @@ export const parseFileNameFromPath = (filePath: string) =>
 // TODO: find a way to extract       ^ this value from this string
 export const extractMetaID = (noteString?: string) =>
   Option.fromNullable(noteString?.replace(/^/, ""));
-
-export const parseWorkerMessageWithSchema = <T extends z.ZodRawShape>(
-  s: z.ZodObject<T>,
-  m: string,
-) => {
-  const result = s.safeParse(m);
-
-  if (!result.success) {
-    return err({
-      message: result.error.flatten(),
-    });
-  }
-
-  return ok(result.data);
-};
 
 export const transformMessage = <T extends z.ZodRawShape>(
   schema: z.ZodObject<T>,
