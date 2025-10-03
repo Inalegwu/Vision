@@ -87,11 +87,11 @@ const _posClass = {
 };
 
 const className = {
-  error: " border-red-400/30 bg-red-400/4 ",
-  success: " border-green-400/30 bg-green-400/4 ",
+  error: " border-red-400/20 bg-red-400/4 ",
+  success: " border-green-400/20 bg-green-400/4 ",
   loading: "border-solid border-moonlightSlight/40",
-  info: " border-yellow-400/30 bg-yellow-400/4",
-  default: "border-gray-400/30 bg-gray-400/4",
+  info: " border-yellow-400/20 bg-yellow-400/4",
+  default: "border-gray-400/20 bg-gray-400/4",
 };
 
 const Toast = React.memo(() => {
@@ -150,7 +150,7 @@ const Toast = React.memo(() => {
               </Switch>
             </motion.div>
             <Text
-              size="1"
+              className="text-[11px] tracking-wide"
               color={
                 mode === "success"
                   ? "green"
@@ -180,7 +180,7 @@ const SwitchIcon = (
   <Icon
     name={props.name}
     className={_iconClass[toastState$.mode.get()]}
-    size={12}
+    size={11}
   />
 );
 

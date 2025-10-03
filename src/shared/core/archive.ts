@@ -176,7 +176,7 @@ const parseXML = Effect.fn(function* (
     })),
   );
 
-  yield* Effect.logInfo({ metaId });
+  yield* Effect.logInfo({ meta });
 
   yield* Effect.tryPromise(
     async () =>

@@ -50,7 +50,7 @@ function Component() {
                     ? "translateX(0px)"
                     : "translateX(28px)",
               }}
-              className="absolute z-0 w-[45%] h-[89%] rounded-lg bg-white dark:bg-moonlightFocusLow"
+              className="absolute z-0 w-[48%] h-[89%] rounded-lg bg-neutral-300/30 border-1 border-solid border-neutral-200 dark:bg-moonlightFocusLow/50 dark:border-1 border-solid dark:border-neutral-800"
             />
             <Tooltip content="My Collections">
               <button

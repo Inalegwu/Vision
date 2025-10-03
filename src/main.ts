@@ -13,12 +13,7 @@ import { globalState$ } from "./web/state";
 
 app.setName("Vision");
 
-const data_dir = Match.value(process.platform).pipe(
-  Match.when("linux", () => `${process.env.HOME}/.local/share/vision`),
-  Match.when("darwin", () => `${process.env.HOME}/.vision`),
-  Match.when("win32", () => `${process.env.APPDATA}/vision`),
-  Match.orElse(() => `${process.env.APPDATA}/vision`),
-);
+const data_dir = path.join(app.getPath("appData"), "Vision");
 
 Fs.makeDirectory(data_dir).pipe(
   Effect.catchTag("FSError", (e) => Console.log(e.message)),
@@ -41,8 +36,8 @@ process.env.cache_dir = path.join(data_dir, "LibraryCache");
 process.env.data_dir = data_dir;
 
 process.env.source_dir = path.join(downloads_dir, "Comics");
-// process.env.lib_dir = path.join(data_dir, "Vision");
-process.env.lib_dir = path.join(data_dir, "ErrorDump.json");
+process.env.lib_dir = path.join(data_dir, "Vision");
+process.env.error_dump = path.join(data_dir, "Vision", "ErrorDump.json");
 
 if (process.defaultApp) {
   if (process.argv.length >= 2) {

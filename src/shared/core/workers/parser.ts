@@ -39,10 +39,10 @@ const handleMessage = Effect.fnUntraced(function* ({
   if (exists) {
     parserChannel.postMessage({
       isCompleted: true,
-      error: "Issue Already Exists",
+      error: `${exists.issueTitle} is already in your library`,
       state: "ERROR",
     });
-    return yield* Effect.logError(`${exists.issueTitle} Already Saved`);
+    return;
   }
 
   parserChannel.postMessage({
