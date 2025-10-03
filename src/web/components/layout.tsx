@@ -2,6 +2,7 @@ import { computed } from "@legendapp/state";
 import { Show, useObservable, useObserveEffect } from "@legendapp/state/react";
 import { Flex, Text, Tooltip } from "@radix-ui/themes";
 import t from "@shared/config";
+import icon from "@src/assets/images/win.png";
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { capitalize } from "effect/String";
 import { AnimatePresence, motion } from "motion/react";
@@ -136,12 +137,13 @@ export default function Layout({ children }: LayoutProps) {
               className="border-b-1 bg-white dark:bg-moonlightInterface w-full"
             >
               <Flex align="center" justify="start" gap="3">
-                <Text
+                {/* <Text
                   className="ml-3 font-[Title] text-moonlightOrange"
                   weight="medium"
                 >
                   Vision
-                </Text>
+                </Text> */}
+                <img src={icon} alt="app__icon" className="w-6 h-6 ml-2" />
                 <Flex gap="1">
                   <Tooltip content="Add Issue To Library">
                     <AddButton />
@@ -199,17 +201,23 @@ export default function Layout({ children }: LayoutProps) {
                   </Text>
                 </Flex>
                 <ThemeButton />
+                <button
+                  onClick={goToSettings}
+                  className="p-2 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+                >
+                  <Icon name="Settings2" size={12} />
+                </button>
                 {/* <BrowserButton /> */}
                 <Flex grow="1" id="drag-region" p="2" />
               </Flex>
               <Flex align="center" justify="end">
-                <button
+                {/* <button
                   className="p-3 hover:bg-neutral-400/10 cursor-pointer dark:text-moonlightText dark:hover:bg-neutral-400/5"
                   onClick={goToSettings}
                   type="button"
                 >
-                  <Icon name="Settings" size={12} />
-                </button>
+                  <Icon name="Settings2" size={12} />
+                </button> */}
                 <button
                   className="p-3 hover:bg-neutral-400/10 dark:text-moonlightText dark:hover:bg-neutral-400/5"
                   onClick={() => minimizeWindow()}
