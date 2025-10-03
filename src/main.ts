@@ -1,6 +1,6 @@
 import { createContext } from "@shared/context";
 import { appRouter } from "@shared/routers/_app";
-import { Console, Effect, Match } from "effect";
+import { Effect, Match } from "effect";
 import { pipe } from "effect/Function";
 import { BrowserWindow, app, screen } from "electron";
 import { createIPCHandler } from "electron-trpc/main";
@@ -15,16 +15,18 @@ app.setName("Vision");
 
 const data_dir = path.join(app.getPath("appData"), "Vision");
 
+// unix systems don't create these on their own for some reason
+// so much for the best operating system lol
 Fs.makeDirectory(data_dir).pipe(
-  Effect.catchTag("FSError", Console.log),
+  Effect.catchTag("FSError", () => Effect.void),
   Effect.runPromise,
 );
 Fs.makeDirectory(path.join(data_dir, "LibraryCache")).pipe(
-  Effect.catchTag("FSError", Console.log),
+  Effect.catchTag("FSError", () => Effect.void),
   Effect.runPromise,
 );
 Fs.makeDirectory(path.join(data_dir, "Library")).pipe(
-  Effect.catchTag("FSError", Console.log),
+  Effect.catchTag("FSError", () => Effect.void),
   Effect.runPromise,
 );
 

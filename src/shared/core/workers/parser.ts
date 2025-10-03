@@ -4,7 +4,10 @@ import db from "@src/shared/storage";
 import { parserSchema } from "@src/shared/validations";
 import { Effect, Match } from "effect";
 import { parentPort } from "node:worker_threads";
-import { DataBaseArchive } from "../services/database-archive";
+import {
+  ArchiveService,
+  databaseArchiveService,
+} from "../services/archive-service";
 
 const port = parentPort;
 
@@ -14,7 +17,7 @@ const handleMessage = Effect.fnUntraced(function* ({
   action,
   parsePath,
 }: ParserSchema) {
-  const archive = yield* DataBaseArchive;
+  const archive = yield* ArchiveService;
 
   const ext = parsePath.includes("cbr")
     ? "cbr"
@@ -26,6 +29,7 @@ const handleMessage = Effect.fnUntraced(function* ({
     isCompleted: false,
     state: "SUCCESS",
     error: null,
+    issue: parseFileNameFromPath(parsePath),
   });
 
   const exists = yield* Effect.tryPromise(
@@ -37,6 +41,7 @@ const handleMessage = Effect.fnUntraced(function* ({
   );
 
   if (exists) {
+    yield* Effect.log(exists);
     parserChannel.postMessage({
       isCompleted: true,
       error: `${exists.issueTitle} is already in your library`,
@@ -49,6 +54,7 @@ const handleMessage = Effect.fnUntraced(function* ({
     isCompleted: false,
     state: "SUCCESS",
     error: null,
+    issue: parseFileNameFromPath(parsePath),
   });
 
   Match.value({ action, ext }).pipe(
@@ -72,7 +78,16 @@ port.on("message", (message) =>
     Effect.annotateLogs({
       worker: "parser-worker",
     }),
-    Effect.provide(DataBaseArchive.Default),
+    Effect.provideService(
+      ArchiveService,
+      databaseArchiveService,
+      // Match.value(process.platform).pipe(
+      //   Match.when("linux", () => fileSystemArchiveService),
+      //   Match.when("darwin", () => fileSystemArchiveService),
+      //   Match.when("win32", () => databaseArchiveService),
+      //   Match.orElse(() => databaseArchiveService),
+      // ),
+    ),
     Effect.orDie,
     Effect.runPromise,
   ),

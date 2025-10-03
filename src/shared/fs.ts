@@ -27,7 +27,7 @@ export namespace Fs {
   /**
    *
    * @param filePath: string
-   * @returns Effect.Effect<void, FSError, never>
+   * @returns Effect.Effect<string, FSError, never>
    *
    * read contents of a path
    */
@@ -48,6 +48,37 @@ export namespace Fs {
 
         resume(Effect.succeed(new Uint8Array(data)));
       }),
+    );
+
+  /**
+   *
+   * @param filePath: string
+   * @returns Effect.Effect<string, FSError, never>
+   *
+   * read contents of a path
+   */
+  export const readFileString = (path: string) =>
+    Effect.async<string, FSError>((resume) =>
+      NodeFS.readFile(
+        path,
+        {
+          encoding: "utf-8",
+        },
+        (cause, data) => {
+          if (cause)
+            resume(
+              Effect.fail(
+                new FSError({
+                  cause,
+                  message: `Error when reading file ${parseFileNameFromPath(
+                    path,
+                  )}`,
+                }),
+              ),
+            );
+          resume(Effect.succeed(data));
+        },
+      ),
     );
 
   /**

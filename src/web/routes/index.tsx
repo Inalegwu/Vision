@@ -41,16 +41,16 @@ function Component() {
         <Flex grow="1" align="center" justify="start" className="relative">
           <Flex
             gap="1"
-            className="bg-neutral-100 rounded-lg p-0.6 relative dark:bg-moonlightFocusMedium"
+            className="bg-neutral-100 rounded-md p-0.6 relative dark:bg-moonlightFocusMedium"
           >
             <motion.div
               animate={{
                 transform:
                   view === "collections"
-                    ? "translateX(0px)"
-                    : "translateX(28px)",
+                    ? "translateX(-1px)"
+                    : "translateX(29px)",
               }}
-              className="absolute z-0 w-[48%] h-[89%] rounded-lg bg-neutral-300/30 border-1 border-solid border-neutral-200 dark:bg-moonlightFocusLow/50 dark:border-1 border-solid dark:border-neutral-800"
+              className="absolute z-0 w-[46%] h-[89%] rounded-lg bg-neutral-300/30 border-1 border-solid border-neutral-200 dark:bg-moonlightFocusLow/50 dark:border-1 border-solid dark:border-neutral-800"
             />
             <Tooltip content="My Collections">
               <button

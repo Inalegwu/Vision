@@ -50,6 +50,7 @@ export const ComicCache = Schema.Array(
     id: Schema.String,
     issueTitle: Schema.String,
     thumbnail: Schema.String,
+    path: Schema.String,
   }),
 );
 

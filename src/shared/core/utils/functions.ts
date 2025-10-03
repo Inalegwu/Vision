@@ -2,7 +2,11 @@ import { parserChannel } from "@src/shared/channels";
 import { Fs } from "@src/shared/fs";
 import { issues, metadata } from "@src/shared/schema";
 import db from "@src/shared/storage";
-import { extractMetaID, sortPages } from "@src/shared/utils";
+import {
+  extractMetaID,
+  parseFileNameFromPath,
+  sortPages,
+} from "@src/shared/utils";
 import Zip from "adm-zip";
 import { Array, Effect, Option, Schema } from "effect";
 import { XMLParser } from "fast-xml-parser";
@@ -36,7 +40,7 @@ export const parseXML = Effect.fn(function* (
     })),
   );
 
-  yield* Effect.logInfo({ meta });
+  yield* Effect.logInfo({ meta, metaId });
 
   yield* Effect.tryPromise(
     async () =>
@@ -71,6 +75,7 @@ export const saveIssue = Effect.fn(function* (
       isCompleted: true,
       error: "Couldn't save Issue",
       state: "ERROR",
+      issue: parseFileNameFromPath(path),
     });
     return yield* Effect.die(
       new ArchiveError({ cause: "Unable to Save Issue" }),

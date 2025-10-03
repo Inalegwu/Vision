@@ -35,7 +35,7 @@ export default function Layout({ children }: LayoutProps) {
   t.library.additions.useSubscription(undefined, {
     onData: (data) => {
       if (!data.isCompleted && data.state === "SUCCESS") {
-        toast.loading("Adding Issue To Library");
+        toast.loading(`Adding ${data.issue || "issue"} To Library`);
       }
 
       if (data.isCompleted && data.state === "SUCCESS") {
@@ -161,7 +161,7 @@ export default function Layout({ children }: LayoutProps) {
                 <Flex>
                   <button
                     disabled={!isNotHome}
-                    className="px-2 py-2 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+                    className="px-2 py-2 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5 disabled:text-neutral-600"
                     onClick={() => navigation.history.back()}
                   >
                     <Icon name="ArrowLeft" size={12} />
