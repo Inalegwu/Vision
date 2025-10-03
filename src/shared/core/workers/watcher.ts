@@ -50,7 +50,7 @@ port.on("message", (message) =>
         watchFS(process.env.source_dir!).pipe(
           Effect.schedule(Schedule.duration(Duration.seconds(10))),
           Effect.catchTags({
-            FSError: (error) => Effect.logError(error.message),
+            FSError: (error) => Effect.fail(error),
             UnknownException: (exception) =>
               Effect.logFatal({
                 message: exception.message,

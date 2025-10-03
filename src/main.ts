@@ -1,28 +1,48 @@
 import { createContext } from "@shared/context";
 import { appRouter } from "@shared/routers/_app";
-import * as Fn from "effect/Function";
+import { Console, Effect, Match } from "effect";
+import { pipe } from "effect/Function";
 import { BrowserWindow, app, screen } from "electron";
 import { createIPCHandler } from "electron-trpc/main";
 import * as fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { deeplinkChannel } from "./shared/channels";
+import { Fs } from "./shared/fs";
 import { globalState$ } from "./web/state";
 
 app.setName("Vision");
 
-process.env.db_url = path.join(app.getPath("appData"), "vision", "vision.db");
-process.env.cache_dir = path.join(
-  app.getPath("appData"),
-  "vision",
-  "LibraryCache",
+const data_dir = Match.value(process.platform).pipe(
+  Match.when("linux", () => `${process.env.HOME}/.local/share/vision`),
+  Match.when("darwin", () => `${process.env.HOME}/.vision`),
+  Match.when("win32", () => `${process.env.APPDATA}/vision`),
+  Match.orElse(() => `${process.env.APPDATA}/vision`),
 );
-process.env.source_dir = path.join(app.getPath("downloads"), "comics");
-process.env.lib_dir = path.join(app.getPath("appData"), "Vision");
-process.env.error_dump = path.join(
-  app.getPath("appData"),
-  "Vision",
-  "ErrorDump.json",
+
+Fs.makeDirectory(data_dir).pipe(
+  Effect.catchTag("FSError", (e) => Console.log(e.message)),
+  Effect.runPromise,
 );
+Fs.makeDirectory(path.join(data_dir, "LibraryCache")).pipe(
+  Effect.catchTag("FSError", (e) => Console.log(e.message)),
+  Effect.runPromise,
+);
+
+const downloads_dir = Match.value(process.platform).pipe(
+  Match.when("linux", () => `${os.homedir()}/Downloads`),
+  Match.when("darwin", () => `${os.homedir()}/Downloads`),
+  Match.when("win32", () => `${os.homedir()}/downloads`),
+  Match.orElse(() => `${os.homedir()}/Downloads`),
+);
+
+process.env.db_url = path.join(data_dir, "vision.db");
+process.env.cache_dir = path.join(data_dir, "LibraryCache");
+process.env.data_dir = data_dir;
+
+process.env.source_dir = path.join(downloads_dir, "Comics");
+// process.env.lib_dir = path.join(data_dir, "Vision");
+process.env.lib_dir = path.join(data_dir, "ErrorDump.json");
 
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
@@ -90,8 +110,8 @@ const createWindow = () => {
   }
 
   // load app settings
-  Fn.pipe(
-    path.join(app.getPath("appData"), "Vision", "config.json"),
+  pipe(
+    path.join(data_dir, "config.json"),
     (_) => fs.readFileSync(_, { encoding: "utf-8" }),
     (_) => JSON.parse(_) as GlobalState,
     globalState$.set,
@@ -106,8 +126,8 @@ app.once("window-all-closed", () => {
   const config = globalState$.get();
 
   // save app settings to disk
-  Fn.pipe(
-    path.join(app.getPath("appData"), "Vision", "config.json"),
+  pipe(
+    path.join(data_dir, "config.json"),
     (path) => ({
       path,
       config: JSON.stringify(config),

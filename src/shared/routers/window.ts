@@ -1,6 +1,5 @@
 import { publicProcedure, router } from "@src/trpc";
 import { globalState$ } from "@src/web/state";
-import { app } from "electron";
 import * as fs from "node:fs";
 import path from "node:path";
 
@@ -11,7 +10,7 @@ export const windowRouter = router({
     const config = globalState$.get();
 
     fs.writeFileSync(
-      path.join(app.getPath("appData"), "Vision", "config.json"),
+      path.join(process.env.data_dir!, "config.json"),
       JSON.stringify(config),
       {
         encoding: "utf-8",

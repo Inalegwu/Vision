@@ -7,8 +7,7 @@ import {
   sortPages,
 } from "@shared/utils";
 import Zip from "adm-zip";
-import { BroadcastChannel } from "broadcast-channel";
-import { Encoding, Option } from "effect";
+import { Option } from "effect";
 import * as Array from "effect/Array";
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
@@ -16,14 +15,14 @@ import { XMLParser } from "fast-xml-parser";
 import { createExtractorFromData } from "node-unrar-js";
 import path from "node:path";
 import { v4 } from "uuid";
+import { parserChannel } from "../channels";
 import { Fs } from "../fs";
 import { Dump } from "./dump";
 import { ArchiveError } from "./errors";
 import { MetadataSchema } from "./validations";
 
-const parserChannel = new BroadcastChannel<ParserChannel>("parser-channel");
-
 export class Archive extends Effect.Service<Archive>()("Archive", {
+  dependencies: [Dump.Default],
   effect: Effect.gen(function* () {
     const dump = yield* Dump;
 
@@ -56,25 +55,15 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
       );
 
       yield* Fs.makeDirectory(savePath).pipe(
-        Effect.catchAll((e) =>
-          dump
-            .writeToDump({
+        Effect.catchTag("FSError", (e) =>
+          Effect.gen(function* () {
+            yield* Effect.logFatal(e.message);
+            yield* dump.writeToDump({
+              id: v4(),
+              error: String(e.message),
               date: new Date(),
-              error: String(e),
-              id: Encoding.encodeBase64(`${e._tag}::${e.cause}`),
-            } satisfies DumpSchema)
-            .pipe(
-              Effect.andThen(
-                Effect.sync(() => {
-                  console.log({ e });
-                  parserChannel.postMessage({
-                    error: e.message,
-                    state: "ERROR",
-                    isCompleted: true,
-                  });
-                }),
-              ),
-            ),
+            });
+          }),
         ),
       );
 
@@ -85,18 +74,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
           {
             encoding: "base64",
           },
-        ).pipe(
-          Effect.catchAll((e) =>
-            Effect.sync(() => {
-              console.log({ e });
-              parserChannel.postMessage({
-                error: e.message,
-                state: "ERROR",
-                isCompleted: true,
-              });
-            }),
-          ),
-        ),
+        ).pipe(Effect.catchTag("FSError", (e) => Effect.logFatal(e.message))),
       );
 
       yield* Effect.sync(() =>
@@ -137,16 +115,7 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
       );
 
       yield* Fs.makeDirectory(savePath).pipe(
-        Effect.catchAll((e) =>
-          Effect.sync(() => {
-            console.log({ e });
-            parserChannel.postMessage({
-              error: e.message,
-              state: "ERROR",
-              isCompleted: true,
-            });
-          }),
-        ),
+        Effect.catchTag("FSError", (e) => Effect.log(e)),
       );
 
       yield* Effect.forEach(files, (file, idx) =>
@@ -157,15 +126,8 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
             encoding: "base64",
           },
         ).pipe(
-          Effect.catchAll((e) =>
-            Effect.sync(() => {
-              console.log({ e });
-              parserChannel.postMessage({
-                error: e.message,
-                state: "ERROR",
-                isCompleted: true,
-              });
-            }),
+          Effect.catchTag("FSError", (e) =>
+            Effect.logFatal(`${e.cause}::${e.message}`),
           ),
         ),
       );
@@ -182,7 +144,6 @@ export class Archive extends Effect.Service<Archive>()("Archive", {
     return { rar, zip } as const;
   }).pipe(
     Effect.orDie,
-    Effect.provide(Dump.Default),
     Effect.annotateLogs({
       service: "archive",
     }),
@@ -205,6 +166,7 @@ const parseXML = Effect.fn(function* (
   ).pipe(
     Effect.andThen((file) =>
       Schema.decodeUnknown(MetadataSchema)(file.comicInfo, {
+        onExcessProperty: "ignore",
         exact: false,
       }),
     ),
@@ -309,8 +271,8 @@ const createRarExtractor = Effect.fn(function* (filePath: string) {
   );
 });
 
-const createZipExtractor = Effect.fn(function* (filePath: string) {
-  return yield* Fs.readFile(filePath).pipe(
+const createZipExtractor = (filePath: string) =>
+  Fs.readFile(filePath).pipe(
     Effect.map((buff) => new Zip(Buffer.from(buff.buffer))),
     Effect.map((zip) =>
       zip
@@ -323,16 +285,14 @@ const createZipExtractor = Effect.fn(function* (filePath: string) {
               data: entry.getData().buffer,
               isDir: entry.isDirectory,
             }) satisfies Extractor,
-        )
-        .filter((file) => !file.isDir),
+        ),
     ),
     Effect.map((files) => ({
       meta: Option.fromNullable(
         files.find((file) => file.name.includes(".xml")),
       ),
       files: files
-        .filter((file) => !file.name.includes(".xml"))
+        .filter((file) => !file.name.includes(".xmk"))
         .filter((file) => !file.isDir),
     })),
   );
-});

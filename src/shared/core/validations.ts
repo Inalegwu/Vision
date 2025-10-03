@@ -42,6 +42,7 @@ export const MetadataSchema = Schema.Struct({
   Month: Schema.Int.pipe(Schema.optional),
   Year: Schema.Int.pipe(Schema.optional),
   Summary: Schema.String.pipe(Schema.optional),
+  Date: Schema.Date.pipe(Schema.optional),
 });
 
 export const dumpSchema = Schema.Struct({

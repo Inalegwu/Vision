@@ -40,6 +40,7 @@ Effect.tryPromise({
           ],
         },
         linux: {
+          icon:"build/win.png",
           target: [
             {
               target: "AppImage",
