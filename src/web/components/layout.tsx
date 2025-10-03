@@ -39,7 +39,7 @@ export default function Layout({ children }: LayoutProps) {
       }
 
       if (data.isCompleted && data.state === "SUCCESS") {
-        toast.success("Added issue to library");
+        toast.success(`Added ${data.issue || "issue"} to library`);
         utils.library.getLibrary.invalidate();
       }
 

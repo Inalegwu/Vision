@@ -1,6 +1,6 @@
 import { Effect, Schema } from "effect";
-import { Fs } from "../fs";
-import { dumpFileSchema, dumpSchema } from "./validations";
+import { Fs } from "../../fs";
+import { dumpFileSchema, dumpSchema } from "../../validations";
 
 export class Dump extends Effect.Service<Dump>()("Dump", {
   effect: Effect.gen(function* () {

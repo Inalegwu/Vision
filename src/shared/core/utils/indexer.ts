@@ -1,7 +1,7 @@
 import { Array, Duration, Effect, HashSet, Schedule } from "effect";
 import type * as fs from "node:fs";
 import path from "node:path";
-import { Fs } from "../fs";
+import { Fs } from "../../fs";
 
 export class WatcherIndex extends Effect.Service<WatcherIndex>()(
   "WatcherIndex",

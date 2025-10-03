@@ -16,11 +16,15 @@ app.setName("Vision");
 const data_dir = path.join(app.getPath("appData"), "Vision");
 
 Fs.makeDirectory(data_dir).pipe(
-  Effect.catchTag("FSError", (e) => Console.log(e.message)),
+  Effect.catchTag("FSError", Console.log),
   Effect.runPromise,
 );
 Fs.makeDirectory(path.join(data_dir, "LibraryCache")).pipe(
-  Effect.catchTag("FSError", (e) => Console.log(e.message)),
+  Effect.catchTag("FSError", Console.log),
+  Effect.runPromise,
+);
+Fs.makeDirectory(path.join(data_dir, "Library")).pipe(
+  Effect.catchTag("FSError", Console.log),
   Effect.runPromise,
 );
 
@@ -36,7 +40,7 @@ process.env.cache_dir = path.join(data_dir, "LibraryCache");
 process.env.data_dir = data_dir;
 
 process.env.source_dir = path.join(downloads_dir, "Comics");
-process.env.lib_dir = path.join(data_dir, "Vision");
+process.env.lib_dir = path.join(data_dir, "Library");
 process.env.error_dump = path.join(data_dir, "Vision", "ErrorDump.json");
 
 if (process.defaultApp) {

@@ -45,6 +45,14 @@ export const MetadataSchema = Schema.Struct({
   Date: Schema.Date.pipe(Schema.optional),
 });
 
+export const ComicCache = Schema.Array(
+  Schema.Struct({
+    id: Schema.String,
+    issueTitle: Schema.String,
+    thumbnail: Schema.String,
+  }),
+);
+
 export const dumpSchema = Schema.Struct({
   id: Schema.String,
   error: Schema.String,

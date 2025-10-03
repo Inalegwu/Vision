@@ -1,9 +1,9 @@
-import { deletionWorkerSchema } from "@shared/core/validations";
 import { issues } from "@shared/schema";
 import db from "@shared/storage";
 import { deletionChannel } from "@src/shared/channels";
 import { Fs } from "@src/shared/fs";
 import { transformMessage } from "@src/shared/utils";
+import { deletionWorkerSchema } from "@src/shared/validations";
 import { eq } from "drizzle-orm";
 import { Effect } from "effect";
 import { parentPort } from "node:worker_threads";

@@ -1,4 +1,4 @@
-import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, externalizeDepsPlugin } from "electron-vite";
 import { resolve } from "node:path";
@@ -45,7 +45,7 @@ export default defineConfig({
     plugins: [
       react(),
       UnoCSS(),
-      TanStackRouterVite({
+      tanstackRouter({
         routesDirectory: "./src/web/routes/",
         generatedRouteTree: "./src/web/routeTree.gen.ts",
       }),

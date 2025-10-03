@@ -5,7 +5,7 @@ import db from "@src/shared/storage";
 import { transformMessage } from "@src/shared/utils";
 import { Effect } from "effect";
 import { parentPort } from "node:worker_threads";
-import { cacheWorkerSchema } from "../validations";
+import { cacheWorkerSchema } from "../../validations";
 
 const port = parentPort;
 

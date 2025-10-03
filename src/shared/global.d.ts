@@ -1,4 +1,5 @@
 import type {
+  ComicCache,
   MetadataSchema,
   cacheWorkerSchema,
   deletionWorkerSchema,
@@ -8,7 +9,7 @@ import type {
   fetchPagesWorkerSchema,
   parserSchema,
   workerResponseSchema,
-} from "@shared/core/validations";
+} from "@src/shared/validations";
 import type * as Schema from "effect/Schema";
 import type z from "zod";
 import type { collections, issues } from "./schema";
@@ -75,6 +76,7 @@ declare global {
     error: string | null;
     isCompleted?: boolean;
     state: "ERROR" | "SUCCESS";
+    issue?: string;
   };
 
   export type DeletionChannel = {
@@ -119,4 +121,5 @@ declare global {
   export type Metadata = Schema.Schema.Type<typeof MetadataSchema>;
   export type DumpFileSchema = Schema.Schema.Type<typeof dumpFileSchema>;
   export type DumpSchema = Schema.Schema.Type<typeof dumpSchema>;
+  export type ComicCacheSchema = Schema.Schema.Type<typeof ComicCache>;
 }

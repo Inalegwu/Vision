@@ -17,9 +17,9 @@ import path from "node:path";
 import { v4 } from "uuid";
 import { parserChannel } from "../channels";
 import { Fs } from "../fs";
-import { Dump } from "./dump";
-import { ArchiveError } from "./errors";
-import { MetadataSchema } from "./validations";
+import { MetadataSchema } from "../validations";
+import { Dump } from "./utils/dump";
+import { ArchiveError } from "./utils/errors";
 
 export class Archive extends Effect.Service<Archive>()("Archive", {
   dependencies: [Dump.Default],

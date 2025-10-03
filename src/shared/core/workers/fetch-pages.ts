@@ -5,7 +5,7 @@ import { Array, Effect, pipe } from "effect";
 import * as fs from "node:fs";
 import { parentPort } from "node:worker_threads";
 import { v4 } from "uuid";
-import { fetchPagesWorkerSchema } from "../validations";
+import { fetchPagesWorkerSchema } from "../../validations";
 
 const port = parentPort;
 

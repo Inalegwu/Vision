@@ -1,7 +1,7 @@
 import { Effect } from "effect";
 import * as NodeFS from "node:fs";
 import { join } from "node:path";
-import { FSError } from "./core/errors";
+import { FSError } from "./core/utils/errors";
 import { parseFileNameFromPath } from "./utils";
 
 type File = Uint8Array<ArrayBuffer>;

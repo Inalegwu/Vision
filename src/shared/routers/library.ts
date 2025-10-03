@@ -50,8 +50,6 @@ const libraryRouter = router({
         ),
       );
 
-    console.log({ issues, collections });
-
     return {
       issues,
       collections,

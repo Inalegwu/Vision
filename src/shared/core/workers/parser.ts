@@ -1,10 +1,10 @@
 import { parserChannel } from "@shared/channels";
-import { parserSchema } from "@shared/core/validations";
 import { parseFileNameFromPath, transformMessage } from "@shared/utils";
 import db from "@src/shared/storage";
+import { parserSchema } from "@src/shared/validations";
 import { Effect, Match } from "effect";
 import { parentPort } from "node:worker_threads";
-import { Archive } from "../archive";
+import { DataBaseArchive } from "../services/database-archive";
 
 const port = parentPort;
 
@@ -14,7 +14,7 @@ const handleMessage = Effect.fnUntraced(function* ({
   action,
   parsePath,
 }: ParserSchema) {
-  const archive = yield* Archive;
+  const archive = yield* DataBaseArchive;
 
   const ext = parsePath.includes("cbr")
     ? "cbr"
@@ -72,7 +72,7 @@ port.on("message", (message) =>
     Effect.annotateLogs({
       worker: "parser-worker",
     }),
-    Effect.provide(Archive.Default),
+    Effect.provide(DataBaseArchive.Default),
     Effect.orDie,
     Effect.runPromise,
   ),
