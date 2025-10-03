@@ -33,7 +33,7 @@ export const databaseArchiveService = {
     const savePath = path.join(process.env.cache_dir!, issueTitle);
 
     const thumbnailUrl = yield* Effect.sync(() =>
-      convertToImageUrl(files[0].data || files[1].data || files[1].data!),
+      convertToImageUrl(files[0].data || files[1].data || files[2].data!),
     );
 
     const newIssue = yield* saveIssue(issueTitle, thumbnailUrl, savePath);

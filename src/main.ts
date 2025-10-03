@@ -1,12 +1,12 @@
+import * as fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { createContext } from "@shared/context";
 import { appRouter } from "@shared/routers/_app";
 import { Effect, Match } from "effect";
 import { pipe } from "effect/Function";
 import { BrowserWindow, app, screen } from "electron";
 import { createIPCHandler } from "electron-trpc/main";
-import * as fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
 import { deeplinkChannel } from "./shared/channels";
 import { Fs } from "./shared/fs";
 import { globalState$ } from "./web/state";
@@ -37,7 +37,10 @@ const downloads_dir = Match.value(process.platform).pipe(
   Match.orElse(() => `${os.homedir()}/Downloads`),
 );
 
-process.env.db_url = path.join(data_dir, "vision.db");
+process.env.db_url = Match.value(process.platform).pipe(
+  Match.when("linux", () => "vision.db"),
+  Match.orElse(() => path.join(data_dir, "vision.db")),
+);
 process.env.cache_dir = path.join(data_dir, "LibraryCache");
 process.env.data_dir = data_dir;
 

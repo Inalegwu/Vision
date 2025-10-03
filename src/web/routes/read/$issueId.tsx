@@ -60,6 +60,9 @@ function Component() {
         console.error(error);
         toast.error(error.message);
       },
+      onSuccess:()=>{
+        globalState$.isFullscreen.set(true);
+      }
     },
   );
 
