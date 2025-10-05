@@ -78,16 +78,7 @@ port.on("message", (message) =>
     Effect.annotateLogs({
       worker: "parser-worker",
     }),
-    Effect.provideService(
-      ArchiveService,
-      databaseArchiveService,
-      // Match.value(process.platform).pipe(
-      //   Match.when("linux", () => fileSystemArchiveService),
-      //   Match.when("darwin", () => fileSystemArchiveService),
-      //   Match.when("win32", () => databaseArchiveService),
-      //   Match.orElse(() => databaseArchiveService),
-      // ),
-    ),
+    Effect.provideService(ArchiveService, databaseArchiveService),
     Effect.orDie,
     Effect.runPromise,
   ),
