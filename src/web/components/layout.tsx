@@ -9,7 +9,7 @@ import { AnimatePresence, motion } from "motion/react";
 import type React from "react";
 import { useEffect } from "react";
 import { v4 } from "uuid";
-import { useInterval } from "../hooks";
+import { useInterval, useKeyPress, useWindow } from "../hooks";
 import { globalState$ } from "../state";
 import Icon from "./icon";
 import Spinner from "./spinner";
@@ -93,6 +93,12 @@ export default function Layout({ children }: LayoutProps) {
     navigation.navigate({
       to: "/settings",
     });
+
+  useWindow("keypress", (e) => {
+    if (e.keyCode === 16) {
+      console.log("search command pressed")
+    }
+  })
 
   useEffect(() => {
     launchWatcher();
@@ -189,8 +195,8 @@ export default function Layout({ children }: LayoutProps) {
                         : routerState.location.pathname === "/history"
                           ? "History"
                           : routerState.location.pathname.includes(
-                                "/collection/",
-                              )
+                            "/collection/",
+                          )
                             ? "Collection"
                             : routerState.location.pathname.includes("read")
                               ? "Reading"
