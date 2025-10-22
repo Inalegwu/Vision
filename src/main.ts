@@ -15,6 +15,8 @@ app.setName("Vision");
 
 const data_dir = path.join(app.getPath("appData"), "Vision");
 
+console.log({ d: data_dir });
+
 // unix systems don't create these on their own for some reason
 // so much for the best operating system lol
 Fs.makeDirectory(data_dir).pipe(

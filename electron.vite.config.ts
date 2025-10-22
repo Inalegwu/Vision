@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig, externalizeDepsPlugin } from "electron-vite";
 import { resolve } from "node:path";
 import UnoCSS from "unocss/vite";
+import path from "node:path";
 
 export default defineConfig({
   main: {
@@ -46,8 +47,10 @@ export default defineConfig({
       react(),
       UnoCSS(),
       tanstackRouter({
-        routesDirectory: "./src/web/routes/",
-        generatedRouteTree: "./src/web/routeTree.gen.ts",
+        // routesDirectory: "./src/web/routes/",
+        // generatedRouteTree: "./src/web/routeTree.gen.ts",
+        routesDirectory: path.join(__dirname, "src/web/routes"),
+        generatedRouteTree: path.join(__dirname, "src/web/routeTree.gen.ts"),
       }),
     ],
     build: {

@@ -2,7 +2,34 @@ import { Option } from "effect";
 import * as Effect from "effect/Effect";
 import type { z } from "zod";
 
-export function sortPages(a: string, b: string) {
+export const sortPages = (a: string, b: string) =>
+  Effect.Do.pipe(
+    Effect.bind("aName", () => Effect.succeed(a.replace(/\.[^/.]+$/, ""))),
+    Effect.bind("bName", () => Effect.succeed(b.replace(/\.[^/.]+$/, ""))),
+    Effect.bind("aMatch", ({ aName }) =>
+      Effect.succeed(aName.match(/(\d+)$g/)),
+    ),
+    Effect.bind("bMatch", ({ aName }) =>
+      Effect.succeed(aName.match(/(\d+)$g/)),
+    ),
+    Effect.flatMap(({ aMatch, bMatch, aName, bName }) =>
+      Effect.sync(() => {
+        if (aMatch && aMatch.length === 1 && bMatch && bMatch.length === 1) {
+          const aPrefix = aName.substring(0, aName.length - aMatch[0].length);
+          const bPrexif = aName.substring(0, bName.length - bMatch[0].length);
+
+          if (aPrefix.toLocaleUpperCase() === bPrexif.toLocaleLowerCase()) {
+            return +aMatch[0] > +bMatch[0] ? 1 : -1;
+          }
+        }
+
+        return a > b ? 1 : -1;
+      }),
+    ),
+    Effect.runSync,
+  );
+
+export function _sortPages(a: string, b: string) {
   const aName = a.replace(/\.[^/.]+$/, "");
   const bName = b.replace(/\.[^/.]+$/, "");
 

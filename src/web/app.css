@@ -1,66 +1,66 @@
-@font-face{
-  font-family:Title;
-  src:url("../assets/fonts/VirusKiller-0W1ov.ttf");
+@font-face {
+    font-family: Title;
+    src: url("../assets/fonts/VirusKiller-0W1ov.ttf");
 }
 
 @font-face {
-  font-family: Font;
-  src: url("../assets/fonts/geist.ttf");
+    font-family: Font;
+    src: url("../assets/fonts/geist.ttf");
 }
 
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: Font;
-  text-decoration: none;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Font;
+    text-decoration: none;
 }
 
-.radix-themes{
-  --default-font-family:Font;
-  --heading-font-family: Font;
-  --code-font-family:Font;
-  --strong-font-family:Font;
-  --em-font-family:Font;
-  --quote-font-family:Font;
+.radix-themes {
+    --default-font-family: Font;
+    --heading-font-family: Font;
+    --code-font-family: Font;
+    --strong-font-family: Font;
+    --em-font-family: Font;
+    --quote-font-family: Font;
 }
 
-a{
-  appearance:none;
-  padding:0;
-  margin:0;
-  color:black;
+a {
+    appearance: none;
+    padding: 0;
+    margin: 0;
+    color: black;
 }
 
 body {
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  overflow: hidden;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    overflow: hidden;
 }
 
 #drag-region {
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-app-region: drag;
-  cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-app-region: drag;
+    cursor: grab;
 }
 
-::-webkit-scrollbar{
-  width: 0;
-  background: none;
+::-webkit-scrollbar {
+    width: 0;
+    background: none;
 }
 
-button{
-  border:none;
-  appearance:none;
-  background:none;
-  outline:none;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+button {
+    border: none;
+    appearance: none;
+    background: none;
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-img{
-  pointer-events: none;
+img {
+    pointer-events: none;
 }
