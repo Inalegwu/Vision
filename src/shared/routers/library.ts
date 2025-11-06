@@ -1,6 +1,6 @@
 import { deletionChannel, parserChannel } from "@/shared/channels";
-import cacheWorker from "@/shared/core/workers/cache?nodeWorker";
-import fileSystemWatchWorker from "@/shared/core/workers/watcher?nodeWorker";
+import cacheWorker from "@/shared/core/workers/cache?modulePath";
+import fileSystemWatchWorker from "@/shared/core/workers/watcher?modulePath";
 import { publicProcedure, router } from "@/trpc";
 import { observable } from "@trpc/server/observable";
 import { eq } from "drizzle-orm";
@@ -15,15 +15,16 @@ import {
 } from "../schema";
 import { sortPages } from "../utils";
 
+const watcher = new Worker(new URL("../core/workers/watcher", import.meta.url));
+const cache = new Worker(new URL("../core/workers/watcher", import.meta.url));
+
 const libraryRouter = router({
   launchWatcher: publicProcedure.mutation(async () => {
-    fileSystemWatchWorker({
-      name: "fs-watcher-worker",
-    })
-      .on("message", console.log)
-      .postMessage({
-        activate: true,
-      });
+    watcher.postMessage({
+      activate: true,
+    });
+
+    watcher.onmessage = (e) => console.log(e)
 
     return {
       success: true,
@@ -224,11 +225,9 @@ const libraryRouter = router({
         ),
     ),
   emptyCache: publicProcedure.mutation(async ({ ctx }) => {
-    cacheWorker({
-      name: "cache-worker",
-    })
-      .on("message", console.log)
-      .postMessage({});
+
+    cache.onmessage = (e) => console.log(e);
+    cache.postMessage({});
 
     return {
       success: true,

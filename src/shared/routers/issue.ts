@@ -1,5 +1,5 @@
-import deletionWorker from "@/shared/core/workers/deletion?nodeWorker";
-import parseWorker from "@/shared/core/workers/parser?nodeWorker";
+import deletionWorker from "@/shared/core/workers/deletion?modulePath";
+import parseWorker from "@/shared/core/workers/parser?modulePath";
 import { publicProcedure, router } from "@/trpc";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
@@ -11,6 +11,9 @@ import z from "zod";
 import { Fs } from "../fs";
 import { issues as issuesSchema } from "../schema";
 import { convertToImageUrl } from "../utils";
+
+const deleter = new Worker(deletionWorker);
+const parser = new Worker(parseWorker);
 
 const issueRouter = router({
   addIssue: publicProcedure.mutation(async () => {
@@ -27,14 +30,10 @@ const issueRouter = router({
     }
 
     for (const parsePath of filePaths) {
-      parseWorker({
-        name: `parse-worker-${parsePath}`,
-      })
-        .on("message", console.log)
-        .postMessage({
-          parsePath,
-          action: "LINK",
-        } satisfies ParserSchema);
+      parser.postMessage({
+        parsePath,
+        action: "LINK",
+      } satisfies ParserSchema);
     }
 
     return {
@@ -48,13 +47,12 @@ const issueRouter = router({
         issueId: z.string(),
       }),
     )
-    .mutation(async ({ ctx, input }) =>
-      deletionWorker({
-        name: "deletion-worker",
-      }).postMessage({
+    .mutation(async ({ ctx, input }) => {
+      deleter.postMessage({
         issueId: input.issueId,
-      }),
-    ),
+      });
+      return true
+    }),
   getPages: publicProcedure
     .input(
       z.object({

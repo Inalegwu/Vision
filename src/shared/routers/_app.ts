@@ -1,13 +1,15 @@
-import parseWorker from "@/shared/core/workers/parser?nodeWorker";
+import parseWorker from "@/shared/core/workers/parser?modulePath";
 import { publicProcedure, router } from "@/trpc";
 import { observable } from "@trpc/server/observable";
 import { gte } from "drizzle-orm";
-import { deeplinkChannel } from "../channels";
+import { deeplinkChannel, parserChannel, deletionChannel } from "../channels";
 import { parseFileNameFromPath } from "../utils";
 import { history } from "./history";
 import issueRouter from "./issue";
 import libraryRouter from "./library";
 import { windowRouter } from "./window";
+
+const parser = new Worker(parseWorker);
 
 export const appRouter = router({
   window: windowRouter,
@@ -28,16 +30,10 @@ export const appRouter = router({
         });
 
         if (!exists) {
-          parseWorker({
-            name: `parse-worker-${evt.path}`,
-          })
-            .on("message", (m) => {
-              console.log(m);
-            })
-            .postMessage({
-              parsePath: evt.path,
-              action: "LINK",
-            } satisfies ParserSchema);
+          parser.postMessage({
+            parsePath: evt.path,
+            action: 'LINK'
+          } satisfies ParserSchema)
           return;
         }
 
