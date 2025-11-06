@@ -1,4 +1,4 @@
-import { Code, Flex, Heading, Text } from "@radix-ui/themes";
+import { Button, Code, Flex, Heading, Text } from "@radix-ui/themes";
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { RefreshCw } from "lucide-react";
 import { useEffect } from "react";
@@ -20,13 +20,14 @@ export default function ErrorComponent(props: ErrorComponentProps) {
     >
       <Heading size="6">{props.error.message}</Heading>
       <Code size="2">{props.error.stack}</Code>
-      <button
+      <Button
         onClick={() => props.reset()}
-        className="p-3 space-x-3 rounded-md cursor-pointer text-moonlightOrange hover:bg-moonlightOrange/10"
+        variant="soft"
+        color='red'
       >
         <Text>Reload</Text>
         <RefreshCw size={15} />
-      </button>
+      </Button>
     </Flex>
   );
 }

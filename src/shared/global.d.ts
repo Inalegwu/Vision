@@ -9,7 +9,7 @@ import type {
   fetchPagesWorkerSchema,
   parserSchema,
   workerResponseSchema,
-} from "@src/shared/validations";
+} from "@/shared/validations";
 import type * as Schema from "effect/Schema";
 import type z from "zod";
 import type { collections, issues } from "./schema";
@@ -103,6 +103,11 @@ declare global {
   export type DeeplinkChannel = {
     path: string;
   };
+
+  export type DeeplinkListener = {
+    exists: boolean;
+    name: string;
+  }
 
   export type Extractor = {
     name: string;

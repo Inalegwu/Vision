@@ -1,4 +1,4 @@
-import { Icon } from "@components";
+import { Icon } from "@/web/components";
 import {
   ContextMenu,
   Dialog,
@@ -7,7 +7,7 @@ import {
   Text,
   Tooltip,
 } from "@radix-ui/themes";
-import t from "@shared/config";
+import t from "@/shared/config";
 import { useRouter } from "@tanstack/react-router";
 import { useRef } from "react";
 import FlatList from "./flatlist";
@@ -67,7 +67,7 @@ export default function Issue({ issue }: Props) {
                 size="1"
                 weight="medium"
                 className="text-black dark:text-neutral-400"
-                // className="text-neutral-400"
+              // className="text-neutral-400"
               >
                 {issue.issueTitle}
               </Text>

@@ -1,4 +1,4 @@
-import { publicProcedure, router } from "@src/trpc";
+import { publicProcedure, router } from "@/trpc";
 import { eq } from "drizzle-orm";
 import { v4 } from "uuid";
 import { z } from "zod";

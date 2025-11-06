@@ -1,6 +1,6 @@
-import { parserChannel } from "@src/shared/channels";
-import { Fs } from "@src/shared/fs";
-import { convertToImageUrl, parseFileNameFromPath } from "@src/shared/utils";
+import { parserChannel } from "@/shared/channels";
+import { Fs } from "@/shared/fs";
+import { convertToImageUrl, parseFileNameFromPath } from "@/shared/utils";
 import { Console, Context, Effect } from "effect";
 import type { UnknownException } from "effect/Cause";
 import path from "node:path";

@@ -1,5 +1,5 @@
-import { Fs } from "@src/shared/fs";
-import db from "@src/shared/storage";
+import { Fs } from "@/shared/fs";
+import db from "@/shared/storage";
 import { Duration, Effect, Mailbox, Schedule } from "effect";
 import { parentPort } from "node:worker_threads";
 import { z } from "zod";

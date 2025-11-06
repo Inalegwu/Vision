@@ -1,6 +1,6 @@
-import deletionWorker from "@core/workers/deletion?nodeWorker";
-import parseWorker from "@core/workers/parser?nodeWorker";
-import { publicProcedure, router } from "@src/trpc";
+import deletionWorker from "@/shared/core/workers/deletion?nodeWorker";
+import parseWorker from "@/shared/core/workers/parser?nodeWorker";
+import { publicProcedure, router } from "@/trpc";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { Effect } from "effect";

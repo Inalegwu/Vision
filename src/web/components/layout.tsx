@@ -1,8 +1,8 @@
 import { computed } from "@legendapp/state";
 import { Show, useObservable, useObserveEffect } from "@legendapp/state/react";
 import { Flex, Text, Tooltip } from "@radix-ui/themes";
-import t from "@shared/config";
-import icon from "@src/assets/images/win.png";
+import t from "@/shared/config";
+import icon from "@/assets/images/win.png";
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { capitalize } from "effect/String";
 import { AnimatePresence, motion } from "motion/react";
@@ -33,7 +33,9 @@ export default function Layout({ children }: LayoutProps) {
   const isNotHome = computed(() => routerState.location.pathname !== "/").get();
   const isFullscreen = globalState$.isFullscreen.get();
 
-  t.library.additions.useSubscription(undefined, {
+  // track the process of adding issues to the library
+  // from background processes
+  t.additions.useSubscription(undefined, {
     onData: (data) => {
       if (!data.isCompleted && data.state === "SUCCESS") {
         toast.loading(`Adding ${data.issue || "issue"} To Library`);
@@ -57,7 +59,9 @@ export default function Layout({ children }: LayoutProps) {
     },
   });
 
-  t.library.deletions.useSubscription(undefined, {
+  // track the process of deleting issues from the library
+  // from background processes
+  t.deletions.useSubscription(undefined, {
     onData: (data) => {
       if (!data.isDone) {
         toast.info(`Removing ${data.title} from Library`);
@@ -74,6 +78,11 @@ export default function Layout({ children }: LayoutProps) {
       }
     },
   });
+
+  // deeplinks
+  t.deeplink.useSubscription(undefined, {
+    onData: () => utils.library.invalidate()
+  })
 
   useInterval(() => {
     if (toast.showing) toast.dismiss();
@@ -276,17 +285,6 @@ function AddButton() {
     >
       {isLoading ? <Spinner /> : <Icon name="Plus" size={12} />}
     </button>
-  );
-}
-
-function NotificationButton() {
-  return (
-    <Link
-      to="/notifications"
-      className="p-2 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
-    >
-      <Icon name="Bell" size={12} />
-    </Link>
   );
 }
 

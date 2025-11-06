@@ -1,6 +1,6 @@
-import { Icon } from "@components";
+import { Icon } from "@/web/components";
 import { ContextMenu, Flex, Text, Tooltip } from "@radix-ui/themes";
-import t from "@shared/config";
+import t from "@/shared/config";
 import { useRouter } from "@tanstack/react-router";
 import * as A from "effect/Array";
 import { motion } from "motion/react";
@@ -45,13 +45,11 @@ const Collection = React.memo(({ collection }: Props) => {
                 src={issue.thumbnailUrl}
                 alt={issue.issueTitle}
                 key={issue.id}
-                className={`w-full h-full absolute z-${
-                  idx * 10
-                } rounded-lg border-1 border-solid border-zinc-200 dark:border-zinc-800`}
+                className={`w-full h-full absolute z-${idx * 10
+                  } rounded-lg border-1 border-solid border-zinc-200 dark:border-zinc-800`}
                 style={{
-                  transform: `rotateZ(${
-                    idx === 0 ? -1.5 : idx % 2 === 0 ? -idx * 1 : idx * 1
-                  }deg)`,
+                  transform: `rotateZ(${idx === 0 ? -1.5 : idx % 2 === 0 ? -idx * 1 : idx * 1
+                    }deg)`,
                 }}
               />
             ))}

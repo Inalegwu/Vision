@@ -1,5 +1,5 @@
-import { publicProcedure, router } from "@src/trpc";
-import { globalState$ } from "@src/web/state";
+import { publicProcedure, router } from "@/trpc";
+import { globalState$ } from "@/web/state";
 import * as fs from "node:fs";
 import path from "node:path";
 

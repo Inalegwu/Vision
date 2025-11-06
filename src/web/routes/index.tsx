@@ -1,4 +1,4 @@
-import { Icon, LoadingSkeleton, Spinner } from "@components";
+import { Icon, LoadingSkeleton, Spinner } from "@/web/components";
 import { Switch, useObservable } from "@legendapp/state/react";
 import {
   Button,
@@ -8,11 +8,11 @@ import {
   TextField,
   Tooltip,
 } from "@radix-ui/themes";
-import t from "@shared/config";
+import t from "@/shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import React, { memo, Suspense } from "react";
-import { toast } from "../components/toast";
+import { toast } from "@/web/components/toast";
 import { useTimeout } from "../hooks";
 import { globalState$ } from "../state";
 
@@ -55,11 +55,10 @@ function Component() {
             <Tooltip content="My Collections">
               <button
                 onClick={() => globalState$.libraryView.set("collections")}
-                className={`p-1.6 cursor-pointer ${
-                  view === "collections"
-                    ? " text-moonlightOrange"
-                    : "text-neutral-600"
-                }`}
+                className={`p-1.6 cursor-pointer ${view === "collections"
+                  ? " text-moonlightOrange"
+                  : "text-neutral-600"
+                  }`}
               >
                 <Icon name="Library" size={13} />
               </button>
@@ -67,11 +66,10 @@ function Component() {
             <Tooltip content="My Issues">
               <button
                 onClick={() => globalState$.libraryView.set("issues")}
-                className={`p-1.6 cursor-pointer ${
-                  view === "issues"
-                    ? " text-moonlightOrange"
-                    : "text-neutral-600"
-                }`}
+                className={`p-1.6 cursor-pointer ${view === "issues"
+                  ? " text-moonlightOrange"
+                  : "text-neutral-600"
+                  }`}
               >
                 <Icon name="Book" size={13} />
               </button>

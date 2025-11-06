@@ -6,8 +6,8 @@ import {
   Heading,
   Text,
 } from "@radix-ui/themes";
-import t from "@shared/config";
-import { toast } from "@src/web/components/toast";
+import t from "@/shared/config";
+import { toast } from "@/web/components/toast";
 import { createFileRoute } from "@tanstack/react-router";
 import React, { Suspense, useState } from "react";
 import { FlatList, Icon, LoadingSkeleton, Spinner } from "../../components";
@@ -100,8 +100,8 @@ function Component() {
                       checked
                         ? setToAdd((added) => [...added, item.id])
                         : setToAdd((added) => [
-                            ...added.filter((id) => id !== item.id),
-                          ])
+                          ...added.filter((id) => id !== item.id),
+                        ])
                     }
                     size="1"
                     variant="soft"

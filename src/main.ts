@@ -1,14 +1,14 @@
 import * as fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { createContext } from "@shared/context";
-import { appRouter } from "@shared/routers/_app";
+import { createContext } from "@/shared/context";
+import { appRouter } from "@/shared/routers/_app";
 import { Effect, Match } from "effect";
 import { pipe } from "effect/Function";
 import { BrowserWindow, app, screen } from "electron";
 import { createIPCHandler } from "electron-trpc/main";
-import { deeplinkChannel } from "./shared/channels";
-import { Fs } from "./shared/fs";
+import { deeplinkChannel } from "@/shared/channels";
+import { Fs } from "@/shared/fs";
 import { globalState$ } from "./web/state";
 
 app.setName("Vision");

@@ -1,15 +1,15 @@
 import { Switch, useObservable } from "@legendapp/state/react";
 import { Flex } from "@radix-ui/themes";
-import t from "@shared/config";
-import { toast } from "@src/web/components/toast";
+import t from "@/shared/config";
+import { toast } from "@/web/components/toast";
 import { createFileRoute } from "@tanstack/react-router";
 import { useGesture } from "@use-gesture/react";
 import { Bookmark, ChevronLeft, ChevronRight, Expand } from "lucide-react";
 import { AnimatePresence, motion, useMotionValue } from "motion/react";
 import React, { memo, useEffect, useMemo, useRef, useState } from "react";
-import { Spinner } from "../../components";
-import { useDebounce, useKeyPress, useTimeout, useWindow } from "../../hooks";
-import { globalState$, readingState$ } from "../../state";
+import { Spinner } from "@/web/components";
+import { useDebounce, useKeyPress, useTimeout, useWindow } from "@/web/hooks";
+import { globalState$, readingState$ } from "@/web/state";
 
 const DRAG_BUFFER = 50;
 
@@ -60,7 +60,7 @@ function Component() {
         console.error(error);
         toast.error(error.message);
       },
-      onSuccess:()=>{
+      onSuccess: () => {
         globalState$.isFullscreen.set(true);
       }
     },

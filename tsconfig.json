@@ -5,27 +5,29 @@
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "lib": ["DOM", "ESNext"],
+    "lib": [
+      "DOM",
+      "ESNext"
+    ],
     "jsx": "react-jsx",
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@src/*": ["src/*"],
-      "@shared/*": ["src/shared/*"],
-      "@components": ["src/web/components/index.ts"],
-      "@assets/*": ["src/assets/*"],
-      "@pages/*": ["src/web/routes/*"],
-      "@core/*": ["src/shared/core/*"]
+      "@/*": [
+        "./src/*"
+      ],
     },
     "plugins": [
       {
         "name": "@effect/language-service",
-        "diagnostics":true,
-        "quickinfo":true,
-        "completions":true,
-        "refactors":true
+        "diagnostics": true,
+        "quickinfo": true,
+        "completions": true,
+        "refactors": true
       }
     ]
   },
-  "include": ["src"],
+  "include": [
+    "src"
+  ],
 }

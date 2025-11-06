@@ -1,7 +1,7 @@
-import { parserChannel } from "@shared/channels";
-import { parseFileNameFromPath, transformMessage } from "@shared/utils";
-import db from "@src/shared/storage";
-import { parserSchema } from "@src/shared/validations";
+import { parserChannel } from "@/shared/channels";
+import { parseFileNameFromPath, transformMessage } from "@/shared/utils";
+import db from "@/shared/storage";
+import { parserSchema } from "@/shared/validations";
 import { Effect, Match } from "effect";
 import { parentPort } from "node:worker_threads";
 import {

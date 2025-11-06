@@ -1,5 +1,5 @@
-import parseWorker from "@core/workers/parser?nodeWorker";
-import { publicProcedure, router } from "@src/trpc";
+import parseWorker from "@/shared/core/workers/parser?nodeWorker";
+import { publicProcedure, router } from "@/trpc";
 import { observable } from "@trpc/server/observable";
 import { gte } from "drizzle-orm";
 import { deeplinkChannel } from "../channels";
@@ -7,14 +7,12 @@ import { parseFileNameFromPath } from "../utils";
 import { history } from "./history";
 import issueRouter from "./issue";
 import libraryRouter from "./library";
-import oauthRouter from "./oauth";
 import { windowRouter } from "./window";
 
 export const appRouter = router({
   window: windowRouter,
   issue: issueRouter,
   library: libraryRouter,
-  oauth: oauthRouter,
   history,
   deeplink: publicProcedure.subscription(({ ctx }) =>
     observable<{
@@ -52,6 +50,33 @@ export const appRouter = router({
 
       return () => {
         deeplinkChannel.removeEventListener("message", listener);
+      };
+    }),
+  ),
+  // subscriptions
+  additions: publicProcedure.subscription(() =>
+    observable<ParserChannel>((emit) => {
+      const listener = (evt: ParserChannel) => {
+        emit.next(evt);
+      };
+
+      parserChannel.addEventListener("message", listener);
+
+      return () => {
+        parserChannel.removeEventListener("message", listener);
+      };
+    }),
+  ),
+  deletions: publicProcedure.subscription(() =>
+    observable<DeletionChannel>((emit) => {
+      const listener = (event: DeletionChannel) => {
+        emit.next(event);
+      };
+
+      deletionChannel.addEventListener("message", listener);
+
+      return () => {
+        deletionChannel.removeEventListener("message", listener);
       };
     }),
   ),

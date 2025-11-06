@@ -1,7 +1,7 @@
-import { deletionChannel, parserChannel } from "@shared/channels";
-import cacheWorker from "@src/shared/core/workers/cache?nodeWorker";
-import fileSystemWatchWorker from "@src/shared/core/workers/watcher?nodeWorker";
-import { publicProcedure, router } from "@src/trpc";
+import { deletionChannel, parserChannel } from "@/shared/channels";
+import cacheWorker from "@/shared/core/workers/cache?nodeWorker";
+import fileSystemWatchWorker from "@/shared/core/workers/watcher?nodeWorker";
+import { publicProcedure, router } from "@/trpc";
 import { observable } from "@trpc/server/observable";
 import { eq } from "drizzle-orm";
 import { Effect } from "effect";
@@ -252,48 +252,6 @@ const libraryRouter = router({
       filePaths,
     };
   }),
-  // subscriptions
-  additions: publicProcedure.subscription(() =>
-    observable<ParserChannel>((emit) => {
-      const listener = (evt: ParserChannel) => {
-        emit.next(evt);
-      };
-
-      parserChannel.addEventListener("message", listener);
-
-      return () => {
-        parserChannel.removeEventListener("message", listener);
-      };
-    }),
-  ),
-  deletions: publicProcedure.subscription(() =>
-    observable<DeletionChannel>((emit) => {
-      const listener = (event: DeletionChannel) => {
-        emit.next(event);
-      };
-
-      deletionChannel.addEventListener("message", listener);
-
-      return () => {
-        deletionChannel.removeEventListener("message", listener);
-      };
-    }),
-  ),
 });
-
-// {
-//   console.log({ input });
-
-//   const deleted = await ctx.db
-//     .delete(collectionsSchema)
-//     .where(eq(collectionsSchema.id, input.collectionId))
-//     .returning();
-
-//   console.log(deleted);
-
-//   return {
-//         deleted: deleted[0],
-//       };
-// }
 
 export default libraryRouter;

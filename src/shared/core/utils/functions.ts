@@ -1,12 +1,12 @@
-import { parserChannel } from "@src/shared/channels";
-import { Fs } from "@src/shared/fs";
-import { issues, metadata } from "@src/shared/schema";
-import db from "@src/shared/storage";
+import { parserChannel } from "@/shared/channels";
+import { Fs } from "@/shared/fs";
+import { issues, metadata } from "@/shared/schema";
+import db from "@/shared/storage";
 import {
   extractMetaID,
   parseFileNameFromPath,
   sortPages,
-} from "@src/shared/utils";
+} from "@/shared/utils";
 import Zip from "adm-zip";
 import { Array, Effect, Option, Schema } from "effect";
 import { XMLParser } from "fast-xml-parser";

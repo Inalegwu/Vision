@@ -1,7 +1,7 @@
-import { Spinner } from "@components";
+import { Spinner } from "@/web/components";
 import { Show, useObservable } from "@legendapp/state/react";
 import { Flex, Text, TextField } from "@radix-ui/themes";
-import t from "@shared/config";
+import t from "@/shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import { Check, Pencil } from "lucide-react";
 import { motion } from "motion/react";
@@ -34,7 +34,8 @@ function Component() {
       console.log({ data });
       utils.library.invalidate();
       isEditing.set(false);
-      name.set(data.result.at(0)?.issueTitle);
+      if (!data.result || !data) return;
+      name.set(data.result.issueTitle);
     },
   });
 

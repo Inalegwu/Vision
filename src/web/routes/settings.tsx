@@ -1,9 +1,9 @@
 import { Flex, Switch, Tabs, Text } from "@radix-ui/themes";
-import t from "@src/shared/config";
+import t from "@/shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import React, { memo } from "react";
-import { Icon } from "../components";
-import { toast } from "../components/toast";
+import { Icon } from "@/web/components";
+import { toast } from "@/web/components/toast";
 import { globalState$ } from "../state";
 
 export const Route = createFileRoute("/settings")({

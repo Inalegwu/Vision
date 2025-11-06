@@ -4,10 +4,11 @@ import { defineConfig, externalizeDepsPlugin } from "electron-vite";
 import { resolve } from "node:path";
 import UnoCSS from "unocss/vite";
 import path from "node:path";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin()],
+    plugins: [externalizeDepsPlugin(), tsconfigPaths()],
     build: {
       lib: {
         entry: "src/main.ts",
@@ -16,16 +17,9 @@ export default defineConfig({
         external: ["better-sqlite3"],
       },
     },
-    resolve: {
-      alias: {
-        "@src": resolve(__dirname, "src/"),
-        "@shared": resolve(__dirname, "src/shared/"),
-        "@core": resolve(__dirname, "src/shared/core/"),
-      },
-    },
   },
   preload: {
-    plugins: [externalizeDepsPlugin()],
+    plugins: [externalizeDepsPlugin(), tsconfigPaths()],
     build: {
       lib: {
         entry: "src/preload.ts",
@@ -34,21 +28,11 @@ export default defineConfig({
   },
   renderer: {
     root: "src/web/",
-    resolve: {
-      alias: {
-        "@src": resolve(__dirname, "src/"),
-        "@shared": resolve(__dirname, "src/shared/"),
-        "@components": resolve(__dirname, "src/web/components/index.ts"),
-        "@assets": resolve(__dirname, "src/assets/"),
-        "@core": resolve(__dirname, "src/shared/core/"),
-      },
-    },
     plugins: [
       react(),
       UnoCSS(),
+      tsconfigPaths(),
       tanstackRouter({
-        // routesDirectory: "./src/web/routes/",
-        // generatedRouteTree: "./src/web/routeTree.gen.ts",
         routesDirectory: path.join(__dirname, "src/web/routes"),
         generatedRouteTree: path.join(__dirname, "src/web/routeTree.gen.ts"),
       }),

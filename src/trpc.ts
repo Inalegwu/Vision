@@ -1,4 +1,4 @@
-import type { Context } from "@src/shared/context";
+import type { Context } from "@/shared/context";
 import { initTRPC } from "@trpc/server";
 
 const t = initTRPC.context<Context>().create({

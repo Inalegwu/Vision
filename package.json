@@ -18,9 +18,9 @@
     "build": "yarn dlx tsx build.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "type:check": "pnpm exec tsc --noEmit",
+    "type:check": "yarn exec tsc --noEmit",
     "postinstall": "electron-rebuild",
-    "app-release": "pnpm exec np --no-publish --no-cleanup --no-tests --no-release-draft"
+    "app-release": "yarn exec np --no-publish --no-cleanup --no-tests --no-release-draft"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.3.0",
@@ -55,6 +55,7 @@
     "sort-by": "^1.2.0",
     "tinybase": "^5.1.1",
     "uuid": "^10.0.0",
+    "vite-tsconfig-paths": "^5.1.4",
     "ws": "^8.18.0",
     "zod": "^3.22.4"
   },
