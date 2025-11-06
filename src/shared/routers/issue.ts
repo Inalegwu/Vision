@@ -1,5 +1,3 @@
-import deletionWorker from "@/shared/core/workers/deletion?modulePath";
-import parseWorker from "@/shared/core/workers/parser?modulePath";
 import { publicProcedure, router } from "@/trpc";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
@@ -12,8 +10,8 @@ import { Fs } from "../fs";
 import { issues as issuesSchema } from "../schema";
 import { convertToImageUrl } from "../utils";
 
-const deleter = new Worker(deletionWorker);
-const parser = new Worker(parseWorker);
+const deleter = new Worker(new URL("../core/workers/deletion", import.meta.url));
+const parser = new Worker(new URL("../core/workers/parser", import.meta.url));
 
 const issueRouter = router({
   addIssue: publicProcedure.mutation(async () => {

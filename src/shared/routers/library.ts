@@ -1,6 +1,4 @@
 import { deletionChannel, parserChannel } from "@/shared/channels";
-import cacheWorker from "@/shared/core/workers/cache?modulePath";
-import fileSystemWatchWorker from "@/shared/core/workers/watcher?modulePath";
 import { publicProcedure, router } from "@/trpc";
 import { observable } from "@trpc/server/observable";
 import { eq } from "drizzle-orm";

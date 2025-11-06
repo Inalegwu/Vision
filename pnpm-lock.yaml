@@ -61,7 +61,7 @@ importers:
         version: 0.32.2(@types/better-sqlite3@7.6.13)(@types/react@18.3.26)(better-sqlite3@11.10.0)(react@18.3.1)
       effect:
         specifier: ^3.10.14
-        version: 3.19.1
+        version: 3.19.2
       electron-trpc:
         specifier: ^0.5.2
         version: 0.5.2(@trpc/client@10.45.2(@trpc/server@10.45.2))(@trpc/server@10.45.2)(electron@28.3.3)
@@ -2755,8 +2755,8 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  effect@3.19.1:
-    resolution: {integrity: sha512-SColjj+hRzL4bPxuE4s5aBBx3jbG5AX28fzHQosB8YzUxCQUUfBILsVW9HOJbXewHajzyFggtrJoK+xyvQYn+g==}
+  effect@3.19.2:
+    resolution: {integrity: sha512-AHkxfzl5RbWfHO9HOdLE4oZ0c3nxqkXKHc69t83GWYoAquZmSeoCjmLP5rPgbHvwv4DcfLr8WW8PWbtNIQI+vw==}
 
   ejs@3.1.10:
     resolution: {integrity: sha512-UeJmFfOrAQS8OJWPZ4qtgHyWExa088/MtK5UEyoJGFH67cDEXkZSviOiKRCZ4Xij0zxI3JECgYs3oKx+AizQBA==}
@@ -6798,7 +6798,7 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  effect@3.19.1:
+  effect@3.19.2:
     dependencies:
       '@standard-schema/spec': 1.0.0
       fast-check: 3.23.2
