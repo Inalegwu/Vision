@@ -9,9 +9,9 @@ import z from "zod";
 import { Fs } from "../fs";
 import { issues as issuesSchema } from "../schema";
 import { convertToImageUrl } from "../utils";
+import { Worker } from "node:worker_threads";
+import { parser, deleter } from "../workers";
 
-const deleter = new Worker(new URL("../core/workers/deletion", import.meta.url));
-const parser = new Worker(new URL("../core/workers/parser", import.meta.url));
 
 const issueRouter = router({
   addIssue: publicProcedure.mutation(async () => {

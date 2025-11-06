@@ -38,12 +38,11 @@ const downloads_dir = Match.value(process.platform).pipe(
 );
 
 process.env.db_url = Match.value(process.platform).pipe(
-  Match.when("linux", () => "vision.db"),
+  Match.when("linux", () => path.join(data_dir, "vision.db")),
   Match.orElse(() => path.join(data_dir, "vision.db")),
 );
 process.env.cache_dir = path.join(data_dir, "LibraryCache");
 process.env.data_dir = data_dir;
-
 process.env.source_dir = path.join(downloads_dir, "Comics");
 process.env.lib_dir = path.join(data_dir, "Library");
 process.env.error_dump = path.join(data_dir, "Vision", "ErrorDump.json");

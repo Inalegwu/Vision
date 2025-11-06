@@ -12,17 +12,13 @@ import {
   issues as issueSchema,
 } from "../schema";
 import { sortPages } from "../utils";
-
-const watcher = new Worker(new URL("../core/workers/watcher", import.meta.url));
-const cache = new Worker(new URL("../core/workers/watcher", import.meta.url));
+import { watcher, cache } from "../workers";
 
 const libraryRouter = router({
   launchWatcher: publicProcedure.mutation(async () => {
     watcher.postMessage({
       activate: true,
     });
-
-    watcher.onmessage = (e) => console.log(e)
 
     return {
       success: true,
@@ -224,7 +220,6 @@ const libraryRouter = router({
     ),
   emptyCache: publicProcedure.mutation(async ({ ctx }) => {
 
-    cache.onmessage = (e) => console.log(e);
     cache.postMessage({});
 
     return {

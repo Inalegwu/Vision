@@ -13,11 +13,13 @@ const port = parentPort;
 
 if (!port) throw new Error("Parse Process Port is Missing");
 
-const handleMessage = Effect.fnUntraced(function* ({
+const handleMessage = Effect.fnUntraced(function*({
   action,
   parsePath,
 }: ParserSchema) {
   const archive = yield* ArchiveService;
+
+  yield* Effect.log({ action, parsePath });
 
   const ext = parsePath.includes("cbr")
     ? "cbr"

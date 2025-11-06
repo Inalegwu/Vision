@@ -1,4 +1,3 @@
-import parseWorker from "@/shared/core/workers/parser?modulePath";
 import { publicProcedure, router } from "@/trpc";
 import { observable } from "@trpc/server/observable";
 import { gte } from "drizzle-orm";
@@ -8,8 +7,7 @@ import { history } from "./history";
 import issueRouter from "./issue";
 import libraryRouter from "./library";
 import { windowRouter } from "./window";
-
-const parser = new Worker(parseWorker);
+import { parser } from "../workers";
 
 export const appRouter = router({
   window: windowRouter,
