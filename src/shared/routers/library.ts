@@ -1,6 +1,4 @@
-import { deletionChannel, parserChannel } from "@/shared/channels";
 import { publicProcedure, router } from "@/trpc";
-import { observable } from "@trpc/server/observable";
 import { eq } from "drizzle-orm";
 import { Effect } from "effect";
 import * as Array from "effect/Array";
@@ -219,7 +217,6 @@ const libraryRouter = router({
         ),
     ),
   emptyCache: publicProcedure.mutation(async ({ ctx }) => {
-
     cache.postMessage({});
 
     return {

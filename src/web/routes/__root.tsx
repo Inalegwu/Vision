@@ -1,11 +1,19 @@
 import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { Layout } from "../components";
+import { SolarProvider } from "@solar-icons/react";
 
 export const Route = createRootRoute({
   component: () => (
-    <Layout>
-      <Outlet />
-      {/* <TanStackRouterDevtools /> */}
-    </Layout>
+    <SolarProvider
+      value={{
+        size: 17,
+        weight: "BoldDuotone",
+      }}
+    >
+      <Layout>
+        <Outlet />
+        {/* <TanStackRouterDevtools /> */}
+      </Layout>
+    </SolarProvider>
   ),
 });

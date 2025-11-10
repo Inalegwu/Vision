@@ -1,5 +1,6 @@
 import { icons } from "lucide-react";
 import React from "react";
+import * as Solar from "@solar-icons/react";
 
 type Props = {
   name: keyof typeof icons;

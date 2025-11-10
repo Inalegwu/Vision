@@ -15,6 +15,16 @@ import Icon from "./icon";
 import Spinner from "./spinner";
 import ThemeButton from "./theme-button";
 import Toast, { toast } from "./toast";
+import {
+  Maximize,
+  CloseSquare,
+  Minimize,
+  AddSquare,
+  ArrowLeft,
+  ArrowRight,
+  Settings,
+  History3,
+} from "@solar-icons/react";
 
 type LayoutProps = {
   children?: React.ReactNode;
@@ -81,8 +91,8 @@ export default function Layout({ children }: LayoutProps) {
 
   // deeplinks
   t.deeplink.useSubscription(undefined, {
-    onData: () => utils.library.invalidate()
-  })
+    onData: () => utils.library.invalidate(),
+  });
 
   useInterval(() => {
     if (toast.showing) toast.dismiss();
@@ -105,9 +115,9 @@ export default function Layout({ children }: LayoutProps) {
 
   useWindow("keypress", (e) => {
     if (e.keyCode === 16) {
-      console.log("search command pressed")
+      console.log("search command pressed");
     }
-  })
+  });
 
   useEffect(() => {
     launchWatcher();
@@ -168,7 +178,7 @@ export default function Layout({ children }: LayoutProps) {
                       to="/history"
                       className="px-2 py-1 flex items-center justify-center rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
                     >
-                      <Icon name="History" size={12} />
+                      <History3 size={16} />
                     </Link>
                   </Tooltip>
                 </Flex>
@@ -181,13 +191,13 @@ export default function Layout({ children }: LayoutProps) {
                     className="px-2 py-2 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5 disabled:text-neutral-600"
                     onClick={() => navigation.history.back()}
                   >
-                    <Icon name="ArrowLeft" size={12} />
+                    <ArrowLeft size={12} />
                   </button>
                   <button
                     className="px-2 py-2 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
                     onClick={() => navigation.history.forward()}
                   >
-                    <Icon name="ArrowRight" size={12} />
+                    <ArrowRight size={12} />
                   </button>
                 </Flex>
                 <Flex
@@ -197,15 +207,15 @@ export default function Layout({ children }: LayoutProps) {
                   gap="2"
                   className="p-1 rounded-md w-2/6 bg-neutral-100/50 dark:bg-neutral-100/4 border-1 border-solid border-neutral-100 dark:border-neutral-100/5"
                 >
-                  <Text size="1" className="text-moonlightSlight">
+                  <Text weight="bold" size="1" className="text-moonlightSlight">
                     {capitalize(
                       routerState.location.pathname === "/"
                         ? "Home"
                         : routerState.location.pathname === "/history"
                           ? "History"
                           : routerState.location.pathname.includes(
-                            "/collection/",
-                          )
+                                "/collection/",
+                              )
                             ? "Collection"
                             : routerState.location.pathname.includes("read")
                               ? "Reading"
@@ -220,39 +230,32 @@ export default function Layout({ children }: LayoutProps) {
                   onClick={goToSettings}
                   className="p-2 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
                 >
-                  <Icon name="Settings2" size={12} />
+                  <Settings size={12} />
                 </button>
                 {/* <BrowserButton /> */}
                 <Flex grow="1" id="drag-region" p="2" />
               </Flex>
               <Flex align="center" justify="end">
-                {/* <button
-                  className="p-3 hover:bg-neutral-400/10 cursor-pointer dark:text-moonlightText dark:hover:bg-neutral-400/5"
-                  onClick={goToSettings}
-                  type="button"
-                >
-                  <Icon name="Settings2" size={12} />
-                </button> */}
                 <button
                   className="p-3 hover:bg-neutral-400/10 dark:text-moonlightText dark:hover:bg-neutral-400/5"
                   onClick={() => minimizeWindow()}
                   type="button"
                 >
-                  <Icon name="Minus" size={12} />
+                  <Minimize size={12} />
                 </button>
                 <button
                   className="p-3 hover:bg-neutral-400/10 dark:text-moonlightText dark:hover:bg-neutral-400/5"
                   onClick={() => maximizeWindow()}
                   type="button"
                 >
-                  <Icon name="Maximize2" size={12} />
+                  <Maximize size={12} />
                 </button>
                 <button
                   className="p-3 hover:bg-red-500 dark:text-moonlightText hover:text-white"
                   onClick={() => closeWindow()}
                   type="button"
                 >
-                  <Icon name="X" size={12} />
+                  <CloseSquare size={12} />
                 </button>
               </Flex>
             </Flex>
@@ -283,86 +286,7 @@ function AddButton() {
       disabled={isLoading}
       onClick={() => addIssueToLibrary()}
     >
-      {isLoading ? <Spinner /> : <Icon name="Plus" size={12} />}
+      {isLoading ? <Spinner /> : <AddSquare size={14} />}
     </button>
-  );
-}
-
-function BrowserButton() {
-  const overlay$ = useObservable(false);
-
-  const searchTerm = useObservable("");
-
-  const doSearch = () => {
-    console.log(searchTerm.get());
-  };
-
-  return (
-    <>
-      <button
-        onClick={() => overlay$.set(!overlay$.get())}
-        className="p-2 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/8 dark:hover:bg-neutral-400/5"
-      >
-        <Icon name="Globe" size={13} />
-      </button>
-      <AnimatePresence>
-        <Show if={overlay$}>
-          <motion.div
-            initial={{
-              opacity: 0,
-              scale: 0,
-              display: "none",
-            }}
-            animate={{
-              opacity: 1,
-              scale: 1,
-              display: "flex",
-            }}
-            exit={{ opacity: 0, scale: 0, display: "none" }}
-            className="absolute z-20 top-0 left-0 w-full h-[100vh] bg-black/4 flex items-center justify-center"
-          >
-            <Flex
-              direction="column"
-              className="bg-white dark:bg-moonlightFocusLow w-4/6 h-4/6 border-1 border-solid border-neutral-200/40 rounded-md dark:border-neutral-400/10"
-            >
-              <Flex
-                align="center"
-                justify="between"
-                className="bg-neutral-200/10 dark:bg-neutral-700/10 rounded-tr-md rounded-tl-md"
-              >
-                <input
-                  placeholder="Find a Comic"
-                  onChange={(value) =>
-                    searchTerm.set(value.currentTarget.value)
-                  }
-                  onSubmit={doSearch}
-                  onBlur={doSearch}
-                  className="bg-transparent border-none font-medium dark:text-neutral-300 py-3 px-3 flex-1 outline-none"
-                />
-                <button
-                  onClick={() => overlay$.set(false)}
-                  className="px-3 py-3 text-neutral-500 cursor-pointer"
-                >
-                  <Icon name="ChevronLeft" size={13} />
-                </button>
-                <button
-                  onClick={() => overlay$.set(false)}
-                  className="px-3 py-3 text-neutral-500 cursor-pointer"
-                >
-                  <Icon name="ChevronRight" size={13} />
-                </button>
-                <button
-                  onClick={() => overlay$.set(false)}
-                  className="px-3 py-3 text-red-500 cursor-pointer"
-                >
-                  <Icon name="X" size={13} />
-                </button>
-              </Flex>
-              webview
-            </Flex>
-          </motion.div>
-        </Show>
-      </AnimatePresence>
-    </>
   );
 }

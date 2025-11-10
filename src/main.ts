@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { createContext } from "@/shared/context";
 import { appRouter } from "@/shared/routers/_app";
-import { Effect, Match } from "effect";
+import { Effect } from "effect";
 import { pipe } from "effect/Function";
 import { BrowserWindow, app, screen } from "electron";
 import { createIPCHandler } from "electron-trpc/main";
@@ -17,10 +17,10 @@ const data_dir = path.join(app.getPath("appData"), "Vision");
 
 // unix systems don't create these on their own for some reason
 // so much for the best operating system lol
-Fs.makeDirectory(data_dir).pipe(
-  Effect.catchTag("FSError", () => Effect.void),
-  Effect.runPromise,
-);
+// Fs.makeDirectory(data_dir).pipe(
+//   Effect.catchTag("FSError", () => Effect.void),
+//   Effect.runPromise,
+// );
 Fs.makeDirectory(path.join(data_dir, "LibraryCache")).pipe(
   Effect.catchTag("FSError", () => Effect.void),
   Effect.runPromise,
@@ -30,20 +30,10 @@ Fs.makeDirectory(path.join(data_dir, "Library")).pipe(
   Effect.runPromise,
 );
 
-const downloads_dir = Match.value(process.platform).pipe(
-  Match.when("linux", () => `${os.homedir()}/Downloads`),
-  Match.when("darwin", () => `${os.homedir()}/Downloads`),
-  Match.when("win32", () => `${os.homedir()}/downloads`),
-  Match.orElse(() => `${os.homedir()}/Downloads`),
-);
-
-process.env.db_url = Match.value(process.platform).pipe(
-  Match.when("linux", () => path.join(data_dir, "vision.db")),
-  Match.orElse(() => path.join(data_dir, "vision.db")),
-);
+process.env.db_url = path.join(data_dir, "vision.db");
 process.env.cache_dir = path.join(data_dir, "LibraryCache");
 process.env.data_dir = data_dir;
-process.env.source_dir = path.join(downloads_dir, "Comics");
+process.env.source_dir = path.join(`${os.homedir()}/Downloads`, "Comics");
 process.env.lib_dir = path.join(data_dir, "Library");
 process.env.error_dump = path.join(data_dir, "Vision", "ErrorDump.json");
 
@@ -103,6 +93,7 @@ const createWindow = () => {
 
         if (!path) return;
 
+        console.log("DEEPLINK PATH RECEIVED");
         console.log({ path });
 
         deeplinkChannel.postMessage({
@@ -120,7 +111,7 @@ const createWindow = () => {
     globalState$.set,
   );
 
-  // mainWindow.webContents.openDevTools({ mode: "detach" });
+  mainWindow.webContents.openDevTools({ mode: "detach" });
 };
 
 app.whenReady().then(() => createWindow());

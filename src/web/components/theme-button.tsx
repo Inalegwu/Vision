@@ -1,5 +1,5 @@
-import { Moon, Sun } from "lucide-react";
 import { globalState$ } from "../state";
+import { Moon, Sun } from "@solar-icons/react";
 
 export default function ThemeButton() {
   return (
