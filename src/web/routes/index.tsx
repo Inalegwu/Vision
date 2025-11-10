@@ -16,7 +16,7 @@ import React, { memo, Suspense } from "react";
 import { toast } from "@/web/components/toast";
 import { useTimeout } from "../hooks";
 import { globalState$ } from "../state";
-import { Library, AddCircle, Book2 } from "@solar-icons/react";
+import { Library, AddCircle, Book2, AddSquare } from "@solar-icons/react";
 
 const Collection = React.lazy(() => import("../components/collection"));
 const Issue = React.lazy(() => import("../components/issue"));
@@ -38,7 +38,7 @@ function Component() {
   useTimeout(() => isEnabled.set(true), 500);
 
   return (
-    <Tabs.Root className="w-full h-screen" defaultValue="issues">
+    <Tabs.Root className="w-full h-screen" defaultValue="collections">
       <Flex
         width="100%"
         align="center"
@@ -46,33 +46,31 @@ function Component() {
         justify="between"
         className="pt-9"
       >
-        <Tabs.List size="2">
-          <Tabs.Trigger value="collections">
-            <Flex align="center" justify="center" gap="2">
-              <Library size={15} />
-              <Text size="2" weight="medium">
-                Collections
-              </Text>
+        <Flex width="100%" align="center" justify="between">
+          <Tabs.List className="w-full" size="2">
+            <Tabs.Trigger className="cursor-pointer" value="collections">
+              <Flex align="center" justify="center" gap="2">
+                <Library size={15} />
+                <Text size="2" weight="medium">
+                  Collections
+                </Text>
+              </Flex>
+            </Tabs.Trigger>
+            <Tabs.Trigger className="cursor-pointer" value="issues">
+              <Flex align="center" justify="center" gap="2">
+                <Book2 size={15} />
+                <Text weight="medium">Issues</Text>
+              </Flex>
+            </Tabs.Trigger>
+            <Flex align="center" justify="end" gap="2" p="1">
+              <CreateCollection />
             </Flex>
-          </Tabs.Trigger>
-          <Tabs.Trigger value="issues">
-            <Flex align="center" justify="center" gap="2">
-              <Book2 size={15} />
-              <Text weight="medium">Issues</Text>
-            </Flex>
-          </Tabs.Trigger>
-        </Tabs.List>
-        <Tabs.Content
-          className="w-full h-[90vh] bg-red-100"
-          value="collections"
-        >
+          </Tabs.List>
+        </Flex>
+        <Tabs.Content className="w-full h-[90vh]" value="collections">
           <RenderCollections collections={data?.collections || []} />
-          <button className="absolute flex items-center justify-center space-x-2 z-10 bottom-3 right-3 rounded-full bg-moonlightOrange">
-            <Text>Create Collection</Text>
-            <AddCircle size={25} />
-          </button>
         </Tabs.Content>
-        <Tabs.Content className="w-full h-screen" value="issues">
+        <Tabs.Content className="w-full h-[90vh]" value="issues">
           <RenderIssues issues={data?.issues || []} />
         </Tabs.Content>
       </Flex>
@@ -182,7 +180,9 @@ const CreateCollection = React.memo(() => {
       <Popover.Content className="transition bg-white dark:bg-moonlightBase relative">
         <Flex direction="column" gap="2" align="start">
           <Flex align="center" justify="start">
-            <Text size="1">Give your collection a name</Text>
+            <Text size="1" weight="bold">
+              Give your collection a name
+            </Text>
           </Flex>
           <TextField.Root>
             <TextField.Input
@@ -198,8 +198,8 @@ const CreateCollection = React.memo(() => {
               size="1"
             >
               <Flex align="center" justify="center" gap="2">
-                <Icon name="Plus" size={10} />
-                <Text>Create Collection</Text>
+                <AddSquare size={16} />
+                <Text weight="medium">Create Collection</Text>
               </Flex>
             </Button>
           </Popover.Close>

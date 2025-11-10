@@ -40,6 +40,8 @@ const watchFS = Effect.fn(function* (directory: string | null) {
     ),
   );
 
+  yield* Effect.log(unsavedIssues);
+
   yield* mailbox.offerAll(unsavedIssues);
 });
 
