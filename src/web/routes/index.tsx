@@ -54,12 +54,18 @@ function Component() {
                 <Text size="2" weight="medium">
                   Collections
                 </Text>
+                <Text size="1" color="gray">
+                  {data?.collections.length || 0}
+                </Text>
               </Flex>
             </Tabs.Trigger>
             <Tabs.Trigger className="cursor-pointer" value="issues">
               <Flex align="center" justify="center" gap="2">
                 <Book2 size={15} />
                 <Text weight="medium">Issues</Text>
+                <Text size="1" color="gray">
+                  {data?.issues.length || 0}
+                </Text>
               </Flex>
             </Tabs.Trigger>
             <Flex align="center" justify="end" gap="2" p="1">

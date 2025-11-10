@@ -11,10 +11,8 @@ import { useEffect } from "react";
 import { v4 } from "uuid";
 import { useInterval, useKeyPress, useWindow } from "../hooks";
 import { globalState$ } from "../state";
-import Icon from "./icon";
 import Spinner from "./spinner";
 import ThemeButton from "./theme-button";
-import Toast, { toast } from "./toast";
 import {
   Maximize,
   CloseSquare,
@@ -25,6 +23,7 @@ import {
   Settings,
   History3,
 } from "@solar-icons/react";
+import { toast } from "sonner";
 
 type LayoutProps = {
   children?: React.ReactNode;
@@ -48,7 +47,7 @@ export default function Layout({ children }: LayoutProps) {
   t.additions.useSubscription(undefined, {
     onData: (data) => {
       if (!data.isCompleted && data.state === "SUCCESS") {
-        toast.loading(`Adding ${data.issue || "issue"} To Library`);
+        toast.promise(`Adding ${data.issue || "issue"} To Library`);
       }
 
       if (data.isCompleted && data.state === "SUCCESS") {
@@ -266,8 +265,6 @@ export default function Layout({ children }: LayoutProps) {
       <Flex width="100%" height="100%">
         {children}
       </Flex>
-      {/* toast notifications */}
-      <Toast />
     </Flex>
   );
 }
