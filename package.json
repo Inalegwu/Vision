@@ -23,6 +23,8 @@
     "app-release": "pnpm exec np --no-publish --no-cleanup --no-tests --no-release-draft"
   },
   "dependencies": {
+    "@effect/platform": "^0.93.0",
+    "@effect/platform-node": "^0.100.0",
     "@electron/rebuild": "^3.4.1",
     "@heroicons/react": "^2.2.0",
     "@legendapp/state": "^2.1.4",

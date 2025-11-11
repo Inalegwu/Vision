@@ -5,6 +5,7 @@ import React, { memo } from "react";
 import { Icon } from "@/web/components";
 import { toast } from "@/web/components/toast";
 import { globalState$ } from "../state";
+import { SsdRound, Glasses } from "@solar-icons/react";
 
 export const Route = createFileRoute("/settings")({
   component: memo(Component),
@@ -14,14 +15,20 @@ function Component() {
   console.log(globalState$.get());
 
   return (
-    <Flex direction="column" className="w-full h-screen pt-9">
+    <Flex direction="column" className="w-full h-screen pt-10">
       <Tabs.Root defaultValue="storage">
         <Tabs.List defaultValue="storage" size="2">
           <Tabs.Trigger className="cursor-pointer" value="storage">
-            <Text size="2">Storage</Text>
+            <Flex align="center" justify="center" gap="2">
+              <SsdRound size={16} />
+              <Text size="2">Storage</Text>
+            </Flex>
           </Tabs.Trigger>
           <Tabs.Trigger className="cursor-pointer" value="reader">
-            <Text size="2">Reader</Text>
+            <Flex align="center" justify="center" gap="2">
+              <Glasses size={16} />
+              <Text size="2">Reader</Text>
+            </Flex>
           </Tabs.Trigger>
         </Tabs.List>
         <Tabs.Content value="storage" className="w-full h-screen">
@@ -47,10 +54,10 @@ const StorageView = React.memo(() => {
     <Flex className="w-full h-full px-2 py-2" gap="3" direction="column">
       <Flex align="center" justify="between" width="100%">
         <Flex direction="column">
-          <Text weight="medium" size="2">
+          <Text weight="bold" size="2">
             Empty Cache
           </Text>
-          <Text size="1" color="gray">
+          <Text weight="medium" size="1" color="gray">
             Empty storage cache
           </Text>
         </Flex>
@@ -72,14 +79,15 @@ const ReaderView = React.memo(() => {
     <Flex className="h-full px-4 py-2" direction="column" gap="3">
       <Flex width="100%" align="center" justify="between">
         <Flex direction="column">
-          <Text weight="medium" size="2">
+          <Text weight="bold" size="2">
             Reader Direction
           </Text>
-          <Text size="1" color="gray">
-            change scroll direction of the reader view
+          <Text weight="medium" size="1" color="gray">
+            Change scroll direction of the reader view
           </Text>
         </Flex>
         <Switch
+          radius="full"
           value={globalState$.reader.direction.get()}
           checked={globalState$.reader.direction.get() === "vertical"}
           onCheckedChange={(checked) =>
@@ -87,7 +95,7 @@ const ReaderView = React.memo(() => {
               checked ? "vertical" : "horizontal",
             )
           }
-          size="1"
+          size="2"
         />
       </Flex>
     </Flex>

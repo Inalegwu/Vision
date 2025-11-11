@@ -26,6 +26,7 @@ const issueRouter = router({
     }
 
     for (const parsePath of filePaths) {
+      console.log({ parsePath });
       parser.postMessage({
         parsePath,
         action: "LINK",
@@ -47,7 +48,7 @@ const issueRouter = router({
       deleter.postMessage({
         issueId: input.issueId,
       });
-      return true
+      return true;
     }),
   getPages: publicProcedure
     .input(

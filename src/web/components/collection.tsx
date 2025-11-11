@@ -5,6 +5,7 @@ import { useRouter } from "@tanstack/react-router";
 import * as A from "effect/Array";
 import { motion } from "motion/react";
 import React from "react";
+import { SquareArrowRight, TrashBinTrash } from "@solar-icons/react";
 
 type Props = {
   collection: Collection & {
@@ -45,11 +46,13 @@ const Collection = React.memo(({ collection }: Props) => {
                 src={issue.thumbnailUrl}
                 alt={issue.issueTitle}
                 key={issue.id}
-                className={`w-full h-full absolute z-${idx * 10
-                  } rounded-lg border-1 border-solid border-zinc-200 dark:border-zinc-800`}
+                className={`w-full h-full absolute z-${
+                  idx * 10
+                } rounded-lg border-1 border-solid border-zinc-200 dark:border-zinc-800`}
                 style={{
-                  transform: `rotateZ(${idx === 0 ? -1.5 : idx % 2 === 0 ? -idx * 1 : idx * 1
-                    }deg)`,
+                  transform: `rotateZ(${
+                    idx === 0 ? -1.5 : idx % 2 === 0 ? -idx * 1 : idx * 1
+                  }deg)`,
                 }}
               />
             ))}
@@ -82,7 +85,7 @@ const Collection = React.memo(({ collection }: Props) => {
               }
               className="p-2 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
             >
-              <Icon name="ChevronRight" size={12} />
+              <SquareArrowRight size={16} />
             </button>
           </Tooltip>
           <Tooltip content="Delete Collection">
@@ -94,7 +97,7 @@ const Collection = React.memo(({ collection }: Props) => {
               }
               className="p-2 rounded-md cursor-pointer text-red-500 hover:bg-red-500/10"
             >
-              <Icon name="Trash" size={12} />
+              <TrashBinTrash size={16} />
             </button>
           </Tooltip>
         </Flex>

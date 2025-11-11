@@ -23,7 +23,7 @@ import {
   Settings,
   History3,
 } from "@solar-icons/react";
-import { toast } from "sonner";
+import { Toaster, toast } from "sonner";
 
 type LayoutProps = {
   children?: React.ReactNode;
@@ -93,10 +93,6 @@ export default function Layout({ children }: LayoutProps) {
     onData: () => utils.library.invalidate(),
   });
 
-  useInterval(() => {
-    if (toast.showing) toast.dismiss();
-  }, 2_500);
-
   useObserveEffect(() => {
     if (globalState$.colorMode.get() === "dark") {
       document.body.classList.add("dark");
@@ -135,7 +131,7 @@ export default function Layout({ children }: LayoutProps) {
     <Flex
       width="100%"
       grow="1"
-      className="transition bg-white dark:bg-moonlightBase relative"
+      className="transition bg-neutral-50 dark:bg-moonlightBase relative"
     >
       {/* title bar */}
       <AnimatePresence mode="wait" initial={false}>
@@ -153,21 +149,21 @@ export default function Layout({ children }: LayoutProps) {
             transition={{
               ease: "easeInOut",
             }}
-            className="w-full absolute top-0 shadow-sm shadow-black/5 dark:shadow-none left-0 z-10"
+            className="w-full absolute top-0 left-0 z-10 border-b-1 border-b-solid border-b-neutral-100 dark:border-b-neutral-800"
           >
             <Flex
               align="center"
               justify="between"
-              className="border-b-1 bg-white dark:bg-moonlightInterface w-full"
+              className="border-b-1 bg-neutral-50 dark:bg-moonlightInterface w-full"
             >
-              <Flex align="center" justify="start" gap="3">
+              <Flex align="center" justify="start" gap="2">
                 {/* <Text
                   className="ml-3 font-[Title] text-moonlightOrange"
                   weight="medium"
                 >
                   Vision
                 </Text> */}
-                <img src={icon} alt="app__icon" className="w-6 h-6 ml-2" />
+                <img src={icon} alt="app__icon" className="w-5 h-5 ml-2" />
                 <Flex gap="1">
                   <Tooltip content="Add Issue To Library">
                     <AddButton />
@@ -175,7 +171,7 @@ export default function Layout({ children }: LayoutProps) {
                   <Tooltip content="View Reading History">
                     <Link
                       to="/history"
-                      className="px-2 py-1 flex items-center justify-center rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+                      className="px-2 py-1 flex items-center justify-center rounded-md dark:text-moonlightWhite cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
                     >
                       <History3 size={16} />
                     </Link>
@@ -187,13 +183,13 @@ export default function Layout({ children }: LayoutProps) {
                 <Flex>
                   <button
                     disabled={!isNotHome}
-                    className="px-2 py-2 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5 disabled:text-neutral-600"
+                    className="px-2 py-2 rounded-md dark:text-moonlightWhite cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5 disabled:text-neutral-600"
                     onClick={() => navigation.history.back()}
                   >
                     <ArrowLeft size={12} />
                   </button>
                   <button
-                    className="px-2 py-2 rounded-md dark:text-moonlightText cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+                    className="px-2 py-2 rounded-md dark:text-moonlightWhite cursor-pointer hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
                     onClick={() => navigation.history.forward()}
                   >
                     <ArrowRight size={12} />
@@ -227,7 +223,7 @@ export default function Layout({ children }: LayoutProps) {
                 <ThemeButton />
                 <button
                   onClick={goToSettings}
-                  className="p-2 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+                  className="p-2 rounded-md cursor-pointer dark:text-moonlightWhite hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
                 >
                   <Settings size={12} />
                 </button>
@@ -265,6 +261,7 @@ export default function Layout({ children }: LayoutProps) {
       <Flex width="100%" height="100%">
         {children}
       </Flex>
+      <Toaster closeButton richColors position="bottom-center" />
     </Flex>
   );
 }
@@ -279,7 +276,7 @@ function AddButton() {
 
   return (
     <button
-      className="p-2 rounded-md cursor-pointer dark:text-moonlightText hover:bg-neutral-400/8 dark:hover:bg-neutral-400/5"
+      className="p-2 rounded-md cursor-pointer dark:text-moonlightWhite hover:bg-neutral-400/8 dark:hover:bg-neutral-400/5"
       disabled={isLoading}
       onClick={() => addIssueToLibrary()}
     >

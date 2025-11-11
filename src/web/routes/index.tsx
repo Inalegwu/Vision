@@ -8,6 +8,8 @@ import {
   TextField,
   Tooltip,
   Tabs,
+  Dialog,
+  IconButton,
 } from "@radix-ui/themes";
 import t from "@/shared/config";
 import { createFileRoute } from "@tanstack/react-router";
@@ -16,7 +18,14 @@ import React, { memo, Suspense } from "react";
 import { toast } from "@/web/components/toast";
 import { useTimeout } from "../hooks";
 import { globalState$ } from "../state";
-import { Library, AddCircle, Book2, AddSquare } from "@solar-icons/react";
+import {
+  Library,
+  AddCircle,
+  Book2,
+  CloseSquare,
+  CursorSquare,
+  Text as TextIcon,
+} from "@solar-icons/react";
 
 const Collection = React.lazy(() => import("../components/collection"));
 const Issue = React.lazy(() => import("../components/issue"));
@@ -28,12 +37,21 @@ export const Route = createFileRoute("/")({
 function Component() {
   const isEnabled = useObservable(false);
 
+  const collectionName = useObservable("");
+  const utils = t.useUtils();
+
   const view = globalState$.libraryView.get();
 
   const { data } = t.library.getLibrary.useQuery(undefined, {
     enabled: isEnabled.get(),
     onError: (error) => toast.error(error.message),
   });
+
+  const { mutate: createCollection, isLoading: creating } =
+    t.library.createCollection.useMutation({
+      onSuccess: (data) => utils.library.invalidate(),
+      onError: (error) => toast.error(error.message),
+    });
 
   useTimeout(() => isEnabled.set(true), 500);
 
@@ -68,9 +86,6 @@ function Component() {
                 </Text>
               </Flex>
             </Tabs.Trigger>
-            <Flex align="center" justify="end" gap="2" p="1">
-              <CreateCollection />
-            </Flex>
           </Tabs.List>
         </Flex>
         <Tabs.Content className="w-full h-[90vh]" value="collections">
@@ -79,6 +94,55 @@ function Component() {
         <Tabs.Content className="w-full h-[90vh]" value="issues">
           <RenderIssues issues={data?.issues || []} />
         </Tabs.Content>
+        <Dialog.Root>
+          <Dialog.Trigger>
+            <IconButton
+              variant="soft"
+              radius="full"
+              size="4"
+              className="absolute z-10 bottom-3 right-3"
+            >
+              <AddCircle size={24} />
+            </IconButton>
+          </Dialog.Trigger>
+          <Dialog.Content className="dark:bg-moonlightOverlay" size="1">
+            <Flex direction="column" gap="2">
+              <Flex align="center" justify="between" width="100%">
+                <Text weight="bold" size="5">
+                  Create Collection
+                </Text>
+                {/*<Dialog.Close>
+                  <CloseSquare size={24} className="text-red-500" />
+                </Dialog.Close>*/}
+              </Flex>
+              <Flex direction="column" gap="3">
+                <TextField.Root>
+                  <TextField.Slot>
+                    <TextIcon size={14} />
+                  </TextField.Slot>
+                  <TextField.Input
+                    placeholder="Collection Name"
+                    onChange={(e) => collectionName.set(e.target.value)}
+                    variant="soft"
+                    size="2"
+                  />
+                </TextField.Root>
+                <Button
+                  onClick={() =>
+                    createCollection({ collectionName: collectionName.get() })
+                  }
+                  className="cursor-pointer"
+                  variant="soft"
+                  size="2"
+                >
+                  <Flex align="center" justify="center" gap="2">
+                    <Text weight="bold">Create Collection</Text>
+                  </Flex>
+                </Button>
+              </Flex>
+            </Flex>
+          </Dialog.Content>
+        </Dialog.Root>
       </Flex>
     </Tabs.Root>
   );
@@ -105,7 +169,7 @@ const RenderIssues = memo(({ issues }: { issues: Issue[] }) => {
   }
 
   return (
-    <Flex width="100%" wrap="wrap" gap="2">
+    <Flex width="100%" wrap="wrap" p="4" gap="2">
       <Suspense fallback={<LoadingSkeleton />}>
         {issues.map((issue) => (
           <Issue issue={issue} key={issue.id} />
@@ -145,7 +209,7 @@ const RenderCollections = memo(
     }
 
     return (
-      <Flex width="100%" gap="5" wrap="wrap">
+      <Flex width="100%" gap="5" p="4" wrap="wrap">
         <Suspense fallback={<LoadingSkeleton />}>
           {collections.map((collection) => (
             <Collection key={collection.id} collection={collection} />
@@ -155,62 +219,3 @@ const RenderCollections = memo(
     );
   },
 );
-
-const CreateCollection = React.memo(() => {
-  const utils = t.useUtils();
-  const { mutate: createCollection, isLoading } =
-    t.library.createCollection.useMutation({
-      onSuccess: (data) => utils.library.invalidate(),
-      onError: (error) => toast.error(error.message),
-    });
-
-  const collectionName = useObservable("");
-
-  const create = () =>
-    createCollection({
-      collectionName: collectionName.get(),
-    });
-
-  return (
-    <Popover.Root>
-      <Popover.Trigger>
-        <button
-          disabled={isLoading}
-          className="p-2 rounded-md cursor-pointer text-moonlightOrange hover:bg-moonlightOrange/10"
-        >
-          <Tooltip content="Create a new collection">
-            {isLoading ? <Spinner /> : <Icon name="Plus" size={10} />}
-          </Tooltip>
-        </button>
-      </Popover.Trigger>
-      <Popover.Content className="transition bg-white dark:bg-moonlightBase relative">
-        <Flex direction="column" gap="2" align="start">
-          <Flex align="center" justify="start">
-            <Text size="1" weight="bold">
-              Give your collection a name
-            </Text>
-          </Flex>
-          <TextField.Root>
-            <TextField.Input
-              onChange={(e) => collectionName.set(e.target.value)}
-              size="2"
-            />
-          </TextField.Root>
-          <Popover.Close>
-            <Button
-              onClick={create}
-              className="cursor-pointer"
-              variant="soft"
-              size="1"
-            >
-              <Flex align="center" justify="center" gap="2">
-                <AddSquare size={16} />
-                <Text weight="medium">Create Collection</Text>
-              </Flex>
-            </Button>
-          </Popover.Close>
-        </Flex>
-      </Popover.Content>
-    </Popover.Root>
-  );
-});

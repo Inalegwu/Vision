@@ -29,8 +29,10 @@ function Index() {
         justify="center"
         gap="1"
       >
-        <Heading size="8">Nothing to see yet</Heading>
-        <Text size="3" color="gray">
+        <Heading size="8" weight="bold">
+          Nothing to see yet
+        </Heading>
+        <Text size="3" color="gray" weight="medium">
           Start reading to track your progress
         </Text>
       </Flex>

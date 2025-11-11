@@ -42,7 +42,7 @@ function Component() {
   return (
     <Flex className="h-screen pt-8 w-full" direction="column">
       <Flex className="w-full px-3 py-6" align="center" justify="between">
-        <Text size="8" className="font-[Title] tracking-wide" weight="bold">
+        <Text size="8" weight="bold">
           {data?.collection?.collectionName}
         </Text>
         <Dialog.Root>
@@ -100,8 +100,8 @@ function Component() {
                       checked
                         ? setToAdd((added) => [...added, item.id])
                         : setToAdd((added) => [
-                          ...added.filter((id) => id !== item.id),
-                        ])
+                            ...added.filter((id) => id !== item.id),
+                          ])
                     }
                     size="1"
                     variant="soft"

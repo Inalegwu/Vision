@@ -8,22 +8,29 @@ import {
   ArchiveService,
   databaseArchiveService,
 } from "../services/archive-service";
+import { Path } from "@effect/platform";
+import { NodeContext } from "@effect/platform-node";
 
 const port = parentPort;
 
 if (!port) throw new Error("Parse Process Port is Missing");
 
-const handleMessage = Effect.fnUntraced(function*({
+const handleMessage = Effect.fnUntraced(function* ({
   action,
   parsePath,
 }: ParserSchema) {
   const archive = yield* ArchiveService;
+  const path = yield* Path.Path;
+
+  const filePath = path.normalize(parsePath);
+
+  yield* Effect.log({ filePath });
 
   yield* Effect.log({ action, parsePath });
 
-  const ext = parsePath.includes("cbr")
+  const ext = filePath.includes("cbr")
     ? "cbr"
-    : parsePath.includes("cbz")
+    : filePath.includes("cbz")
       ? "cbz"
       : "none";
 
@@ -31,14 +38,14 @@ const handleMessage = Effect.fnUntraced(function*({
     isCompleted: false,
     state: "SUCCESS",
     error: null,
-    issue: parseFileNameFromPath(parsePath),
+    issue: parseFileNameFromPath(filePath),
   });
 
   const exists = yield* Effect.tryPromise(
     async () =>
       await db.query.issues.findFirst({
         where: (issue, { eq }) =>
-          eq(issue.issueTitle, parseFileNameFromPath(parsePath)),
+          eq(issue.issueTitle, parseFileNameFromPath(filePath)),
       }),
   );
 
@@ -56,15 +63,15 @@ const handleMessage = Effect.fnUntraced(function*({
     isCompleted: false,
     state: "SUCCESS",
     error: null,
-    issue: parseFileNameFromPath(parsePath),
+    issue: parseFileNameFromPath(filePath),
   });
 
   Match.value({ action, ext }).pipe(
     Match.when({ action: "LINK", ext: "cbr" }, () =>
-      archive.rar(parsePath).pipe(Effect.runPromise),
+      archive.rar(filePath).pipe(Effect.runPromise),
     ),
     Match.when({ action: "LINK", ext: "cbz" }, () =>
-      archive.zip(parsePath).pipe(Effect.runPromise),
+      archive.zip(filePath).pipe(Effect.runPromise),
     ),
     Match.when({ action: "LINK", ext: "none" }, () => Effect.void),
     Match.when({ action: "UNLINK" }, () => Effect.void),
@@ -81,6 +88,7 @@ port.on("message", (message) =>
       worker: "parser-worker",
     }),
     Effect.provideService(ArchiveService, databaseArchiveService),
+    Effect.provide(NodeContext.layer),
     Effect.orDie,
     Effect.runPromise,
   ),

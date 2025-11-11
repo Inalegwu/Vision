@@ -5,7 +5,7 @@ export default function ThemeButton() {
   return (
     <button
       type="button"
-      className="p-2 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
+      className="p-2 rounded-md cursor-pointer dark:text-moonlightWhite hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
       onClick={() => {
         if (globalState$.colorMode.get() === "dark") {
           globalState$.colorMode.set("light");
