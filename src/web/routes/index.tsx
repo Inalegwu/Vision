@@ -1,19 +1,17 @@
-import { Icon, LoadingSkeleton, Spinner } from "@/web/components";
-import { Switch, useObservable } from "@legendapp/state/react";
+import { LoadingSkeleton } from "@/web/components";
+import { useObservable } from "@legendapp/state/react";
 import {
   Button,
   Flex,
-  Popover,
   Text,
   TextField,
-  Tooltip,
   Tabs,
   Dialog,
   IconButton,
+  Heading,
 } from "@radix-ui/themes";
 import t from "@/shared/config";
 import { createFileRoute } from "@tanstack/react-router";
-import { AnimatePresence, motion } from "motion/react";
 import React, { memo, Suspense } from "react";
 import { toast } from "@/web/components/toast";
 import { useTimeout } from "../hooks";
@@ -22,8 +20,6 @@ import {
   Library,
   AddCircle,
   Book2,
-  CloseSquare,
-  CursorSquare,
   Text as TextIcon,
 } from "@solar-icons/react";
 
@@ -47,13 +43,15 @@ function Component() {
     onError: (error) => toast.error(error.message),
   });
 
-  const { mutate: createCollection, isLoading: creating } =
+  const { mutate: createCollection, isPending: creating } =
     t.library.createCollection.useMutation({
       onSuccess: (data) => utils.library.invalidate(),
       onError: (error) => toast.error(error.message),
     });
 
   useTimeout(() => isEnabled.set(true), 500);
+
+  console.log({ data });
 
   return (
     <Tabs.Root className="w-full h-screen" defaultValue="collections">
@@ -105,12 +103,18 @@ function Component() {
               <AddCircle size={24} />
             </IconButton>
           </Dialog.Trigger>
-          <Dialog.Content className="dark:bg-moonlightOverlay" size="1">
+          <Dialog.Content
+            aria-describedby="create collection modal"
+            className="dark:bg-moonlightOverlay"
+            size="1"
+          >
             <Flex direction="column" gap="2">
               <Flex align="center" justify="between" width="100%">
-                <Text weight="bold" size="5">
-                  Create Collection
-                </Text>
+                <Dialog.Title>
+                  <Text weight="bold" size="5">
+                    Create Collection
+                  </Text>
+                </Dialog.Title>
                 {/*<Dialog.Close>
                   <CloseSquare size={24} className="text-red-500" />
                 </Dialog.Close>*/}
@@ -150,22 +154,22 @@ function Component() {
 
 const RenderIssues = memo(({ issues }: { issues: Issue[] }) => {
   if (issues.length === 0) {
-    // return (
-    //   <Flex
-    //     direction="column"
-    //     className="w-full h-full"
-    //     align="center"
-    //     justify="center"
-    //   >
-    //     <Heading className="text-moonlightOrange" size="8">
-    //       No Issues
-    //     </Heading>
-    //     <Text size="3" className="text-moonlightSlight">
-    //       Add some issues to see them in your library
-    //     </Text>
-    //   </Flex>
-    // );
-    return null;
+    return (
+      <Flex
+        direction="column"
+        width="100%"
+        className="h-full"
+        align="center"
+        justify="center"
+      >
+        <Heading className="text-moonlightOrange" size="8">
+          No Issues
+        </Heading>
+        <Text size="3" className="text-moonlightSlight">
+          Add some issues to see them in your library
+        </Text>
+      </Flex>
+    );
   }
 
   return (
@@ -190,22 +194,22 @@ const RenderCollections = memo(
     >;
   }) => {
     if (collections.length === 0) {
-      // return (
-      //   <Flex
-      //     direction="column"
-      //     className="w-full h-full"
-      //     align="center"
-      //     justify="center"
-      //   >
-      //     <Heading className="text-moonlightOrange" size="8">
-      //       No Collections
-      //     </Heading>
-      //     <Text size="3" className="text-moonlightSlight">
-      //       Create some collections to organize your library
-      //     </Text>
-      //   </Flex>
-      // );
-      return null;
+      return (
+        <Flex
+          direction="column"
+          className="h-full"
+          width="100%"
+          align="center"
+          justify="center"
+        >
+          <Heading className="text-moonlightOrange" size="8">
+            No Collections
+          </Heading>
+          <Text size="3" className="text-moonlightSlight">
+            Create some collections to organize your library
+          </Text>
+        </Flex>
+      );
     }
 
     return (

@@ -2,18 +2,15 @@ import { Flex, Switch, Tabs, Text } from "@radix-ui/themes";
 import t from "@/shared/config";
 import { createFileRoute } from "@tanstack/react-router";
 import React, { memo } from "react";
-import { Icon } from "@/web/components";
 import { toast } from "@/web/components/toast";
 import { globalState$ } from "../state";
-import { SsdRound, Glasses } from "@solar-icons/react";
+import { SsdRound, Glasses, PaperBin } from "@solar-icons/react";
 
 export const Route = createFileRoute("/settings")({
   component: memo(Component),
 });
 
 function Component() {
-  console.log(globalState$.get());
-
   return (
     <Flex direction="column" className="w-full h-screen pt-10">
       <Tabs.Root defaultValue="storage">
@@ -65,7 +62,7 @@ const StorageView = React.memo(() => {
           onClick={() => emptyCache()}
           className="p-3 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
         >
-          <Icon name="Recycle" size={14} />
+          <PaperBin size={16} />
         </button>
       </Flex>
     </Flex>

@@ -10,7 +10,8 @@ import t from "@/shared/config";
 import { toast } from "@/web/components/toast";
 import { createFileRoute } from "@tanstack/react-router";
 import React, { Suspense, useState } from "react";
-import { FlatList, Icon, LoadingSkeleton, Spinner } from "../../components";
+import { FlatList, LoadingSkeleton, Spinner } from "../../components";
+import { AddCircle } from "@solar-icons/react";
 
 const Issue = React.lazy(() => import("../../components/issue"));
 
@@ -48,7 +49,7 @@ function Component() {
         <Dialog.Root>
           <Dialog.Trigger>
             <button className="p-2 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5">
-              <Icon name="Plus" size={13} />
+              <AddCircle size={13} />
             </button>
           </Dialog.Trigger>
           <Dialog.Content

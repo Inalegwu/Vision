@@ -1,4 +1,3 @@
-import { Icon } from "@/web/components";
 import {
   ContextMenu,
   Dialog,
@@ -12,6 +11,14 @@ import { useRouter } from "@tanstack/react-router";
 import { useRef } from "react";
 import FlatList from "./flatlist";
 import { toast } from "./toast";
+import {
+  MinusCircle,
+  AddCircle,
+  InfoCircle,
+  TrashBin2,
+  Refresh,
+  FolderFavouriteBookmark,
+} from "@solar-icons/react";
 
 type Props = {
   issue: Issue;
@@ -26,7 +33,7 @@ export default function Issue({ issue }: Props) {
     onSuccess: () => utils.library.getLibrary.invalidate(),
   });
 
-  const { mutate: addToCollection, isLoading: adding } =
+  const { mutate: addToCollection } =
     t.library.addIssueToCollection.useMutation({
       onSuccess: () => utils.library.getLibrary.invalidate(),
       onError: (error) => toast.error(error.message),
@@ -67,7 +74,7 @@ export default function Issue({ issue }: Props) {
                 size="1"
                 weight="medium"
                 className="text-black dark:text-neutral-400"
-              // className="text-neutral-400"
+                // className="text-neutral-400"
               >
                 {issue.issueTitle}
               </Text>
@@ -89,7 +96,7 @@ export default function Issue({ issue }: Props) {
                   onClick={() => removeFromCollection({ issueId: issue.id })}
                   className="p-2 rounded-md cursor-pointer text-red-500 hover:bg-red-500/10"
                 >
-                  <Icon name="Minus" size={12} />
+                  <MinusCircle size={14} />
                 </button>
               </Tooltip>
             ) : (
@@ -98,7 +105,7 @@ export default function Issue({ issue }: Props) {
                   onClick={() => dialogRef.current?.click()}
                   className="p-2 rounded-md cursor-pointer text-moonlightOrange hover:bg-moonlightOrange/10"
                 >
-                  <Icon name="Plus" size={12} />
+                  <AddCircle size={12} />
                 </button>
               </Tooltip>
             )}
@@ -114,7 +121,7 @@ export default function Issue({ issue }: Props) {
                 }
                 className="p-2 rounded-md cursor-pointer dark:text-moonlightSlight hover:bg-neutral-400/10 dark:hover:bg-neutral-400/5"
               >
-                <Icon name="Info" size={12} />
+                <InfoCircle size={12} />
               </button>
             </Tooltip>
             <Tooltip content="Delete Issue">
@@ -126,7 +133,7 @@ export default function Issue({ issue }: Props) {
                 }
                 className="p-2 rounded-md cursor-pointer text-red-500 hover:bg-red-500/10"
               >
-                <Icon name="Trash" size={12} />
+                <TrashBin2 size={12} />
               </button>
             </Tooltip>
           </Flex>
@@ -145,7 +152,7 @@ export default function Issue({ issue }: Props) {
                 >
                   <Flex align="center" gap="3" justify="between" width="100%">
                     <Text size="1"> Remove From Collection</Text>
-                    <Icon name="Minus" size={11} />
+                    <MinusCircle size={11} />
                   </Flex>
                 </ContextMenu.Item>
               ) : (
@@ -155,14 +162,14 @@ export default function Issue({ issue }: Props) {
                 >
                   <Flex align="center" justify="between" gap="4" width="100%">
                     <Text size="1">Add To Collection</Text>
-                    <Icon name="Plus" size={11} />
+                    <AddCircle size={11} />
                   </Flex>
                 </ContextMenu.Item>
               )}
               <ContextMenu.Item className="cursor-pointer">
                 <Flex gap="3" align="center" justify="between" width="100%">
                   <Text size="1"> Regenerate Thumbnail</Text>
-                  <Icon name="RefreshCcw" size={11} />
+                  <Refresh size={11} />
                 </Flex>
               </ContextMenu.Item>
             </ContextMenu.SubContent>
@@ -206,7 +213,7 @@ export default function Issue({ issue }: Props) {
                     })
                   }
                 >
-                  <Icon name="BookPlus" size={13} />
+                  <FolderFavouriteBookmark size={13} />
                 </button>
               </Flex>
             )}

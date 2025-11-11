@@ -1,5 +1,5 @@
 import { computed } from "@legendapp/state";
-import { Show, useObservable, useObserveEffect } from "@legendapp/state/react";
+import { useObserveEffect } from "@legendapp/state/react";
 import { Flex, Text, Tooltip } from "@radix-ui/themes";
 import t from "@/shared/config";
 import icon from "@/assets/images/win.png";
@@ -9,7 +9,7 @@ import { AnimatePresence, motion } from "motion/react";
 import type React from "react";
 import { useEffect } from "react";
 import { v4 } from "uuid";
-import { useInterval, useKeyPress, useWindow } from "../hooks";
+import { useWindow } from "../hooks";
 import { globalState$ } from "../state";
 import Spinner from "./spinner";
 import ThemeButton from "./theme-button";
@@ -47,7 +47,7 @@ export default function Layout({ children }: LayoutProps) {
   t.additions.useSubscription(undefined, {
     onData: (data) => {
       if (!data.isCompleted && data.state === "SUCCESS") {
-        toast.promise(`Adding ${data.issue || "issue"} To Library`);
+        toast.success(`Adding ${data.issue || "issue"} To Library`);
       }
 
       if (data.isCompleted && data.state === "SUCCESS") {
