@@ -1,6 +1,4 @@
 import { enableReactTracking } from "@legendapp/state/config/enableReactTracking";
-import { Theme } from "@radix-ui/themes";
-import "@radix-ui/themes/styles.css";
 import t, { persister, queryClient, trpcClient } from "@/shared/config";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import {
@@ -45,12 +43,6 @@ if (!rootElement?.innerHTML) {
           persistOptions={{ persister }}
           client={queryClient}
         >
-          <Theme
-            radius="small"
-            accentColor="orange"
-            grayColor="slate"
-            panelBackground="translucent"
-          >
             <ToastProvider
               context={{
                 duration: 2000,
@@ -59,7 +51,6 @@ if (!rootElement?.innerHTML) {
             >
               <RouterProvider defaultViewTransition router={router} />
             </ToastProvider>
-          </Theme>
         </PersistQueryClientProvider>
       </t.Provider>
     </StrictMode>,
