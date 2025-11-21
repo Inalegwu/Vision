@@ -58,6 +58,8 @@ export const transformMessage = <T extends z.ZodRawShape>(
     ),
   );
 
+export const formatNumber = (value: number) => value.toString().padStart(2, "0");
+
 export function debounce<A = unknown[], R = void>(
   fn: (args: A) => R,
   ms: number,

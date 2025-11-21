@@ -5,7 +5,12 @@
 
 @font-face {
     font-family: Font;
-    src: url("../assets/fonts/nunito.ttf");
+    src: url("../assets/fonts/atkinson.ttf");
+}
+
+@font-face{
+    font-family: Count;
+    src:url("../assets/fonts/plex-mono.ttf")
 }
 
 * {

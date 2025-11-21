@@ -15,12 +15,6 @@ app.setName("Vision");
 
 const data_dir = path.join(app.getPath("appData"), "Vision");
 
-// unix systems don't create these on their own for some reason
-// so much for the best operating system lol
-// Fs.makeDirectory(data_dir).pipe(
-//   Effect.catchTag("FSError", () => Effect.void),
-//   Effect.runPromise,
-// );
 Fs.makeDirectory(path.join(data_dir, "LibraryCache")).pipe(
   Effect.catchTag("FSError", () => Effect.void),
   Effect.runPromise,

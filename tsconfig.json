@@ -5,17 +5,12 @@
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "lib": [
-      "DOM",
-      "ESNext"
-    ],
+    "lib": ["DOM", "ESNext"],
     "jsx": "react-jsx",
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
+      "@/*": ["./src/*"]
     },
     "plugins": [
       {
@@ -27,7 +22,5 @@
       }
     ]
   },
-  "include": [
-    "src"
-  ],
+  "include": ["src", "./kuma.config.ts"]
 }
