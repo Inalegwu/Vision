@@ -36,6 +36,40 @@ const theme = createTheme({
     body: "Font",
     count: "Count",
   },
+  components: {
+    Button: {
+      defaultProps: {
+        fontFamily: "Font",
+        fontSize: 13,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        padding: 2,
+        borderRadius: 8,
+        border: "2px solid",
+        borderColor: "primary.400",
+        color: "#000000",
+        bg: "light.700",
+        _hover: {
+          bg: "primary.100",
+          color: "light.100",
+        },
+        _active: {
+          bg: "primary.200",
+          color: "light.100",
+        },
+        _disabled: {
+          bg: "light.300",
+          color: "dark.300",
+          cursor: "not-allowed",
+        },
+        _focus: {
+          boxShadow: "0 0 0 2px #EF46B1",
+        },
+      },
+    },
+  },
 });
 
 type CustomTheme = typeof theme;
